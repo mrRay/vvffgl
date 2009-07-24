@@ -76,7 +76,7 @@ static VVFFGLPluginManager *_sharedPluginManager = nil;
 
 - (void)loadPluginsFromDirectories:(NSArray *)paths
 {
-    for (path in paths) {
+    for (NSString *path in paths) {
         [self loadPluginsFromDirectory:path];
     }
 }
@@ -85,31 +85,14 @@ static VVFFGLPluginManager *_sharedPluginManager = nil;
 {
     @synchronized(self) {
         NSArray *contents;
-        NSMutableArray *fileTypeHandlers;
-        NSString *file, *path, *extension;
-        NSBundle *bundle;
+        NSString *file, *path;
+        VVFFGLPlugin *plugin;
         contents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:NULL];
         for (file in contents) {
             if([[file pathExtension] isEqualToString:@"frf"]) {
-                bundle = [NSBundle bundleWithPath:[path stringByAppendingPathComponent:file]];
-                bundleClass = [bundle principalClass]; // loads the bundle code
-                if ([bundleClass conformsToProtocol:@protocol(v002Plugin)]) {
-                    [_plugins addObject:v002IdentifierFromClass(bundleClass)];
-                    capabilities = [bundleClass capabilities];
-                    if ((capabilities & kv002PluginCapabilities_OpensFilePath) || (capabilities & kv002PluginCapabilities_OpensFilePathList)) {
-                        for (extension in [bundleClass loadableFileTypes]) {
-                            if (fileTypeHandlers = [_fileHandlers objectForKey:extension]) {
-                                [fileTypeHandlers addObject:v002IdentifierFromClass(bundleClass)];
-                            } else {
-                                [_fileHandlers setObject:[NSMutableArray arrayWithObject:v002IdentifierFromClass(bundleClass)] forKey:extension];
-                            }
-                        }
-                    }
-                    [self.delegate pluginLoaded:v002IdentifierFromClass(bundleClass)]; 
-                } else {
-                    // Plugin doesn't conform to protocol.
-                    [bundle unload];
-                }
+                plugin = [[VVFFGLPlugin alloc] initWithPath:file];
+                [plugin autorelease];
+                // TODO: check type, add to apt array
             }
         }        
     }
