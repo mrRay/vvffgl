@@ -101,7 +101,9 @@ static VVFFGLPluginManager *_sharedPluginManager = nil;
         VVFFGLPlugin *plugin;
         contents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:NULL];
         for (file in contents) {
-            if([[file pathExtension] isEqualToString:@"frf"]) {
+            // frf is probably not a good assumption -vade all of the shipping OS X FF plugins use a .bundle extentions
+			if([[file pathExtension] isEqualToString:@"frf"])
+			{				
                 plugin = [[VVFFGLPlugin alloc] initWithPath:file];
                 [plugin autorelease];
                 if ([plugin type] == VVFFGLPluginSourceType) {
