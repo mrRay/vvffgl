@@ -14,13 +14,19 @@ enum {
     VVFFGLPluginSourceType = 1
 };
 
-typedef struct VVFFGLPluginData VVFFGLPluginData;
+extern NSString * const VVFFGLPluginAttributesNameKey;
+extern NSString * const VVFFGLPluginAttributesVersionKey;
+extern NSString * const VVFFGLPluginAttributesDescriptionKey;
+extern NSString * const VVFFGLPluginAttributesAuthorKey;
+
+typedef struct VVFFGLPluginData VVFFGLPluginData; // Private
 
 @interface VVFFGLPlugin : NSObject {
 @private
-    CFBundleRef _bundle;
     VVFFGLPluginData *_pluginData;
 }
 - (id)initWithPath:(NSString *)path;
 - (VVFFGLPluginType)type;
+- (NSString *)identifier;
+- (NSDictionary *)attributes; // Alternatively we could have methods to directly access each attribute?
 @end
