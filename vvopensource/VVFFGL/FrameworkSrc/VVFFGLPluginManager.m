@@ -101,15 +101,17 @@ static VVFFGLPluginManager *_sharedPluginManager = nil;
         VVFFGLPlugin *plugin;
         contents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:NULL];
         for (file in contents) {
-            // frf is probably not a good assumption -vade all of the shipping OS X FF plugins use a .bundle extentions
-			if([[file pathExtension] isEqualToString:@"frf"])
+            // So far spotted in the wild: .bundle, .frf. If we find others, we could skip this check altogether. .plugin is an Apple-defined extension
+            // which gets its own pretty icon and can't be opened as a folder in the Finder, but nobody making FF plugins seems to be using it, but they should!
+			if([[file pathExtension] isEqualToString:@"frf"] || [[file pathExtension] isEqualToString:@"bundle"] || [[file pathExtension] isEqualToString:@"plugin"])
 			{				
-                plugin = [[VVFFGLPlugin alloc] initWithPath:file];
-                [plugin autorelease];
-                if ([plugin type] == VVFFGLPluginSourceType) {
-                  [_sources addObject:plugin];  
-                } else {
-                    [_effects addObject:plugin];
+                plugin = [[[VVFFGLPlugin alloc] initWithPath:file] autorelease];
+                if (plugin != nil) {
+                    if ([plugin type] == VVFFGLPluginSourceType) {
+                        [_sources addObject:plugin];  
+                    } else {
+                        [_effects addObject:plugin];
+                    }
                 }
             }
         }        
