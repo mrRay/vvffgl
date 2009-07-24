@@ -104,7 +104,11 @@ static VVFFGLPluginManager *_sharedPluginManager = nil;
             if([[file pathExtension] isEqualToString:@"frf"]) {
                 plugin = [[VVFFGLPlugin alloc] initWithPath:file];
                 [plugin autorelease];
-                // TODO: check type, add to apt array
+                if ([plugin type] == VVFFGLPluginSourceType) {
+                  [_sources addObject:plugin];  
+                } else {
+                    [_effects addObject:plugin];
+                }
             }
         }        
     }

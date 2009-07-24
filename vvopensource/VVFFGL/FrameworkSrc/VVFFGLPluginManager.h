@@ -17,6 +17,7 @@
 - (void)loadLibraryPlugins;
 - (void)loadApplicationPlugins;
 - (void)loadPluginsFromDirectory:(NSString *)path;
+- (void)loadPluginsFromDirectories:(NSArray *)paths;
 - (NSArray *)plugins;
 - (NSArray *)sourcePlugins;
 - (NSArray *)effectPlugins;

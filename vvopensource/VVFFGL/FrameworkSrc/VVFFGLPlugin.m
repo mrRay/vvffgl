@@ -43,19 +43,16 @@ struct VVFFGLPluginData {
             [self release];
             return nil;
         }
-        plugMainUnion result = m_ffPluginMain(FF_GETPARAMETERDEFAULT,(DWORD)i,0);
-        if (result.ivalue!=FF_FAIL)
-        {
-            SetFloatParameter(i,result.fvalue);
-        }
-    }
+
         plugMainUnion result;
-        PluginInfoStruct *infoPtr;
-        FF_Main_FuncPtr functionPtr = _pluginData->main;
-        result = functionPtr(FF_GETINFO, 0, 0);
-        _pluginData->info = (PluginInfoStruct *)(*_pluginData->main)(FF_GETINFO, 0, 0);
-        DWORD r = (*_pluginData->main)(FF_INITIALISE, 0, 0);
-        if (r != FF_SUCCESS) {
+        result = _pluginData->main(FF_GETINFO, 0, 0);
+        if ((result.ivalue != FF_SUCCESS) || (result.svalue == NULL)) {
+            [self release];
+            return nil;
+        }
+        _pluginData->info = (PluginInfoStruct *)result.svalue;
+        if ((_pluginData->info->PluginType != FF_SOURCE) && (_pluginData->info->PluginType != FF_EFFECT)) {
+            // Bail if this is some future other type of plugin.
             [self release];
             return nil;
         }
@@ -72,6 +69,6 @@ struct VVFFGLPluginData {
 
 - (VVFFGLPluginType)type
 {
-    
+    return _pluginData->info->PluginType;
 }
 @end
