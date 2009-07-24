@@ -27,7 +27,24 @@
 
 - (void)dealloc
 {
+	if(_pluginContext != nil)
+	{
+		CGLReleaseContext(_pluginContext);
+	}
+	
     [_plugin release];
     [super dealloc];
 }
+
+- (void)setCGLContext:(CGLContextObj)cgl_ctx
+{
+	if(_pluginContext != nil)
+	{
+		CGLReleaseContext(_pluginContext);
+	}
+	_pluginContext = cgl_ctx;
+	CGLRetainContext(_pluginContext);
+}	
+
+
 @end
