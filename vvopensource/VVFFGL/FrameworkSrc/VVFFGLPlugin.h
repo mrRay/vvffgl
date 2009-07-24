@@ -8,9 +8,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "FreeFrame.h"
-#import "FFGL.h"
-
 typedef NSUInteger VVFFGLPluginType;
 enum {
     VVFFGLPluginEffectType = 0,

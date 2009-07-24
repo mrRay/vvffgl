@@ -9,10 +9,6 @@
 
 #import "VVFFGLPlugin.h"
 
-#import "FreeFrame.h"
-#import "FFGL.h"
-
-
 
 @interface VVFFGLPluginManager : NSObject {
 @private
