@@ -196,9 +196,13 @@
 		96BF10B0100E95330079A2E6 /* VVOSC.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF10AD100E95330079A2E6 /* VVOSC.h */; };
 		96BF10B1100E95330079A2E6 /* VVOSC.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF10AD100E95330079A2E6 /* VVOSC.h */; };
 		96C2F2141017815F004E19B0 /* OSCConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 96C2F2131017815F004E19B0 /* OSCConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		BD9F6A0B10191358004D8CD9 /* VVFFGL.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6A0910191358004D8CD9 /* VVFFGL.h */; };
+		BD9F6A0B10191358004D8CD9 /* VVFFGL.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6A0910191358004D8CD9 /* VVFFGL.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BD9F6A0C10191358004D8CD9 /* FreeFrame.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6A0A10191358004D8CD9 /* FreeFrame.h */; };
 		BD9F6A88101921FD004D8CD9 /* FFGL.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6A87101921FD004D8CD9 /* FFGL.h */; };
+		BD9F6C8E101945AE004D8CD9 /* VVFFGLPlugin.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6C8A101945AE004D8CD9 /* VVFFGLPlugin.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		BD9F6C8F101945AE004D8CD9 /* VVFFGLPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = BD9F6C8B101945AE004D8CD9 /* VVFFGLPlugin.m */; };
+		BD9F6C90101945AE004D8CD9 /* VVFFGLPluginManager.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6C8C101945AE004D8CD9 /* VVFFGLPluginManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		BD9F6C91101945AE004D8CD9 /* VVFFGLPluginManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BD9F6C8D101945AE004D8CD9 /* VVFFGLPluginManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -500,6 +504,10 @@
 		BD9F6A0910191358004D8CD9 /* VVFFGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VVFFGL.h; path = VVFFGL/VVFFGL.h; sourceTree = "<group>"; };
 		BD9F6A0A10191358004D8CD9 /* FreeFrame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FreeFrame.h; path = VVFFGL/FrameworkSrc/FreeFrame.h; sourceTree = "<group>"; };
 		BD9F6A87101921FD004D8CD9 /* FFGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGL.h; path = VVFFGL/FrameworkSrc/FFGL.h; sourceTree = "<group>"; };
+		BD9F6C8A101945AE004D8CD9 /* VVFFGLPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VVFFGLPlugin.h; path = VVFFGL/FrameworkSrc/VVFFGLPlugin.h; sourceTree = "<group>"; };
+		BD9F6C8B101945AE004D8CD9 /* VVFFGLPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = VVFFGLPlugin.m; path = VVFFGL/FrameworkSrc/VVFFGLPlugin.m; sourceTree = "<group>"; };
+		BD9F6C8C101945AE004D8CD9 /* VVFFGLPluginManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VVFFGLPluginManager.h; path = VVFFGL/FrameworkSrc/VVFFGLPluginManager.h; sourceTree = "<group>"; };
+		BD9F6C8D101945AE004D8CD9 /* VVFFGLPluginManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = VVFFGLPluginManager.m; path = VVFFGL/FrameworkSrc/VVFFGLPluginManager.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -647,6 +655,10 @@
 		9606B186101763A700CC50B7 /* VVFFGL framework */ = {
 			isa = PBXGroup;
 			children = (
+				BD9F6C8A101945AE004D8CD9 /* VVFFGLPlugin.h */,
+				BD9F6C8B101945AE004D8CD9 /* VVFFGLPlugin.m */,
+				BD9F6C8C101945AE004D8CD9 /* VVFFGLPluginManager.h */,
+				BD9F6C8D101945AE004D8CD9 /* VVFFGLPluginManager.m */,
 				BD9F6A0A10191358004D8CD9 /* FreeFrame.h */,
 				BD9F6A87101921FD004D8CD9 /* FFGL.h */,
 				BD9F6A0910191358004D8CD9 /* VVFFGL.h */,
@@ -802,6 +814,8 @@
 				BD9F6A0B10191358004D8CD9 /* VVFFGL.h in Headers */,
 				BD9F6A0C10191358004D8CD9 /* FreeFrame.h in Headers */,
 				BD9F6A88101921FD004D8CD9 /* FFGL.h in Headers */,
+				BD9F6C8E101945AE004D8CD9 /* VVFFGLPlugin.h in Headers */,
+				BD9F6C90101945AE004D8CD9 /* VVFFGLPluginManager.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1239,6 +1253,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BD9F6C8F101945AE004D8CD9 /* VVFFGLPlugin.m in Sources */,
+				BD9F6C91101945AE004D8CD9 /* VVFFGLPluginManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
