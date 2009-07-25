@@ -42,6 +42,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		1BCF31B1101A5AEC00D50A21 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BCF31B0101A5AEC00D50A21 /* OpenGL.framework */; };
+		1BCF31B2101A5AEC00D50A21 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BCF31B0101A5AEC00D50A21 /* OpenGL.framework */; };
 		9606B16C1017624000CC50B7 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
 		9606B16D1017624400CC50B7 /* VVBasics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 961EA8ED100E8565007E6C25 /* VVBasics.framework */; };
 		9606B185101763A200CC50B7 /* VVFFGL.h in Headers */ = {isa = PBXBuildFile; fileRef = 9606B184101763A200CC50B7 /* VVFFGL.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -415,6 +417,7 @@
 
 /* Begin PBXFileReference section */
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		1BCF31B0101A5AEC00D50A21 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		32DBCF5E0370ADEE00C91783 /* VVOpenSource_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VVOpenSource_Prefix.pch; sourceTree = "<group>"; };
 		9606B14D101761EF00CC50B7 /* VVFFGL.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = VVFFGL.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9606B14E101761EF00CC50B7 /* VVFFGL-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "VVFFGL-Info.plist"; path = "VVFFGL/FrameworkSrc/VVFFGL-Info.plist"; sourceTree = "<group>"; };
@@ -519,6 +522,7 @@
 			files = (
 				9606B16C1017624000CC50B7 /* Cocoa.framework in Frameworks */,
 				9606B16D1017624400CC50B7 /* VVBasics.framework in Frameworks */,
+				1BCF31B1101A5AEC00D50A21 /* OpenGL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -526,6 +530,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1BCF31B2101A5AEC00D50A21 /* OpenGL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -636,6 +641,7 @@
 		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				1BCF31B0101A5AEC00D50A21 /* OpenGL.framework */,
 				9617463E100F88EC00FB60E6 /* CoreMIDI.framework */,
 				1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */,
 			);

@@ -109,9 +109,11 @@ static VVFFGLPluginManager *_sharedPluginManager = nil;
                 if (plugin != nil) {
                     if ([plugin type] == VVFFGLPluginSourceType) {
                         [_sources addObject:plugin];  
-                    } else {
+                    } else if([plugin type] == VVFFGLPluginEffectType) {
                         [_effects addObject:plugin];
                     }
+					else
+						NSLog(@"Unsupported plugin type");
                 }
             }
         }        
