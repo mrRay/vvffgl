@@ -29,6 +29,6 @@
 // if the context changes for whatever reason, probably should re-make the object
 // need to pass in a viewport stuct
 
-- (id)initWithPlugin:(VVFFGLPlugin *)plugin context(CGLContextObj)cgl_ctx viewport:(FFGLViewportStruct) vp;
+- (id)initWithPlugin:(VVFFGLPlugin *)plugin context(CGLContextObj)cgl_ctx;
 
 @end
