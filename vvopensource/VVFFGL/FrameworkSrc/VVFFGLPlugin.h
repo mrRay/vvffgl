@@ -36,6 +36,21 @@ extern NSString * const VVFFGLPluginAttributesVersionKey;
 extern NSString * const VVFFGLPluginAttributesDescriptionKey;
 extern NSString * const VVFFGLPluginAttributesAuthorKey;
 
+extern NSString * const VVFFGLParameterAttributeTypeKey;
+extern NSString * const VVFFGLParameterAttributeNameKey;
+extern NSString * const VVFFGLParameterAttributeDefaultValueKey;
+extern NSString * const VVFFGLParameterAttributeMinimumValueKey;
+extern NSString * const VVFFGLParameterAttributeMaximumValueKey;
+extern NSString * const VVFFGLParameterAttributeRequiredKey;
+
+extern NSString * const VVFFGLParameterTypeBoolean;
+extern NSString * const VVFFGLParameterTypeEvent;
+extern NSString * const VVFFGLParameterTypePoint;
+extern NSString * const VVFFGLParameterTypeNumber;
+extern NSString * const VVFFGLParameterTypeString;
+extern NSString * const VVFFGLParameterTypeColor;
+extern NSString * const VVFFGLParameterTypeImage;
+
 typedef struct VVFFGLPluginData VVFFGLPluginData; // Private
 
 @interface VVFFGLPlugin : NSObject {
@@ -48,4 +63,6 @@ typedef struct VVFFGLPluginData VVFFGLPluginData; // Private
 - (NSArray *)supportedBufferPixelFormats;
 - (NSString *)identifier;
 - (NSDictionary *)attributes; // Alternatively we could have methods to directly access each attribute?
+- (NSArray *)parameterKeys;
+- (NSDictionary *)attributesForParameterWithKey:(NSString *)key;
 @end

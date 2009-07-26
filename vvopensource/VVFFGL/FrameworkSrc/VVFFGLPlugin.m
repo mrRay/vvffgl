@@ -16,6 +16,7 @@ struct VVFFGLPluginData {
     Boolean initted;
     VVFFGLPluginMode mode;
     NSArray *bufferPixelFormats;
+    NSDictionary *parameters;
     PluginInfoStruct *info;
     PluginExtendedInfoStruct *extendedInfo;
 };
@@ -31,6 +32,22 @@ NSString * const VVFFGLPluginAttributesNameKey = @"VVFFGLPluginAttributesNameKey
 NSString * const VVFFGLPluginAttributesVersionKey = @"VVFFGLPluginAttributesVersionKey";
 NSString * const VVFFGLPluginAttributesDescriptionKey = @"VVFFGLPluginAttributesDescriptionKey";
 NSString * const VVFFGLPluginAttributesAuthorKey = @"VVFFGLPluginAttributesAuthorKey";
+
+NSString * const VVFFGLParameterAttributeTypeKey = @"VVFFGLParameterAttributeTypeKey";
+NSString * const VVFFGLParameterAttributeNameKey = @"VVFFGLParameterAttributeNameKey";
+NSString * const VVFFGLParameterAttributeDefaultValueKey = @"VVFFGLParameterAttributeDefaultValueKey";
+NSString * const VVFFGLParameterAttributeMinimumValueKey = @"VVFFGLParameterAttributeMinimumValueKey";
+NSString * const VVFFGLParameterAttributeMaximumValueKey = @"VVFFGLParameterAttributeMaximumValueKey";
+NSString * const VVFFGLParameterAttributeRequiredKey = @"VVFFGLParameterAttributeRequiredKey";
+
+NSString * const VVFFGLParameterTypeBoolean = @"VVFFGLParameterTypeBoolean";
+NSString * const VVFFGLParameterTypeEvent = @"VVFFGLParameterTypeEvent";
+NSString * const VVFFGLParameterTypePoint = @"VVFFGLParameterTypePoint";
+NSString * const VVFFGLParameterTypeNumber = @"VVFFGLParameterTypeNumber";
+NSString * const VVFFGLParameterTypeString = @"VVFFGLParameterTypeString";
+NSString * const VVFFGLParameterTypeColor = @"VVFFGLParameterTypeColor";
+NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
+
 
 @implementation VVFFGLPlugin
 
@@ -53,6 +70,7 @@ NSString * const VVFFGLPluginAttributesAuthorKey = @"VVFFGLPluginAttributesAutho
         _pluginData->initted = false;
         _pluginData->bundle = NULL;
         _pluginData->bufferPixelFormats = nil;
+        _pluginData->parameters = nil;
         
         // Load the plugin bundle.
         NSURL *url = [NSURL fileURLWithPath:path isDirectory:NO];
@@ -134,6 +152,30 @@ NSString * const VVFFGLPluginAttributesAuthorKey = @"VVFFGLPluginAttributesAutho
 #endif
         }
         
+        // Discover our parameters, which include the plugin's parameters plus video inputs.
+        _pluginData->parameters = [[NSMutableDictionary alloc] initWithCapacity:4];
+        NSUInteger i = 0;
+        NSDictionary *attributes;
+        NSString *name;
+        result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_MINIMUMINPUTFRAMES, 0);
+        for (i = 0; i < result.ivalue; i++) {
+            name = [NSString stringWithFormat:@"Input Image #%u", i];
+            attributes = [NSDictionary dictionaryWithObjectsAndKeys:VVFFGLParameterTypeImage, VVFFGLParameterAttributeTypeKey,
+                          name, VVFFGLParameterAttributeNameKey, [NSNumber numberWithBool:YES], VVFFGLParameterAttributeRequiredKey, nil];
+            [(NSMutableDictionary *)_pluginData->parameters setObject:attributes forKey:name];
+        }
+        result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_MAXIMUMINPUTFRAMES, 0);
+        for (; i < result.ivalue; i++) {
+            name = [NSString stringWithFormat:@"Input Image #%u", i];
+            attributes = [NSDictionary dictionaryWithObjectsAndKeys:VVFFGLParameterTypeImage, VVFFGLParameterAttributeTypeKey,
+                          name, VVFFGLParameterAttributeNameKey, [NSNumber numberWithBool:NO], VVFFGLParameterAttributeRequiredKey, nil];
+            [(NSMutableDictionary *)_pluginData->parameters setObject:attributes forKey:name];
+        }
+        result = _pluginData->main(FF_GETNUMPARAMETERS, 0, 0);
+        for (i = 0; i < result.ivalue; i++) {
+            // TODO: finishing populating parameters...
+        }
+        
         // Finally initialise the plugin.
         result = _pluginData->main(FF_INITIALISE, 0, 0);
         if (result.ivalue != FF_SUCCESS) {
@@ -153,6 +195,7 @@ NSString * const VVFFGLPluginAttributesAuthorKey = @"VVFFGLPluginAttributesAutho
         if (_pluginData->bundle)
             CFRelease(_pluginData->bundle);
         [_pluginData->bufferPixelFormats release];
+        [_pluginData->parameters release];
         free(_pluginData);
     }
     [super dealloc];
@@ -204,4 +247,13 @@ NSString * const VVFFGLPluginAttributesAuthorKey = @"VVFFGLPluginAttributesAutho
             description, VVFFGLPluginAttributesDescriptionKey, author, VVFFGLPluginAttributesAuthorKey, nil];
 }
 
+- (NSArray *)parameterKeys
+{
+    return [_pluginData->parameters allKeys];
+}
+
+- (NSDictionary *)attributesForParameterWithKey:(NSString *)key
+{
+    return [_pluginData->parameters objectForKey:key];
+}
 @end
