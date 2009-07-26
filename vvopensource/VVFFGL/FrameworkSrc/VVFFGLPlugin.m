@@ -8,14 +8,24 @@
 
 #import "VVFFGLPlugin.h"
 #import "FreeFrame.h"
+#import "FFGL.h"
 
 struct VVFFGLPluginData {
     CFBundleRef bundle;
     FF_Main_FuncPtr main;
     Boolean initted;
+    VVFFGLPluginMode mode;
+    NSArray *bufferPixelFormats;
     PluginInfoStruct *info;
     PluginExtendedInfoStruct *extendedInfo;
 };
+
+NSString * const VVFFGLPluginBufferPixelFormatARGB8888 = @"VVFFGLPluginBufferPixelFormatARGB8888";
+NSString * const VVFFGLPluginBufferPixelFormatBGRA8888 = @"VVFFGLPluginBufferPixelFormatBGRA8888";
+NSString * const VVFFGLPluginBufferPixelFormatRGB888 = @"VVFFGLPluginBufferPixelFormatRGB888";
+NSString * const VVFFGLPluginBufferPixelFormatBGR888 = @"VVFFGLPluginBufferPixelFormatBGR888";
+NSString * const VVFFGLPluginBufferPixelFormatRGB565 = @"VVFFGLPluginBufferPixelFormatRGB565";
+NSString * const VVFFGLPluginBufferPixelFormatBGR565 = @"VVFFGLPluginBufferPixelFormatBGR565";
 
 NSString * const VVFFGLPluginAttributesNameKey = @"VVFFGLPluginAttributesNameKey";
 NSString * const VVFFGLPluginAttributesVersionKey = @"VVFFGLPluginAttributesVersionKey";
@@ -39,29 +49,34 @@ NSString * const VVFFGLPluginAttributesAuthorKey = @"VVFFGLPluginAttributesAutho
             [self release];
             return nil;
         }
+        // Set everything we need in dealloc, in case we bail from init.
         _pluginData->initted = false;
+        _pluginData->bundle = NULL;
+        _pluginData->bufferPixelFormats = nil;
         
-        NSURL *url = [NSURL URLWithString:path];
+        // Load the plugin bundle.
+        NSURL *url = [NSURL fileURLWithPath:path isDirectory:NO];
         if (url == nil) {
             [self release];
             return nil;
         }
-        
         _pluginData->bundle = CFBundleCreate(kCFAllocatorDefault, (CFURLRef)url);
         if (_pluginData->bundle == NULL) {
             [self release];
             return nil;
         }
         
+        // Get a pointer to the function.
         _pluginData->main = CFBundleGetFunctionPointerForName(_pluginData->bundle, CFSTR("plugMain"));
         if (_pluginData->main == NULL) {
             [self release];
             return nil;
         }
 
+        // Get basic plugin info, and check we are a type (source or effect) we know about.
         plugMainUnion result;
         result = _pluginData->main(FF_GETINFO, 0, 0);
-        if ((result.ivalue != FF_SUCCESS) || (result.svalue == NULL)) {
+        if (result.svalue == NULL) {
             [self release];
             return nil;
         }
@@ -72,14 +87,54 @@ NSString * const VVFFGLPluginAttributesAuthorKey = @"VVFFGLPluginAttributesAutho
             return nil;
         }
         
+        // Get extended info, which is used by our -attributes method.
         result = _pluginData->main(FF_GETEXTENDEDINFO, 0, 0);
-        if ((result.ivalue != FF_SUCCESS) || (result.svalue == NULL)) {
+        if (result.svalue == NULL) {
             // Bail, but do we have to? Could be a bit more elegant dealing with this, which isn't a catastrophic problem.
             [self release];
             return nil;
         }
         _pluginData->extendedInfo = (PluginExtendedInfoStruct *)result.svalue;
         
+        // Determine our mode.
+        result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_PROCESSOPENGL, 0);
+        if (result.ivalue == FF_SUPPORTED) {
+            _pluginData->mode = VVFFGLPluginModeGPU;
+        } else {
+            _pluginData->mode = VVFFGLPluginModeCPU;
+        }
+        
+        /*
+         Get information about the pixel formats we support. FF plugins only support native-endian pixel formats. We could
+         support both and handle conversion, however that doesn't seem a priority.
+         */
+        _pluginData->bufferPixelFormats = [[NSMutableArray alloc] initWithCapacity:3];
+        result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_16BITVIDEO, 0);
+        if (result.ivalue == FF_SUPPORTED) {
+#if __BIG_ENDIAN__
+            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:VVFFGLPluginBufferPixelFormatRGB565];
+#else
+            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:VVFFGLPluginBufferPixelFormatBGR565];
+#endif
+        }
+        result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_24BITVIDEO, 0);
+        if (result.ivalue == FF_SUPPORTED) {
+#if __BIG_ENDIAN__
+            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:VVFFGLPluginBufferPixelFormatRGB888];
+#else
+            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:VVFFGLPluginBufferPixelFormatBGR888];
+#endif
+        }
+        result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_32BITVIDEO, 0);
+        if (result.ivalue == FF_SUPPORTED) {
+#if __BIG_ENDIAN__
+            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:VVFFGLPluginBufferPixelFormatARGB8888];
+#else
+            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:VVFFGLPluginBufferPixelFormatBGRA8888];
+#endif
+        }
+        
+        // Finally initialise the plugin.
         result = _pluginData->main(FF_INITIALISE, 0, 0);
         if (result.ivalue != FF_SUCCESS) {
             [self release];
@@ -97,6 +152,7 @@ NSString * const VVFFGLPluginAttributesAuthorKey = @"VVFFGLPluginAttributesAutho
             _pluginData->main(FF_DEINITIALISE, 0, 0);
         if (_pluginData->bundle)
             CFRelease(_pluginData->bundle);
+        [_pluginData->bufferPixelFormats release];
         free(_pluginData);
     }
     [super dealloc];
@@ -105,6 +161,16 @@ NSString * const VVFFGLPluginAttributesAuthorKey = @"VVFFGLPluginAttributesAutho
 - (VVFFGLPluginType)type
 {
     return _pluginData->info->PluginType;
+}
+
+- (VVFFGLPluginMode)mode
+{
+    return _pluginData->mode;
+}
+
+- (NSArray *)supportedBufferPixelFormats
+{
+    return _pluginData->bufferPixelFormats;
 }
 
 - (NSString *)identifier

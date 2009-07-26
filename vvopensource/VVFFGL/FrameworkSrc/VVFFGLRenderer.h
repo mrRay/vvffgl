@@ -11,15 +11,13 @@
 
 @class VVFFGLPlugin;
 
+typedef struct VVFFGLRendererData VVFFGLRendererData;
+
 @interface VVFFGLRenderer : NSObject {
 @private
     VVFFGLPlugin *_plugin;
-	NSUInteger _pluginInstanceIdentifier;
-	CGLContextObj _pluginContext;
-	
-	// needed to initialize GPU or CPU plugins.
-	FFGLViewportStruct _pluginViewport;
-	VideoInfoStruct _pluginVideoInfo;
+    VVFFGLRendererData *_data;
+    CGLContextObj _pluginContext;
 }
 
 // for CPU effects/sources, the last two arguments can be nil.
@@ -29,6 +27,6 @@
 // if the context changes for whatever reason, probably should re-make the object
 // need to pass in a viewport stuct
 
-- (id)initWithPlugin:(VVFFGLPlugin *)plugin context(CGLContextObj)cgl_ctx;
+- (id)initWithPlugin:(VVFFGLPlugin *)plugin context:(CGLContextObj)cgl_ctx;
 
 @end
