@@ -31,25 +31,25 @@ enum {
     VVFFGLPluginModeGPU = 1
 };
 
-extern NSString * const VVFFGLPluginAttributesNameKey;
-extern NSString * const VVFFGLPluginAttributesVersionKey;
-extern NSString * const VVFFGLPluginAttributesDescriptionKey;
-extern NSString * const VVFFGLPluginAttributesAuthorKey;
+extern NSString * const VVFFGLPluginAttributeNameKey;
+extern NSString * const VVFFGLPluginAttributeVersionKey;
+extern NSString * const VVFFGLPluginAttributeDescriptionKey;
+extern NSString * const VVFFGLPluginAttributeAuthorKey;
 
 extern NSString * const VVFFGLParameterAttributeTypeKey;
 extern NSString * const VVFFGLParameterAttributeNameKey;
-extern NSString * const VVFFGLParameterAttributeDefaultValueKey;
-extern NSString * const VVFFGLParameterAttributeMinimumValueKey;
-extern NSString * const VVFFGLParameterAttributeMaximumValueKey;
-extern NSString * const VVFFGLParameterAttributeRequiredKey;
+extern NSString * const VVFFGLParameterAttributeDefaultValueKey; // For Boolean, Point, Number, String & Color types.
+extern NSString * const VVFFGLParameterAttributeMinimumValueKey; // For Point & Number types.
+extern NSString * const VVFFGLParameterAttributeMaximumValueKey; // For Point & Number types.
+extern NSString * const VVFFGLParameterAttributeRequiredKey; // A NSNumber with a BOOL value.
 
-extern NSString * const VVFFGLParameterTypeBoolean;
-extern NSString * const VVFFGLParameterTypeEvent;
-extern NSString * const VVFFGLParameterTypePoint;
-extern NSString * const VVFFGLParameterTypeNumber;
-extern NSString * const VVFFGLParameterTypeString;
-extern NSString * const VVFFGLParameterTypeColor;
-extern NSString * const VVFFGLParameterTypeImage;
+extern NSString * const VVFFGLParameterTypeBoolean; // A NSNumber with a BOOL value.
+extern NSString * const VVFFGLParameterTypeEvent; // A NSNumber with a BOOL value.
+//extern NSString * const VVFFGLParameterTypePoint; // This isn't supported by FF, which passes x & y as seperate parameters, but maybe we can synthesize it?
+extern NSString * const VVFFGLParameterTypeNumber; // A NSNumber.
+extern NSString * const VVFFGLParameterTypeString; // A NSString.
+//extern NSString * const VVFFGLParameterTypeColor; // This isn't supported by FF, which passes r, g, b & a as seperate parameters, but maybe we can synthesize it?
+extern NSString * const VVFFGLParameterTypeImage; // TODO: !
 
 typedef struct VVFFGLPluginData VVFFGLPluginData; // Private
 
@@ -62,7 +62,7 @@ typedef struct VVFFGLPluginData VVFFGLPluginData; // Private
 - (VVFFGLPluginMode)mode;
 - (NSArray *)supportedBufferPixelFormats;
 - (NSString *)identifier;
-- (NSDictionary *)attributes; // Alternatively we could have methods to directly access each attribute?
+- (NSDictionary *)attributes;
 - (NSArray *)parameterKeys;
 - (NSDictionary *)attributesForParameterWithKey:(NSString *)key;
 @end

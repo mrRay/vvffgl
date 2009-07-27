@@ -7,6 +7,7 @@
 //
 
 #import "VVFFGLPlugin.h"
+#import "VVFFGLPluginInstances.h"
 #import "FreeFrame.h"
 #import "FFGL.h"
 
@@ -105,6 +106,13 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
             return nil;
         }
         
+        /*
+         Long init
+            Current strategy is to do all our parameter/attributes calls to the plugin at init, so we can give that information out without locks
+            because we won't be changing anything in memory after init... Can change if it proves problematic, in which case the below will move
+            to respective methods.
+         */
+        
         // Get extended info, which is used by our -attributes method.
         result = _pluginData->main(FF_GETEXTENDEDINFO, 0, 0);
         if (result.svalue == NULL) {
@@ -157,6 +165,7 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
         NSUInteger i = 0;
         NSDictionary *attributes;
         NSString *name;
+        BOOL recognized;
         result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_MINIMUMINPUTFRAMES, 0);
         for (i = 0; i < result.ivalue; i++) {
             name = [NSString stringWithFormat:@"Input Image #%u", i];
@@ -173,7 +182,54 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
         }
         result = _pluginData->main(FF_GETNUMPARAMETERS, 0, 0);
         for (i = 0; i < result.ivalue; i++) {
-            // TODO: finishing populating parameters...
+            attributes = [NSMutableDictionary dictionaryWithCapacity:4];
+            result = _pluginData->main(FF_GETPARAMETERTYPE, i, 0);
+            recognized = YES;
+            switch (result.ivalue) {
+                case FF_TYPE_BOOLEAN:
+                    [attributes setValue:VVFFGLParameterTypeBoolean forKey:VVFFGLParameterAttributeTypeKey];
+                    result = _pluginData->main(FF_GETPARAMETERDEFAULT, i, 0);
+                    [attributes setValue:[NSNumber numberWithBool:(result.ivalue ? YES : NO)] forKey:VVFFGLParameterAttributeDefaultValueKey];
+                    break;
+                case FF_TYPE_EVENT:
+                    [attributes setValue:VVFFGLParameterTypeEvent forKey:VVFFGLParameterAttributeTypeKey];
+                    result = _pluginData->main(FF_GETPARAMETERDEFAULT, i, 0);
+                    break;
+                case FF_TYPE_RED: // TODO: we may want to synthesize color inputs if we can reliably detect sets of RGBA inputs...
+                case FF_TYPE_GREEN:
+                case FF_TYPE_BLUE:
+                case 11: // The standard defins an alpha value at 11, but it doesn't appear in the headers. Added it to my list of things to mention to FF folk...
+                case FF_TYPE_STANDARD:
+                case FF_TYPE_XPOS: // TODO: we may want to synthesize point inputs if we can reliably detect sets of X/YPOS inputs...
+                case FF_TYPE_YPOS:
+                    [attributes setValue:VVFFGLParameterTypeNumber forKey:VVFFGLParameterAttributeTypeKey];
+                    [attributes setValue:[NSNumber numberWithFloat:0.0] forKey:VVFFGLParameterAttributeMinimumValueKey];
+                    [attributes setValue:[NSNumber numberWithFloat:1.0] forKey:VVFFGLParameterAttributeMaximumValueKey];
+                    result = _pluginData->main(FF_GETPARAMETERDEFAULT, i, 0);
+                    [attributes setValue:[NSNumber numberWithFloat:result.fvalue] forKey:VVFFGLParameterAttributeDefaultValueKey];
+                    break;
+                case FF_TYPE_TEXT:
+                    [attributes setValue:VVFFGLParameterTypeString forKey:VVFFGLParameterAttributeTypeKey];
+                    result = _pluginData->main(FF_GETPARAMETERDEFAULT, i, 0);
+                    if (result.svalue != NULL) {
+                        [attributes setValue:[NSString stringWithCString:result.svalue encoding:NSASCIIStringEncoding]
+                                      forKey:VVFFGLParameterAttributeDefaultValueKey];
+                    }
+                    break;
+                default:
+                    recognized = NO;
+                    break;
+            }
+            if (recognized == YES) {
+                result = _pluginData->main(FF_GETPARAMETERNAME, i, 0);
+                if (result.ivalue != NULL) {
+                    [attributes setValue:[[[NSString alloc] initWithBytes:result.svalue length:16 encoding:NSASCIIStringEncoding] autorelease]
+                                  forKey:VVFFGLParameterAttributeNameKey];
+                } else {
+                    [attributes setValue:@"Untitled Parameter" forKey:VVFFGLParameterAttributeNameKey];
+                }
+                [(NSMutableDictionary *)_pluginData->parameters setObject:attributes forKey:[NSString stringWithFormat:@"non-image-parameter-%u", i]];
+            }
         }
         
         // Finally initialise the plugin.
@@ -243,8 +299,8 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
     else
         author = @"";
     
-    return [NSDictionary dictionaryWithObjectsAndKeys:name, VVFFGLPluginAttributesNameKey, version, VVFFGLPluginAttributesVersionKey,
-            description, VVFFGLPluginAttributesDescriptionKey, author, VVFFGLPluginAttributesAuthorKey, nil];
+    return [NSDictionary dictionaryWithObjectsAndKeys:name, VVFFGLPluginAttributeNameKey, version, VVFFGLPluginAttributeVersionKey,
+            description, VVFFGLPluginAttributeDescriptionKey, author, VVFFGLPluginAttributeAuthorKey, nil];
 }
 
 - (NSArray *)parameterKeys
