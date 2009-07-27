@@ -43,7 +43,7 @@ struct VVFFGLRendererData {
         // but we will need something like this somewhere. Feel free to fiddle :)
         
         // if plugin is GPU, we have to do specific instantiate functions
-        if([plugin mode] == VVFFGLPluginModeGPU) // placeholder bool
+        if([plugin mode] == VVFFGLPluginModeGPU)
         {
                 // we will need the _pluginViewport / pluginVideoInfo from somewhere.... the manager?
                 _data->instanceIdentifier = [_plugin instantiateGL:_data->viewport];
@@ -68,7 +68,7 @@ struct VVFFGLRendererData {
 - (void)dealloc
 {
 	// same reasoning as in init
-	if(isGPU) // placeholder bool to change
+	if([plugin mode] == VVFFGLPluginModeGPU)
 	{
 		if([_plugin deinstantiateGL] != FF_SUCCESS)
 			return nil;
@@ -89,6 +89,23 @@ struct VVFFGLRendererData {
     [super dealloc];
 }
 
+- (VVFFGLPlugin *)plugin
+{
+    return _plugin;
+}
 
+- (id)valueForParameterKey:(NSString *)key
+{
+    // TODO: 
+}
 
+- (void)setValue:(id)value forParameterKey:(NSString *)key
+{
+    // TODO:     
+}
+
+- (void)renderAtTime:(NSTimeInterval)time
+{
+    // TODO: 
+}
 @end

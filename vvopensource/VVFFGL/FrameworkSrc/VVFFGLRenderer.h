@@ -18,6 +18,7 @@ typedef struct VVFFGLRendererData VVFFGLRendererData;
     VVFFGLPlugin *_plugin;
     VVFFGLRendererData *_data;
     CGLContextObj _pluginContext;
+    
 }
 
 // for CPU effects/sources, the last two arguments can be nil.
@@ -28,5 +29,8 @@ typedef struct VVFFGLRendererData VVFFGLRendererData;
 // need to pass in a viewport stuct
 
 - (id)initWithPlugin:(VVFFGLPlugin *)plugin context:(CGLContextObj)cgl_ctx;
-
+- (VVFFGLPlugin *)plugin;
+- (id)valueForParameterKey:(NSString *)key;
+- (void)setValue:(id)value forParameterKey:(NSString *)key;
+- (void)renderAtTime:(NSTimeInterval)time;
 @end
