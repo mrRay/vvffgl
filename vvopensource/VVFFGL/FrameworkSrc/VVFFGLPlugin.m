@@ -30,10 +30,10 @@ NSString * const VVFFGLPluginBufferPixelFormatBGR888 = @"VVFFGLPluginBufferPixel
 NSString * const VVFFGLPluginBufferPixelFormatRGB565 = @"VVFFGLPluginBufferPixelFormatRGB565";
 NSString * const VVFFGLPluginBufferPixelFormatBGR565 = @"VVFFGLPluginBufferPixelFormatBGR565";
 
-NSString * const VVFFGLPluginAttributeNameKey = @"VVFFGLPluginAttributesNameKey";
-NSString * const VVFFGLPluginAttributeVersionKey = @"VVFFGLPluginAttributesVersionKey";
-NSString * const VVFFGLPluginAttributeDescriptionKey = @"VVFFGLPluginAttributesDescriptionKey";
-NSString * const VVFFGLPluginAttributeAuthorKey = @"VVFFGLPluginAttributesAuthorKey";
+NSString * const VVFFGLPluginAttributeNameKey = @"VVFFGLPluginAttributeNameKey";
+NSString * const VVFFGLPluginAttributeVersionKey = @"VVFFGLPluginAttributeVersionKey";
+NSString * const VVFFGLPluginAttributeDescriptionKey = @"VVFFGLPluginAttributeDescriptionKey";
+NSString * const VVFFGLPluginAttributeAuthorKey = @"VVFFGLPluginAttributeAuthorKey";
 NSString * const VVFFGLPluginAttributePathKey = @"VVFFGLPluginAttributePathKey";
 
 NSString * const VVFFGLParameterAttributeTypeKey = @"VVFFGLParameterAttributeTypeKey";

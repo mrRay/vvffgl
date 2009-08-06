@@ -65,10 +65,28 @@ static VVFFGLPluginManager *_sharedPluginManager = nil;
     if (self = [super init]) {
         _sources = [[NSMutableArray alloc] initWithCapacity:4];
         _effects = [[NSMutableArray alloc] initWithCapacity:4];
+        _auto = YES;
     }
     return self;
 }
 #pragma mark Plugin Management
+
+- (BOOL)loadsPluginsAutomatically
+{
+    BOOL result;
+    @synchronized(self) {
+        result = _auto;
+    }
+    return result;
+}
+
+- (void)setLoadsPluginsAutomatically:(BOOL)autoLoads
+{
+    @synchronized(self) {
+        _auto = autoLoads;
+    }
+}
+
 - (void)loadLibraryPlugins
 {
     NSArray *libraryDirectories = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSAllDomainsMask - NSSystemDomainMask, YES);
@@ -78,12 +96,23 @@ static VVFFGLPluginManager *_sharedPluginManager = nil;
         // TODO: Decide where the common plug-in location should be.
         [directories addObject:[path stringByAppendingPathComponent:@"Graphics/Free Frame Plug-Ins"]];
     }
-    [self loadPluginsFromDirectories:directories];
+    @synchronized(self) {
+        if (_libraryLoaded == NO) {
+            [self loadPluginsFromDirectories:directories];
+            _libraryLoaded = YES;
+        }
+    }
+
 }
 
 - (void)loadApplicationPlugins
 {
-    [self loadPluginsFromDirectory:[[NSBundle mainBundle] builtInPlugInsPath]];
+    @synchronized(self) {
+        if (_appLoaded == NO) {
+            [self loadPluginsFromDirectory:[[NSBundle mainBundle] builtInPlugInsPath]];
+            _appLoaded = YES;
+        }
+    }
 }
 
 - (void)loadPluginsFromDirectories:(NSArray *)paths
@@ -103,8 +132,8 @@ static VVFFGLPluginManager *_sharedPluginManager = nil;
         for (file in contents) {
             // So far spotted in the wild: .bundle, .frf. If we find others, we could skip this check altogether. .plugin is an Apple-defined extension
             // which gets its own pretty icon and can't be opened as a folder in the Finder, but nobody making FF plugins seems to be using it, but they should!
-			if([[file pathExtension] isEqualToString:@"frf"] || [[file pathExtension] isEqualToString:@"bundle"] || [[file pathExtension] isEqualToString:@"plugin"])
-			{				
+            if([[file pathExtension] isEqualToString:@"frf"] || [[file pathExtension] isEqualToString:@"bundle"]
+               || [[file pathExtension] isEqualToString:@"plugin"]) {
                 plugin = [[[VVFFGLPlugin alloc] initWithPath:[path stringByAppendingPathComponent:file]] autorelease];
                 if (plugin != nil) {
                     if ([plugin type] == VVFFGLPluginSourceType) {
@@ -132,6 +161,10 @@ static VVFFGLPluginManager *_sharedPluginManager = nil;
 {
     NSArray *copy;
     @synchronized(self) {
+        if (_auto && (_libraryLoaded == NO)) {
+            [self loadLibraryPlugins];
+            [self loadApplicationPlugins];
+        }
         copy = [[_sources copy] autorelease];
     }
     return copy;
@@ -141,6 +174,10 @@ static VVFFGLPluginManager *_sharedPluginManager = nil;
 {
     NSArray *copy;
     @synchronized(self) {
+        if (_auto) {
+            [self loadLibraryPlugins];
+            [self loadApplicationPlugins];
+        }
         copy = [[_effects copy] autorelease];
     }
     return copy;
