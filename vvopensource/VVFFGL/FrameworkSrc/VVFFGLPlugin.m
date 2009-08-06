@@ -29,10 +29,10 @@ NSString * const VVFFGLPluginBufferPixelFormatBGR888 = @"VVFFGLPluginBufferPixel
 NSString * const VVFFGLPluginBufferPixelFormatRGB565 = @"VVFFGLPluginBufferPixelFormatRGB565";
 NSString * const VVFFGLPluginBufferPixelFormatBGR565 = @"VVFFGLPluginBufferPixelFormatBGR565";
 
-NSString * const VVFFGLPluginAttributesNameKey = @"VVFFGLPluginAttributesNameKey";
-NSString * const VVFFGLPluginAttributesVersionKey = @"VVFFGLPluginAttributesVersionKey";
-NSString * const VVFFGLPluginAttributesDescriptionKey = @"VVFFGLPluginAttributesDescriptionKey";
-NSString * const VVFFGLPluginAttributesAuthorKey = @"VVFFGLPluginAttributesAuthorKey";
+NSString * const VVFFGLPluginAttributeNameKey = @"VVFFGLPluginAttributesNameKey";
+NSString * const VVFFGLPluginAttributeVersionKey = @"VVFFGLPluginAttributesVersionKey";
+NSString * const VVFFGLPluginAttributeDescriptionKey = @"VVFFGLPluginAttributesDescriptionKey";
+NSString * const VVFFGLPluginAttributeAuthorKey = @"VVFFGLPluginAttributesAuthorKey";
 
 NSString * const VVFFGLParameterAttributeTypeKey = @"VVFFGLParameterAttributeTypeKey";
 NSString * const VVFFGLParameterAttributeNameKey = @"VVFFGLParameterAttributeNameKey";
@@ -180,8 +180,9 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
                           name, VVFFGLParameterAttributeNameKey, [NSNumber numberWithBool:NO], VVFFGLParameterAttributeRequiredKey, nil];
             [(NSMutableDictionary *)_pluginData->parameters setObject:attributes forKey:name];
         }
-        result = _pluginData->main(FF_GETNUMPARAMETERS, 0, 0);
-        for (i = 0; i < result.ivalue; i++) {
+        DWORD paramCount = _pluginData->main(FF_GETNUMPARAMETERS, 0, 0).ivalue;
+        
+        for (i = 0; i < paramCount; i++) {
             attributes = [NSMutableDictionary dictionaryWithCapacity:4];
             result = _pluginData->main(FF_GETPARAMETERTYPE, i, 0);
             recognized = YES;
@@ -222,7 +223,7 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
             }
             if (recognized == YES) {
                 result = _pluginData->main(FF_GETPARAMETERNAME, i, 0);
-                if (result.ivalue != NULL) {
+                if (result.svalue != NULL) {
                     [attributes setValue:[[[NSString alloc] initWithBytes:result.svalue length:16 encoding:NSASCIIStringEncoding] autorelease]
                                   forKey:VVFFGLParameterAttributeNameKey];
                 } else {

@@ -97,7 +97,7 @@ static VVFFGLPluginManager *_sharedPluginManager = nil;
 {
     @synchronized(self) {
         NSArray *contents;
-        NSString *file, *path;
+        NSString *file;
         VVFFGLPlugin *plugin;
         contents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:NULL];
         for (file in contents) {
@@ -105,15 +105,13 @@ static VVFFGLPluginManager *_sharedPluginManager = nil;
             // which gets its own pretty icon and can't be opened as a folder in the Finder, but nobody making FF plugins seems to be using it, but they should!
 			if([[file pathExtension] isEqualToString:@"frf"] || [[file pathExtension] isEqualToString:@"bundle"] || [[file pathExtension] isEqualToString:@"plugin"])
 			{				
-                plugin = [[[VVFFGLPlugin alloc] initWithPath:file] autorelease];
+                plugin = [[[VVFFGLPlugin alloc] initWithPath:[path stringByAppendingPathComponent:file]] autorelease];
                 if (plugin != nil) {
                     if ([plugin type] == VVFFGLPluginSourceType) {
                         [_sources addObject:plugin];  
                     } else if([plugin type] == VVFFGLPluginEffectType) {
                         [_effects addObject:plugin];
                     }
-					else
-						NSLog(@"Unsupported plugin type");
                 }
             }
         }        
