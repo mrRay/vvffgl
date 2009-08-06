@@ -35,6 +35,7 @@ extern NSString * const VVFFGLPluginAttributeNameKey;
 extern NSString * const VVFFGLPluginAttributeVersionKey;
 extern NSString * const VVFFGLPluginAttributeDescriptionKey;
 extern NSString * const VVFFGLPluginAttributeAuthorKey;
+extern NSString * const VVFFGLPluginAttributePathKey;
 
 extern NSString * const VVFFGLParameterAttributeTypeKey;
 extern NSString * const VVFFGLParameterAttributeNameKey;
@@ -53,7 +54,7 @@ extern NSString * const VVFFGLParameterTypeImage; // TODO: !
 
 typedef struct VVFFGLPluginData VVFFGLPluginData; // Private
 
-@interface VVFFGLPlugin : NSObject {
+@interface VVFFGLPlugin : NSObject <NSCopying>{
 @private
     VVFFGLPluginData *_pluginData;
 }

@@ -15,11 +15,12 @@ struct VVFFGLPluginData {
     CFBundleRef bundle;
     FF_Main_FuncPtr main;
     Boolean initted;
+    VVFFGLPluginType type;
     VVFFGLPluginMode mode;
     NSArray *bufferPixelFormats;
     NSDictionary *parameters;
-    PluginInfoStruct *info;
-    PluginExtendedInfoStruct *extendedInfo;
+    NSDictionary *attributes;
+    NSString *identifier;
 };
 
 NSString * const VVFFGLPluginBufferPixelFormatARGB8888 = @"VVFFGLPluginBufferPixelFormatARGB8888";
@@ -33,6 +34,7 @@ NSString * const VVFFGLPluginAttributeNameKey = @"VVFFGLPluginAttributesNameKey"
 NSString * const VVFFGLPluginAttributeVersionKey = @"VVFFGLPluginAttributesVersionKey";
 NSString * const VVFFGLPluginAttributeDescriptionKey = @"VVFFGLPluginAttributesDescriptionKey";
 NSString * const VVFFGLPluginAttributeAuthorKey = @"VVFFGLPluginAttributesAuthorKey";
+NSString * const VVFFGLPluginAttributePathKey = @"VVFFGLPluginAttributePathKey";
 
 NSString * const VVFFGLParameterAttributeTypeKey = @"VVFFGLParameterAttributeTypeKey";
 NSString * const VVFFGLParameterAttributeNameKey = @"VVFFGLParameterAttributeNameKey";
@@ -72,6 +74,8 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
         _pluginData->bundle = NULL;
         _pluginData->bufferPixelFormats = nil;
         _pluginData->parameters = nil;
+        _pluginData->attributes = nil;
+        _pluginData->identifier = nil;
         
         // Load the plugin bundle.
         NSURL *url = [NSURL fileURLWithPath:path isDirectory:NO];
@@ -99,8 +103,8 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
             [self release];
             return nil;
         }
-        _pluginData->info = (PluginInfoStruct *)result.svalue;
-        if ((_pluginData->info->PluginType != FF_SOURCE) && (_pluginData->info->PluginType != FF_EFFECT)) {
+        PluginInfoStruct *info = (PluginInfoStruct *)result.svalue;
+        if ((info->PluginType != FF_SOURCE) && (info->PluginType != FF_EFFECT)) {
             // Bail if this is some future other type of plugin.
             [self release];
             return nil;
@@ -113,14 +117,40 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
             to respective methods.
          */
         
-        // Get extended info, which is used by our -attributes method.
+        // Set our identifier and type from the PluginInfoStruct.
+        _pluginData->identifier = [[NSString alloc] initWithBytes:info->PluginUniqueID length:4 encoding:NSASCIIStringEncoding];
+        _pluginData->type = info->PluginType;
+        
+        // Get extended info, and fill out our attributes dictionary.
+        NSString *name;
+        if(info->PluginName)
+            name = [[[NSString alloc] initWithBytes:info->PluginName length:16 encoding:NSASCIIStringEncoding] autorelease];
+        else
+            name = [self identifier];
+
         result = _pluginData->main(FF_GETEXTENDEDINFO, 0, 0);
-        if (result.svalue == NULL) {
-            // Bail, but do we have to? Could be a bit more elegant dealing with this, which isn't a catastrophic problem.
-            [self release];
-            return nil;
+        PluginExtendedInfoStruct *extendedInfo = (PluginExtendedInfoStruct *)result.svalue;
+        if (extendedInfo != NULL) {
+            NSNumber *version = [NSNumber numberWithFloat:extendedInfo->PluginMajorVersion + (extendedInfo->PluginMinorVersion * 0.001)];
+            
+            NSString *description;
+            if (extendedInfo->Description)
+                description = [NSString stringWithCString:extendedInfo->Description encoding:NSASCIIStringEncoding];
+            else
+                description = @"";
+            
+            NSString *author;
+            if (extendedInfo->About)
+                author = [NSString stringWithCString:extendedInfo->About encoding:NSASCIIStringEncoding];
+            else
+                author = @"";
+            
+            _pluginData->attributes = [[NSDictionary alloc] initWithObjectsAndKeys:name, VVFFGLPluginAttributeNameKey, version, VVFFGLPluginAttributeVersionKey,
+                                       description, VVFFGLPluginAttributeDescriptionKey, author, VVFFGLPluginAttributeAuthorKey,
+                                       path, VVFFGLPluginAttributePathKey, nil];
+        } else {
+            _pluginData->attributes = [[NSDictionary alloc] initWithObjectsAndKeys:name, VVFFGLPluginAttributeNameKey, path, VVFFGLPluginAttributePathKey, nil];
         }
-        _pluginData->extendedInfo = (PluginExtendedInfoStruct *)result.svalue;
         
         // Determine our mode.
         result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_PROCESSOPENGL, 0);
@@ -163,37 +193,37 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
         // Discover our parameters, which include the plugin's parameters plus video inputs.
         _pluginData->parameters = [[NSMutableDictionary alloc] initWithCapacity:4];
         NSUInteger i = 0;
-        NSDictionary *attributes;
-        NSString *name;
+        NSDictionary *pAttributes;
+        NSString *pName;
         BOOL recognized;
         result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_MINIMUMINPUTFRAMES, 0);
         for (i = 0; i < result.ivalue; i++) {
-            name = [NSString stringWithFormat:@"Input Image #%u", i];
-            attributes = [NSDictionary dictionaryWithObjectsAndKeys:VVFFGLParameterTypeImage, VVFFGLParameterAttributeTypeKey,
-                          name, VVFFGLParameterAttributeNameKey, [NSNumber numberWithBool:YES], VVFFGLParameterAttributeRequiredKey, nil];
-            [(NSMutableDictionary *)_pluginData->parameters setObject:attributes forKey:name];
+            pName = [NSString stringWithFormat:@"Input Image #%u", i];
+            pAttributes = [NSDictionary dictionaryWithObjectsAndKeys:VVFFGLParameterTypeImage, VVFFGLParameterAttributeTypeKey,
+                          pName, VVFFGLParameterAttributeNameKey, [NSNumber numberWithBool:YES], VVFFGLParameterAttributeRequiredKey, nil];
+            [(NSMutableDictionary *)_pluginData->parameters setObject:pAttributes forKey:pName];
         }
         result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_MAXIMUMINPUTFRAMES, 0);
         for (; i < result.ivalue; i++) {
-            name = [NSString stringWithFormat:@"Input Image #%u", i];
-            attributes = [NSDictionary dictionaryWithObjectsAndKeys:VVFFGLParameterTypeImage, VVFFGLParameterAttributeTypeKey,
-                          name, VVFFGLParameterAttributeNameKey, [NSNumber numberWithBool:NO], VVFFGLParameterAttributeRequiredKey, nil];
-            [(NSMutableDictionary *)_pluginData->parameters setObject:attributes forKey:name];
+            pName = [NSString stringWithFormat:@"Input Image #%u", i];
+            pAttributes = [NSDictionary dictionaryWithObjectsAndKeys:VVFFGLParameterTypeImage, VVFFGLParameterAttributeTypeKey,
+                          pName, VVFFGLParameterAttributeNameKey, [NSNumber numberWithBool:NO], VVFFGLParameterAttributeRequiredKey, nil];
+            [(NSMutableDictionary *)_pluginData->parameters setObject:pAttributes forKey:pName];
         }
         DWORD paramCount = _pluginData->main(FF_GETNUMPARAMETERS, 0, 0).ivalue;
         
         for (i = 0; i < paramCount; i++) {
-            attributes = [NSMutableDictionary dictionaryWithCapacity:4];
+            pAttributes = [NSMutableDictionary dictionaryWithCapacity:4];
             result = _pluginData->main(FF_GETPARAMETERTYPE, i, 0);
             recognized = YES;
             switch (result.ivalue) {
                 case FF_TYPE_BOOLEAN:
-                    [attributes setValue:VVFFGLParameterTypeBoolean forKey:VVFFGLParameterAttributeTypeKey];
+                    [pAttributes setValue:VVFFGLParameterTypeBoolean forKey:VVFFGLParameterAttributeTypeKey];
                     result = _pluginData->main(FF_GETPARAMETERDEFAULT, i, 0);
-                    [attributes setValue:[NSNumber numberWithBool:(result.ivalue ? YES : NO)] forKey:VVFFGLParameterAttributeDefaultValueKey];
+                    [pAttributes setValue:[NSNumber numberWithBool:(result.ivalue ? YES : NO)] forKey:VVFFGLParameterAttributeDefaultValueKey];
                     break;
                 case FF_TYPE_EVENT:
-                    [attributes setValue:VVFFGLParameterTypeEvent forKey:VVFFGLParameterAttributeTypeKey];
+                    [pAttributes setValue:VVFFGLParameterTypeEvent forKey:VVFFGLParameterAttributeTypeKey];
                     result = _pluginData->main(FF_GETPARAMETERDEFAULT, i, 0);
                     break;
                 case FF_TYPE_RED: // TODO: we may want to synthesize color inputs if we can reliably detect sets of RGBA inputs...
@@ -203,17 +233,17 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
                 case FF_TYPE_STANDARD:
                 case FF_TYPE_XPOS: // TODO: we may want to synthesize point inputs if we can reliably detect sets of X/YPOS inputs...
                 case FF_TYPE_YPOS:
-                    [attributes setValue:VVFFGLParameterTypeNumber forKey:VVFFGLParameterAttributeTypeKey];
-                    [attributes setValue:[NSNumber numberWithFloat:0.0] forKey:VVFFGLParameterAttributeMinimumValueKey];
-                    [attributes setValue:[NSNumber numberWithFloat:1.0] forKey:VVFFGLParameterAttributeMaximumValueKey];
+                    [pAttributes setValue:VVFFGLParameterTypeNumber forKey:VVFFGLParameterAttributeTypeKey];
+                    [pAttributes setValue:[NSNumber numberWithFloat:0.0] forKey:VVFFGLParameterAttributeMinimumValueKey];
+                    [pAttributes setValue:[NSNumber numberWithFloat:1.0] forKey:VVFFGLParameterAttributeMaximumValueKey];
                     result = _pluginData->main(FF_GETPARAMETERDEFAULT, i, 0);
-                    [attributes setValue:[NSNumber numberWithFloat:result.fvalue] forKey:VVFFGLParameterAttributeDefaultValueKey];
+                    [pAttributes setValue:[NSNumber numberWithFloat:result.fvalue] forKey:VVFFGLParameterAttributeDefaultValueKey];
                     break;
                 case FF_TYPE_TEXT:
-                    [attributes setValue:VVFFGLParameterTypeString forKey:VVFFGLParameterAttributeTypeKey];
+                    [pAttributes setValue:VVFFGLParameterTypeString forKey:VVFFGLParameterAttributeTypeKey];
                     result = _pluginData->main(FF_GETPARAMETERDEFAULT, i, 0);
                     if (result.svalue != NULL) {
-                        [attributes setValue:[NSString stringWithCString:result.svalue encoding:NSASCIIStringEncoding]
+                        [pAttributes setValue:[NSString stringWithCString:result.svalue encoding:NSASCIIStringEncoding]
                                       forKey:VVFFGLParameterAttributeDefaultValueKey];
                     }
                     break;
@@ -224,12 +254,12 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
             if (recognized == YES) {
                 result = _pluginData->main(FF_GETPARAMETERNAME, i, 0);
                 if (result.svalue != NULL) {
-                    [attributes setValue:[[[NSString alloc] initWithBytes:result.svalue length:16 encoding:NSASCIIStringEncoding] autorelease]
+                    [pAttributes setValue:[[[NSString alloc] initWithBytes:result.svalue length:16 encoding:NSASCIIStringEncoding] autorelease]
                                   forKey:VVFFGLParameterAttributeNameKey];
                 } else {
-                    [attributes setValue:@"Untitled Parameter" forKey:VVFFGLParameterAttributeNameKey];
+                    [pAttributes setValue:@"Untitled Parameter" forKey:VVFFGLParameterAttributeNameKey];
                 }
-                [(NSMutableDictionary *)_pluginData->parameters setObject:attributes forKey:[NSString stringWithFormat:@"non-image-parameter-%u", i]];
+                [(NSMutableDictionary *)_pluginData->parameters setObject:pAttributes forKey:[NSString stringWithFormat:@"non-image-parameter-%u", i]];
             }
         }
         
@@ -253,14 +283,21 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
             CFRelease(_pluginData->bundle);
         [_pluginData->bufferPixelFormats release];
         [_pluginData->parameters release];
+        [_pluginData->attributes release];
+        [_pluginData->identifier release];
         free(_pluginData);
     }
     [super dealloc];
 }
 
+- (id)copyWithZone:(NSZone *)zone
+{
+    return [self retain];
+}
+
 - (VVFFGLPluginType)type
 {
-    return _pluginData->info->PluginType;
+    return _pluginData->type;
 }
 
 - (VVFFGLPluginMode)mode
@@ -275,33 +312,12 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
 
 - (NSString *)identifier
 {
-    return [[[NSString alloc] initWithBytes:_pluginData->info->PluginUniqueID length:4 encoding:NSASCIIStringEncoding] autorelease];
+    return _pluginData->identifier;
 }
 
 - (NSDictionary *)attributes
 {
-    NSString *name;
-    if(_pluginData->info->PluginName)
-        name = [[[NSString alloc] initWithBytes:_pluginData->info->PluginName length:16 encoding:NSASCIIStringEncoding] autorelease];
-    else
-        name = [self identifier];
-    
-    NSNumber *version = [NSNumber numberWithFloat:_pluginData->extendedInfo->PluginMajorVersion + (_pluginData->extendedInfo->PluginMinorVersion * 0.001)];
-    
-    NSString *description;
-    if (_pluginData->extendedInfo->Description)
-        description = [NSString stringWithCString:_pluginData->extendedInfo->Description encoding:NSASCIIStringEncoding];
-    else
-        description = @"";
-    
-    NSString *author;
-    if (_pluginData->extendedInfo->About)
-        author = [NSString stringWithCString:_pluginData->extendedInfo->About encoding:NSASCIIStringEncoding];
-    else
-        author = @"";
-    
-    return [NSDictionary dictionaryWithObjectsAndKeys:name, VVFFGLPluginAttributeNameKey, version, VVFFGLPluginAttributeVersionKey,
-            description, VVFFGLPluginAttributeDescriptionKey, author, VVFFGLPluginAttributeAuthorKey, nil];
+    return _pluginData->attributes;
 }
 
 - (NSArray *)parameterKeys
