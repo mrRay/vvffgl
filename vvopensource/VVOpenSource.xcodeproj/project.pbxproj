@@ -198,14 +198,13 @@
 		96BF10B0100E95330079A2E6 /* VVOSC.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF10AD100E95330079A2E6 /* VVOSC.h */; };
 		96BF10B1100E95330079A2E6 /* VVOSC.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF10AD100E95330079A2E6 /* VVOSC.h */; };
 		96C2F2141017815F004E19B0 /* OSCConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 96C2F2131017815F004E19B0 /* OSCConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		BD93426E101A56F600C4B805 /* VVFFGLRenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = BD93426C101A56F600C4B805 /* VVFFGLRenderer.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		BD93426F101A56F600C4B805 /* VVFFGLRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = BD93426D101A56F600C4B805 /* VVFFGLRenderer.m */; };
 		BD9F6A0C10191358004D8CD9 /* FreeFrame.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6A0A10191358004D8CD9 /* FreeFrame.h */; };
 		BD9F6A88101921FD004D8CD9 /* FFGL.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6A87101921FD004D8CD9 /* FFGL.h */; };
 		BD9F6C8E101945AE004D8CD9 /* VVFFGLPlugin.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6C8A101945AE004D8CD9 /* VVFFGLPlugin.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BD9F6C8F101945AE004D8CD9 /* VVFFGLPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = BD9F6C8B101945AE004D8CD9 /* VVFFGLPlugin.m */; };
 		BD9F6C90101945AE004D8CD9 /* VVFFGLPluginManager.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6C8C101945AE004D8CD9 /* VVFFGLPluginManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BD9F6C91101945AE004D8CD9 /* VVFFGLPluginManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BD9F6C8D101945AE004D8CD9 /* VVFFGLPluginManager.m */; };
+		BDA25B51102B9030000BE743 /* VVFFGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9606B14D101761EF00CC50B7 /* VVFFGL.framework */; };
 		BDD2315F101C7E98001CE112 /* VVFFGLPluginInstances.h in Headers */ = {isa = PBXBuildFile; fileRef = BDD2315E101C7E98001CE112 /* VVFFGLPluginInstances.h */; };
 /* End PBXBuildFile section */
 
@@ -532,6 +531,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BDA25B51102B9030000BE743 /* VVFFGL.framework in Frameworks */,
 				1BCF31B2101A5AEC00D50A21 /* OpenGL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -827,7 +827,6 @@
 				BD9F6A88101921FD004D8CD9 /* FFGL.h in Headers */,
 				BD9F6C8E101945AE004D8CD9 /* VVFFGLPlugin.h in Headers */,
 				BD9F6C90101945AE004D8CD9 /* VVFFGLPluginManager.h in Headers */,
-				BD93426E101A56F600C4B805 /* VVFFGLRenderer.h in Headers */,
 				BDD2315F101C7E98001CE112 /* VVFFGLPluginInstances.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1268,7 +1267,6 @@
 			files = (
 				BD9F6C8F101945AE004D8CD9 /* VVFFGLPlugin.m in Sources */,
 				BD9F6C91101945AE004D8CD9 /* VVFFGLPluginManager.m in Sources */,
-				BD93426F101A56F600C4B805 /* VVFFGLRenderer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
