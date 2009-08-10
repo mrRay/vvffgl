@@ -1,5 +1,5 @@
 //
-//  VVFFGLPluginManager.h
+//  FFGLPluginManager.h
 //  VVOpenSource
 //
 //  Created by Tom on 23/07/2009.
@@ -13,9 +13,9 @@
     - notifications
  */
 
-@class VVFFGLPlugin;
+@class FFGLPlugin;
 
-@interface VVFFGLPluginManager : NSObject {
+@interface FFGLPluginManager : NSObject {
 @private
     NSMutableArray  *_sources;
     NSMutableArray  *_effects;
@@ -23,14 +23,14 @@
     BOOL            _libraryLoaded;
     BOOL            _appLoaded;
 }
-+ (VVFFGLPluginManager *)sharedManager;
++ (FFGLPluginManager *)sharedManager;
 - (BOOL)loadsPluginsAutomatically; // Loads library and app plugins. Default is YES, set to NO before any of the ...Plugins methods are called if wanted.
 - (void)setLoadsPluginsAutomatically:(BOOL)autoLoads;
 - (void)loadLibraryPlugins;
 - (void)loadApplicationPlugins;
 - (void)loadPluginsFromDirectory:(NSString *)path;
 - (void)loadPluginsFromDirectories:(NSArray *)paths;
-- (void)unloadPlugin:(VVFFGLPlugin *)plugin;
+- (void)unloadPlugin:(FFGLPlugin *)plugin;
 - (NSArray *)plugins;
 - (NSArray *)sourcePlugins;
 - (NSArray *)effectPlugins;

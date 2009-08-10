@@ -1,19 +1,19 @@
 //
-//  VVFFGLPluginManager.m
+//  FFGLPluginManager.m
 //  VVOpenSource
 //
 //  Created by Tom on 23/07/2009.
 //  Copyright 2009 Tom Butterworth. All rights reserved.
 //
 
-#import "VVFFGLPluginManager.h"
-#import "VVFFGLPlugin.h"
+#import "FFGLPluginManager.h"
+#import "FFGLPlugin.h"
 
-static VVFFGLPluginManager *_sharedPluginManager = nil;
+static FFGLPluginManager *_sharedPluginManager = nil;
 
-@implementation VVFFGLPluginManager
+@implementation FFGLPluginManager
 #pragma mark Singleton Instance
-+ (VVFFGLPluginManager*)sharedManager
++ (FFGLPluginManager*)sharedManager
 {
     @synchronized(self) {
         if (_sharedPluginManager == nil) {
@@ -127,18 +127,18 @@ static VVFFGLPluginManager *_sharedPluginManager = nil;
     @synchronized(self) {
         NSArray *contents;
         NSString *file;
-        VVFFGLPlugin *plugin;
+        FFGLPlugin *plugin;
         contents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:NULL];
         for (file in contents) {
             // So far spotted in the wild: .bundle, .frf. If we find others, we could skip this check altogether. .plugin is an Apple-defined extension
             // which gets its own pretty icon and can't be opened as a folder in the Finder, but nobody making FF plugins seems to be using it, but they should!
             if([[file pathExtension] isEqualToString:@"frf"] || [[file pathExtension] isEqualToString:@"bundle"]
                || [[file pathExtension] isEqualToString:@"plugin"]) {
-                plugin = [[[VVFFGLPlugin alloc] initWithPath:[path stringByAppendingPathComponent:file]] autorelease];
+                plugin = [[[FFGLPlugin alloc] initWithPath:[path stringByAppendingPathComponent:file]] autorelease];
                 if (plugin != nil) {
-                    if (([plugin type] == VVFFGLPluginSourceType) && ![_sources containsObject:plugin]) {
+                    if (([plugin type] == FFGLPluginSourceType) && ![_sources containsObject:plugin]) {
                         [_sources addObject:plugin];  
-                    } else if(([plugin type] == VVFFGLPluginEffectType) && ![_effects containsObject:plugin]) {
+                    } else if(([plugin type] == FFGLPluginEffectType) && ![_effects containsObject:plugin]) {
                         [_effects addObject:plugin];
                     }
                 }
@@ -147,10 +147,10 @@ static VVFFGLPluginManager *_sharedPluginManager = nil;
     }    
 }
 
-- (void)unloadPlugin:(VVFFGLPlugin *)plugin
+- (void)unloadPlugin:(FFGLPlugin *)plugin
 {
     @synchronized(self) {
-        [([plugin type] == VVFFGLPluginSourceType ? _sources : _effects) removeObject:plugin];        
+        [([plugin type] == FFGLPluginSourceType ? _sources : _effects) removeObject:plugin];        
     }
 }
 

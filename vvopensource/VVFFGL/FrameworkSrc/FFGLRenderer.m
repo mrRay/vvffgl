@@ -1,22 +1,22 @@
 //
-//  VVFFGLRenderer.m
+//  FFGLRenderer.m
 //  VVOpenSource
 //
 //  Created by Tom on 24/07/2009.
 //  Copyright 2009 Tom Butterworth. All rights reserved.
 //
 
-#import "VVFFGLRenderer.h"
-#import "VVFFGLPlugin.h"
-#import "VVFFGLPluginInstances.h"
+#import "FFGLRenderer.h"
+#import "FFGLPlugin.h"
+#import "FFGLPluginInstances.h"
 
-struct VVFFGLRendererData {
+struct FFGLRendererData {
     NSUInteger instanceIdentifier;
     FFGLViewportStruct viewport;
     VideoInfoStruct videoInfo;
 };
 
-@implementation VVFFGLRenderer
+@implementation FFGLRenderer
 
 - (id)init
 {
@@ -26,14 +26,14 @@ struct VVFFGLRendererData {
 
 // do we want the framework users to have to pass in FFGL viewport structs? Maybe, maybe not?
     // I say not - let's be completely opaque and expose none of the underlying FFGL stuff.
-- (id)initWithPlugin:(VVFFGLPlugin *)plugin context(CGLContextObj)cgl_ctx;
+- (id)initWithPlugin:(FFGLPlugin *)plugin context(CGLContextObj)cgl_ctx;
 {
     if (self = [super init]) {
         _plugin = [plugin retain];
         _pluginContext = cgl_ctx;
         CGLRetainContext(_pluginContext);
         
-        _data = malloc(sizeof(VVFFGLRendererData));
+        _data = malloc(sizeof(FFGLRendererData));
         if (_data == NULL) {
             [self release];
             return nil;
@@ -43,7 +43,7 @@ struct VVFFGLRendererData {
         // but we will need something like this somewhere. Feel free to fiddle :)
         
         // if plugin is GPU, we have to do specific instantiate functions
-        if([plugin mode] == VVFFGLPluginModeGPU)
+        if([plugin mode] == FFGLPluginModeGPU)
         {
                 // we will need the _pluginViewport / pluginVideoInfo from somewhere.... the manager?
                 _data->instanceIdentifier = [_plugin instantiateGL:_data->viewport];
@@ -68,7 +68,7 @@ struct VVFFGLRendererData {
 - (void)dealloc
 {
 	// same reasoning as in init
-	if([plugin mode] == VVFFGLPluginModeGPU)
+	if([plugin mode] == FFGLPluginModeGPU)
 	{
 		if([_plugin deinstantiateGL] != FF_SUCCESS)
 			return nil;
@@ -89,7 +89,7 @@ struct VVFFGLRendererData {
     [super dealloc];
 }
 
-- (VVFFGLPlugin *)plugin
+- (FFGLPlugin *)plugin
 {
     return _plugin;
 }

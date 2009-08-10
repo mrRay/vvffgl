@@ -1,5 +1,5 @@
 //
-//  VVFFGLRenderer.h
+//  FFGLRenderer.h
 //  VVOpenSource
 //
 //  Created by Tom on 24/07/2009.
@@ -9,14 +9,14 @@
 #import <Cocoa/Cocoa.h>
 #import <OpenGL/OpenGL.h>
 
-@class VVFFGLPlugin;
+@class FFGLPlugin;
 
-typedef struct VVFFGLRendererData VVFFGLRendererData;
+typedef struct FFGLRendererData FFGLRendererData;
 
-@interface VVFFGLRenderer : NSObject {
+@interface FFGLRenderer : NSObject {
 @private
-    VVFFGLPlugin *_plugin;
-    VVFFGLRendererData *_data;
+    FFGLPlugin *_plugin;
+    FFGLRendererData *_data;
     CGLContextObj _pluginContext;
     
 }
@@ -28,8 +28,8 @@ typedef struct VVFFGLRendererData VVFFGLRendererData;
 // if the context changes for whatever reason, probably should re-make the object
 // need to pass in a viewport stuct
 
-- (id)initWithPlugin:(VVFFGLPlugin *)plugin context:(CGLContextObj)cgl_ctx;
-- (VVFFGLPlugin *)plugin;
+- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)cgl_ctx;
+- (FFGLPlugin *)plugin;
 - (id)valueForParameterKey:(NSString *)key;
 - (void)setValue:(id)value forParameterKey:(NSString *)key;
 - (void)renderAtTime:(NSTimeInterval)time;

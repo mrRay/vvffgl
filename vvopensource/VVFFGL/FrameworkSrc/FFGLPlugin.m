@@ -1,64 +1,64 @@
 //
-//  vvFFGLPlugin.m
+//  FFGLPlugin.m
 //  VVOpenSource
 //
 //  Created by Tom on 23/07/2009.
 //  Copyright 2009 Tom Butterworth. All rights reserved.
 //
 
-#import "VVFFGLPlugin.h"
-#import "VVFFGLPluginInstances.h"
+#import "FFGLPlugin.h"
+#import "FFGLPluginInstances.h"
 #import "FreeFrame.h"
 #import "FFGL.h"
 
-struct VVFFGLPluginData {
+struct FFGLPluginData {
     CFBundleRef bundle;
     FF_Main_FuncPtr main;
     Boolean initted;
-    VVFFGLPluginType type;
-    VVFFGLPluginMode mode;
+    FFGLPluginType type;
+    FFGLPluginMode mode;
     NSArray *bufferPixelFormats;
     NSDictionary *parameters;
     NSDictionary *attributes;
     NSString *identifier;
 };
 
-NSString * const VVFFGLPluginBufferPixelFormatARGB8888 = @"VVFFGLPluginBufferPixelFormatARGB8888";
-NSString * const VVFFGLPluginBufferPixelFormatBGRA8888 = @"VVFFGLPluginBufferPixelFormatBGRA8888";
-NSString * const VVFFGLPluginBufferPixelFormatRGB888 = @"VVFFGLPluginBufferPixelFormatRGB888";
-NSString * const VVFFGLPluginBufferPixelFormatBGR888 = @"VVFFGLPluginBufferPixelFormatBGR888";
-NSString * const VVFFGLPluginBufferPixelFormatRGB565 = @"VVFFGLPluginBufferPixelFormatRGB565";
-NSString * const VVFFGLPluginBufferPixelFormatBGR565 = @"VVFFGLPluginBufferPixelFormatBGR565";
+NSString * const FFGLPluginBufferPixelFormatARGB8888 = @"FFGLPluginBufferPixelFormatARGB8888";
+NSString * const FFGLPluginBufferPixelFormatBGRA8888 = @"FFGLPluginBufferPixelFormatBGRA8888";
+NSString * const FFGLPluginBufferPixelFormatRGB888 = @"FFGLPluginBufferPixelFormatRGB888";
+NSString * const FFGLPluginBufferPixelFormatBGR888 = @"FFGLPluginBufferPixelFormatBGR888";
+NSString * const FFGLPluginBufferPixelFormatRGB565 = @"FFGLPluginBufferPixelFormatRGB565";
+NSString * const FFGLPluginBufferPixelFormatBGR565 = @"FFGLPluginBufferPixelFormatBGR565";
 
-NSString * const VVFFGLPluginAttributeNameKey = @"VVFFGLPluginAttributeNameKey";
-NSString * const VVFFGLPluginAttributeVersionKey = @"VVFFGLPluginAttributeVersionKey";
-NSString * const VVFFGLPluginAttributeDescriptionKey = @"VVFFGLPluginAttributeDescriptionKey";
-NSString * const VVFFGLPluginAttributeAuthorKey = @"VVFFGLPluginAttributeAuthorKey";
-NSString * const VVFFGLPluginAttributePathKey = @"VVFFGLPluginAttributePathKey";
+NSString * const FFGLPluginAttributeNameKey = @"FFGLPluginAttributeNameKey";
+NSString * const FFGLPluginAttributeVersionKey = @"FFGLPluginAttributeVersionKey";
+NSString * const FFGLPluginAttributeDescriptionKey = @"FFGLPluginAttributeDescriptionKey";
+NSString * const FFGLPluginAttributeAuthorKey = @"FFGLPluginAttributeAuthorKey";
+NSString * const FFGLPluginAttributePathKey = @"FFGLPluginAttributePathKey";
 
-NSString * const VVFFGLParameterAttributeTypeKey = @"VVFFGLParameterAttributeTypeKey";
-NSString * const VVFFGLParameterAttributeNameKey = @"VVFFGLParameterAttributeNameKey";
-NSString * const VVFFGLParameterAttributeDefaultValueKey = @"VVFFGLParameterAttributeDefaultValueKey";
-NSString * const VVFFGLParameterAttributeMinimumValueKey = @"VVFFGLParameterAttributeMinimumValueKey";
-NSString * const VVFFGLParameterAttributeMaximumValueKey = @"VVFFGLParameterAttributeMaximumValueKey";
-NSString * const VVFFGLParameterAttributeRequiredKey = @"VVFFGLParameterAttributeRequiredKey";
+NSString * const FFGLParameterAttributeTypeKey = @"FFGLParameterAttributeTypeKey";
+NSString * const FFGLParameterAttributeNameKey = @"FFGLParameterAttributeNameKey";
+NSString * const FFGLParameterAttributeDefaultValueKey = @"FFGLParameterAttributeDefaultValueKey";
+NSString * const FFGLParameterAttributeMinimumValueKey = @"FFGLParameterAttributeMinimumValueKey";
+NSString * const FFGLParameterAttributeMaximumValueKey = @"FFGLParameterAttributeMaximumValueKey";
+NSString * const FFGLParameterAttributeRequiredKey = @"FFGLParameterAttributeRequiredKey";
 
-NSString * const VVFFGLParameterTypeBoolean = @"VVFFGLParameterTypeBoolean";
-NSString * const VVFFGLParameterTypeEvent = @"VVFFGLParameterTypeEvent";
-//NSString * const VVFFGLParameterTypePoint = @"VVFFGLParameterTypePoint";
-NSString * const VVFFGLParameterTypeNumber = @"VVFFGLParameterTypeNumber";
-NSString * const VVFFGLParameterTypeString = @"VVFFGLParameterTypeString";
-//NSString * const VVFFGLParameterTypeColor = @"VVFFGLParameterTypeColor";
-NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
+NSString * const FFGLParameterTypeBoolean = @"FFGLParameterTypeBoolean";
+NSString * const FFGLParameterTypeEvent = @"FFGLParameterTypeEvent";
+//NSString * const FFGLParameterTypePoint = @"FFGLParameterTypePoint";
+NSString * const FFGLParameterTypeNumber = @"FFGLParameterTypeNumber";
+NSString * const FFGLParameterTypeString = @"FFGLParameterTypeString";
+//NSString * const FFGLParameterTypeColor = @"FFGLParameterTypeColor";
+NSString * const FFGLParameterTypeImage = @"FFGLParameterTypeImage";
 
-static NSMutableDictionary *_VVFFGLPluginInstances = nil;
+static NSMutableDictionary *_FFGLPluginInstances = nil;
 
-@implementation VVFFGLPlugin
+@implementation FFGLPlugin
 
 + (void)initialise
 {
-    // Create a dictionary which doesn't retain its contents, otherwise VVFFGLPlugins will never be released.
-    _VVFFGLPluginInstances = (NSMutableDictionary *)CFDictionaryCreateMutable(kCFAllocatorDefault, 10, &kCFTypeDictionaryKeyCallBacks, NULL);
+    // Create a dictionary which doesn't retain its contents, otherwise FFGLPlugins will never be released.
+    _FFGLPluginInstances = (NSMutableDictionary *)CFDictionaryCreateMutable(kCFAllocatorDefault, 10, &kCFTypeDictionaryKeyCallBacks, NULL);
 }
 
 - (id)init
@@ -70,9 +70,9 @@ static NSMutableDictionary *_VVFFGLPluginInstances = nil;
 - (id)initWithPath:(NSString *)path
 {
     if (self = [super init]) {
-        VVFFGLPlugin *p;
-        @synchronized(_VVFFGLPluginInstances) {
-            p = [_VVFFGLPluginInstances objectForKey:path];
+        FFGLPlugin *p;
+        @synchronized(_FFGLPluginInstances) {
+            p = [_FFGLPluginInstances objectForKey:path];
         }
         if (p != nil) {
             [self release];
@@ -82,7 +82,7 @@ static NSMutableDictionary *_VVFFGLPluginInstances = nil;
             [self release];
             return nil;
         }
-        _pluginData = malloc(sizeof(struct VVFFGLPluginData));
+        _pluginData = malloc(sizeof(struct FFGLPluginData));
         if (_pluginData == NULL) {
             [self release];
             return nil;
@@ -163,19 +163,19 @@ static NSMutableDictionary *_VVFFGLPluginInstances = nil;
             else
                 author = @"";
             
-            _pluginData->attributes = [[NSDictionary alloc] initWithObjectsAndKeys:name, VVFFGLPluginAttributeNameKey, version, VVFFGLPluginAttributeVersionKey,
-                                       description, VVFFGLPluginAttributeDescriptionKey, author, VVFFGLPluginAttributeAuthorKey,
-                                       [[path copy] autorelease], VVFFGLPluginAttributePathKey, nil];
+            _pluginData->attributes = [[NSDictionary alloc] initWithObjectsAndKeys:name, FFGLPluginAttributeNameKey, version, FFGLPluginAttributeVersionKey,
+                                       description, FFGLPluginAttributeDescriptionKey, author, FFGLPluginAttributeAuthorKey,
+                                       [[path copy] autorelease], FFGLPluginAttributePathKey, nil];
         } else {
-            _pluginData->attributes = [[NSDictionary alloc] initWithObjectsAndKeys:name, VVFFGLPluginAttributeNameKey, path, VVFFGLPluginAttributePathKey, nil];
+            _pluginData->attributes = [[NSDictionary alloc] initWithObjectsAndKeys:name, FFGLPluginAttributeNameKey, path, FFGLPluginAttributePathKey, nil];
         }
         
         // Determine our mode.
         result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_PROCESSOPENGL, 0);
         if (result.ivalue == FF_SUPPORTED) {
-            _pluginData->mode = VVFFGLPluginModeGPU;
+            _pluginData->mode = FFGLPluginModeGPU;
         } else {
-            _pluginData->mode = VVFFGLPluginModeCPU;
+            _pluginData->mode = FFGLPluginModeCPU;
         }
         
         /*
@@ -186,25 +186,25 @@ static NSMutableDictionary *_VVFFGLPluginInstances = nil;
         result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_16BITVIDEO, 0);
         if (result.ivalue == FF_SUPPORTED) {
 #if __BIG_ENDIAN__
-            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:VVFFGLPluginBufferPixelFormatRGB565];
+            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatRGB565];
 #else
-            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:VVFFGLPluginBufferPixelFormatBGR565];
+            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatBGR565];
 #endif
         }
         result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_24BITVIDEO, 0);
         if (result.ivalue == FF_SUPPORTED) {
 #if __BIG_ENDIAN__
-            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:VVFFGLPluginBufferPixelFormatRGB888];
+            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatRGB888];
 #else
-            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:VVFFGLPluginBufferPixelFormatBGR888];
+            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatBGR888];
 #endif
         }
         result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_32BITVIDEO, 0);
         if (result.ivalue == FF_SUPPORTED) {
 #if __BIG_ENDIAN__
-            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:VVFFGLPluginBufferPixelFormatARGB8888];
+            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatARGB8888];
 #else
-            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:VVFFGLPluginBufferPixelFormatBGRA8888];
+            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatBGRA8888];
 #endif
         }
         
@@ -217,15 +217,15 @@ static NSMutableDictionary *_VVFFGLPluginInstances = nil;
         result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_MINIMUMINPUTFRAMES, 0);
         for (i = 0; i < result.ivalue; i++) {
             pName = [NSString stringWithFormat:@"Input Image #%u", i];
-            pAttributes = [NSDictionary dictionaryWithObjectsAndKeys:VVFFGLParameterTypeImage, VVFFGLParameterAttributeTypeKey,
-                          pName, VVFFGLParameterAttributeNameKey, [NSNumber numberWithBool:YES], VVFFGLParameterAttributeRequiredKey, nil];
+            pAttributes = [NSDictionary dictionaryWithObjectsAndKeys:FFGLParameterTypeImage, FFGLParameterAttributeTypeKey,
+                          pName, FFGLParameterAttributeNameKey, [NSNumber numberWithBool:YES], FFGLParameterAttributeRequiredKey, nil];
             [(NSMutableDictionary *)_pluginData->parameters setObject:pAttributes forKey:pName];
         }
         result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_MAXIMUMINPUTFRAMES, 0);
         for (; i < result.ivalue; i++) {
             pName = [NSString stringWithFormat:@"Input Image #%u", i];
-            pAttributes = [NSDictionary dictionaryWithObjectsAndKeys:VVFFGLParameterTypeImage, VVFFGLParameterAttributeTypeKey,
-                          pName, VVFFGLParameterAttributeNameKey, [NSNumber numberWithBool:NO], VVFFGLParameterAttributeRequiredKey, nil];
+            pAttributes = [NSDictionary dictionaryWithObjectsAndKeys:FFGLParameterTypeImage, FFGLParameterAttributeTypeKey,
+                          pName, FFGLParameterAttributeNameKey, [NSNumber numberWithBool:NO], FFGLParameterAttributeRequiredKey, nil];
             [(NSMutableDictionary *)_pluginData->parameters setObject:pAttributes forKey:pName];
         }
         DWORD paramCount = _pluginData->main(FF_GETNUMPARAMETERS, 0, 0).ivalue;
@@ -236,12 +236,12 @@ static NSMutableDictionary *_VVFFGLPluginInstances = nil;
             recognized = YES;
             switch (result.ivalue) {
                 case FF_TYPE_BOOLEAN:
-                    [pAttributes setValue:VVFFGLParameterTypeBoolean forKey:VVFFGLParameterAttributeTypeKey];
+                    [pAttributes setValue:FFGLParameterTypeBoolean forKey:FFGLParameterAttributeTypeKey];
                     result = _pluginData->main(FF_GETPARAMETERDEFAULT, i, 0);
-                    [pAttributes setValue:[NSNumber numberWithBool:(result.ivalue ? YES : NO)] forKey:VVFFGLParameterAttributeDefaultValueKey];
+                    [pAttributes setValue:[NSNumber numberWithBool:(result.ivalue ? YES : NO)] forKey:FFGLParameterAttributeDefaultValueKey];
                     break;
                 case FF_TYPE_EVENT:
-                    [pAttributes setValue:VVFFGLParameterTypeEvent forKey:VVFFGLParameterAttributeTypeKey];
+                    [pAttributes setValue:FFGLParameterTypeEvent forKey:FFGLParameterAttributeTypeKey];
                     result = _pluginData->main(FF_GETPARAMETERDEFAULT, i, 0);
                     break;
                 case FF_TYPE_RED: // TODO: we may want to synthesize color inputs if we can reliably detect sets of RGBA inputs...
@@ -251,18 +251,18 @@ static NSMutableDictionary *_VVFFGLPluginInstances = nil;
                 case FF_TYPE_STANDARD:
                 case FF_TYPE_XPOS: // TODO: we may want to synthesize point inputs if we can reliably detect sets of X/YPOS inputs...
                 case FF_TYPE_YPOS:
-                    [pAttributes setValue:VVFFGLParameterTypeNumber forKey:VVFFGLParameterAttributeTypeKey];
-                    [pAttributes setValue:[NSNumber numberWithFloat:0.0] forKey:VVFFGLParameterAttributeMinimumValueKey];
-                    [pAttributes setValue:[NSNumber numberWithFloat:1.0] forKey:VVFFGLParameterAttributeMaximumValueKey];
+                    [pAttributes setValue:FFGLParameterTypeNumber forKey:FFGLParameterAttributeTypeKey];
+                    [pAttributes setValue:[NSNumber numberWithFloat:0.0] forKey:FFGLParameterAttributeMinimumValueKey];
+                    [pAttributes setValue:[NSNumber numberWithFloat:1.0] forKey:FFGLParameterAttributeMaximumValueKey];
                     result = _pluginData->main(FF_GETPARAMETERDEFAULT, i, 0);
-                    [pAttributes setValue:[NSNumber numberWithFloat:result.fvalue] forKey:VVFFGLParameterAttributeDefaultValueKey];
+                    [pAttributes setValue:[NSNumber numberWithFloat:result.fvalue] forKey:FFGLParameterAttributeDefaultValueKey];
                     break;
                 case FF_TYPE_TEXT:
-                    [pAttributes setValue:VVFFGLParameterTypeString forKey:VVFFGLParameterAttributeTypeKey];
+                    [pAttributes setValue:FFGLParameterTypeString forKey:FFGLParameterAttributeTypeKey];
                     result = _pluginData->main(FF_GETPARAMETERDEFAULT, i, 0);
                     if (result.svalue != NULL) {
                         [pAttributes setValue:[NSString stringWithCString:result.svalue encoding:NSASCIIStringEncoding]
-                                      forKey:VVFFGLParameterAttributeDefaultValueKey];
+                                      forKey:FFGLParameterAttributeDefaultValueKey];
                     }
                     break;
                 default:
@@ -273,9 +273,9 @@ static NSMutableDictionary *_VVFFGLPluginInstances = nil;
                 result = _pluginData->main(FF_GETPARAMETERNAME, i, 0);
                 if (result.svalue != NULL) {
                     [pAttributes setValue:[[[NSString alloc] initWithBytes:result.svalue length:16 encoding:NSASCIIStringEncoding] autorelease]
-                                  forKey:VVFFGLParameterAttributeNameKey];
+                                  forKey:FFGLParameterAttributeNameKey];
                 } else {
-                    [pAttributes setValue:@"Untitled Parameter" forKey:VVFFGLParameterAttributeNameKey];
+                    [pAttributes setValue:@"Untitled Parameter" forKey:FFGLParameterAttributeNameKey];
                 }
                 [(NSMutableDictionary *)_pluginData->parameters setObject:pAttributes forKey:[NSString stringWithFormat:@"non-image-parameter-%u", i]];
             }
@@ -288,8 +288,8 @@ static NSMutableDictionary *_VVFFGLPluginInstances = nil;
             return nil;
         }
         _pluginData->initted = true;
-        @synchronized(_VVFFGLPluginInstances) {
-            [_VVFFGLPluginInstances setObject:self forKey:path];
+        @synchronized(_FFGLPluginInstances) {
+            [_FFGLPluginInstances setObject:self forKey:path];
         }
     }
     return self;
@@ -300,8 +300,8 @@ static NSMutableDictionary *_VVFFGLPluginInstances = nil;
     if (_pluginData != NULL) {
         if (_pluginData->initted == true) {
             _pluginData->main(FF_DEINITIALISE, 0, 0);
-            @synchronized(_VVFFGLPluginInstances) {
-                [_VVFFGLPluginInstances removeObjectForKey:[[self attributes] objectForKey:VVFFGLPluginAttributePathKey]];
+            @synchronized(_FFGLPluginInstances) {
+                [_FFGLPluginInstances removeObjectForKey:[[self attributes] objectForKey:FFGLPluginAttributePathKey]];
             }
         }
         if (_pluginData->bundle)
@@ -330,15 +330,15 @@ static NSMutableDictionary *_VVFFGLPluginInstances = nil;
 
 - (NSUInteger) hash
 {
-    return [[[self attributes] objectForKey:VVFFGLPluginAttributePathKey] hash];
+    return [[[self attributes] objectForKey:FFGLPluginAttributePathKey] hash];
 }
 
-- (VVFFGLPluginType)type
+- (FFGLPluginType)type
 {
     return _pluginData->type;
 }
 
-- (VVFFGLPluginMode)mode
+- (FFGLPluginMode)mode
 {
     return _pluginData->mode;
 }
