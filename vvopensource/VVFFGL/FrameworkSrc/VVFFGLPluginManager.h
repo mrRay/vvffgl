@@ -14,6 +14,8 @@
     - notifications
  */
 
+@class VVFFGLPlugin;
+
 @interface VVFFGLPluginManager : NSObject {
 @private
     NSMutableArray  *_sources;
@@ -29,6 +31,7 @@
 - (void)loadApplicationPlugins;
 - (void)loadPluginsFromDirectory:(NSString *)path;
 - (void)loadPluginsFromDirectories:(NSArray *)paths;
+- (void)unloadPlugin:(VVFFGLPlugin *)plugin;
 - (NSArray *)plugins;
 - (NSArray *)sourcePlugins;
 - (NSArray *)effectPlugins;

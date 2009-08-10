@@ -45,14 +45,21 @@ NSString * const VVFFGLParameterAttributeRequiredKey = @"VVFFGLParameterAttribut
 
 NSString * const VVFFGLParameterTypeBoolean = @"VVFFGLParameterTypeBoolean";
 NSString * const VVFFGLParameterTypeEvent = @"VVFFGLParameterTypeEvent";
-NSString * const VVFFGLParameterTypePoint = @"VVFFGLParameterTypePoint";
+//NSString * const VVFFGLParameterTypePoint = @"VVFFGLParameterTypePoint";
 NSString * const VVFFGLParameterTypeNumber = @"VVFFGLParameterTypeNumber";
 NSString * const VVFFGLParameterTypeString = @"VVFFGLParameterTypeString";
-NSString * const VVFFGLParameterTypeColor = @"VVFFGLParameterTypeColor";
+//NSString * const VVFFGLParameterTypeColor = @"VVFFGLParameterTypeColor";
 NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
 
+static NSMutableDictionary *_VVFFGLPluginInstances = nil;
 
 @implementation VVFFGLPlugin
+
++ (void)initialise
+{
+    // Create a dictionary which doesn't retain its contents, otherwise VVFFGLPlugins will never be released.
+    _VVFFGLPluginInstances = (NSMutableDictionary *)CFDictionaryCreateMutable(kCFAllocatorDefault, 10, &kCFTypeDictionaryKeyCallBacks, NULL);
+}
 
 - (id)init
 {
@@ -63,7 +70,18 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
 - (id)initWithPath:(NSString *)path
 {
     if (self = [super init]) {
-        
+        VVFFGLPlugin *p;
+        @synchronized(_VVFFGLPluginInstances) {
+            p = [_VVFFGLPluginInstances objectForKey:path];
+        }
+        if (p != nil) {
+            [self release];
+            return [p retain];
+        }
+        if (path == nil) {
+            [self release];
+            return nil;
+        }
         _pluginData = malloc(sizeof(struct VVFFGLPluginData));
         if (_pluginData == NULL) {
             [self release];
@@ -147,7 +165,7 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
             
             _pluginData->attributes = [[NSDictionary alloc] initWithObjectsAndKeys:name, VVFFGLPluginAttributeNameKey, version, VVFFGLPluginAttributeVersionKey,
                                        description, VVFFGLPluginAttributeDescriptionKey, author, VVFFGLPluginAttributeAuthorKey,
-                                       path, VVFFGLPluginAttributePathKey, nil];
+                                       [[path copy] autorelease], VVFFGLPluginAttributePathKey, nil];
         } else {
             _pluginData->attributes = [[NSDictionary alloc] initWithObjectsAndKeys:name, VVFFGLPluginAttributeNameKey, path, VVFFGLPluginAttributePathKey, nil];
         }
@@ -270,6 +288,9 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
             return nil;
         }
         _pluginData->initted = true;
+        @synchronized(_VVFFGLPluginInstances) {
+            [_VVFFGLPluginInstances setObject:self forKey:path];
+        }
     }
     return self;
 }
@@ -277,8 +298,12 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
 - (void)dealloc
 {
     if (_pluginData != NULL) {
-        if (_pluginData->initted == true)
+        if (_pluginData->initted == true) {
             _pluginData->main(FF_DEINITIALISE, 0, 0);
+            @synchronized(_VVFFGLPluginInstances) {
+                [_VVFFGLPluginInstances removeObjectForKey:[[self attributes] objectForKey:VVFFGLPluginAttributePathKey]];
+            }
+        }
         if (_pluginData->bundle)
             CFRelease(_pluginData->bundle);
         [_pluginData->bufferPixelFormats release];
@@ -293,6 +318,19 @@ NSString * const VVFFGLParameterTypeImage = @"VVFFGLParameterTypeImage";
 - (id)copyWithZone:(NSZone *)zone
 {
     return [self retain];
+}
+
+- (BOOL)isEqual:(id)anObject
+{
+    if (anObject == self) {
+        return YES;
+    }
+    return NO;
+}
+
+- (NSUInteger) hash
+{
+    return [[[self attributes] objectForKey:VVFFGLPluginAttributePathKey] hash];
 }
 
 - (VVFFGLPluginType)type

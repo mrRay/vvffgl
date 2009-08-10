@@ -21,10 +21,6 @@ extern NSString * const VVFFGLPluginBufferPixelFormatBGR888;
 extern NSString * const VVFFGLPluginBufferPixelFormatRGB565;
 extern NSString * const VVFFGLPluginBufferPixelFormatBGR565;
 
-
-// Just now we expose this, but we could have it private and accept any input and handle conversion to/from GL ourselves, or
-// keep it, do that and provide this so clients can determine the most efficient input to provide us...
-// Also if you can think of a more descriptive name for it, do...
 typedef NSUInteger VVFFGLPluginMode;
 enum {
     VVFFGLPluginModeCPU = 0,

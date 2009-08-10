@@ -136,16 +136,22 @@ static VVFFGLPluginManager *_sharedPluginManager = nil;
                || [[file pathExtension] isEqualToString:@"plugin"]) {
                 plugin = [[[VVFFGLPlugin alloc] initWithPath:[path stringByAppendingPathComponent:file]] autorelease];
                 if (plugin != nil) {
-                    if ([plugin type] == VVFFGLPluginSourceType) {
+                    if (([plugin type] == VVFFGLPluginSourceType) && ![_sources containsObject:plugin]) {
                         [_sources addObject:plugin];  
-                    } else if([plugin type] == VVFFGLPluginEffectType) {
+                    } else if(([plugin type] == VVFFGLPluginEffectType) && ![_effects containsObject:plugin]) {
                         [_effects addObject:plugin];
                     }
                 }
             }
-        }        
+        }
+    }    
+}
+
+- (void)unloadPlugin:(VVFFGLPlugin *)plugin
+{
+    @synchronized(self) {
+        [([plugin type] == VVFFGLPluginSourceType ? _sources : _effects) removeObject:plugin];        
     }
-    
 }
 
 - (NSArray *)plugins
