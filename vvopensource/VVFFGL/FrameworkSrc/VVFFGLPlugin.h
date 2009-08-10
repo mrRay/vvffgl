@@ -3,7 +3,6 @@
 //  VVOpenSource
 //
 //  Created by Tom on 23/07/2009.
-//  Copyright 2009 Tom Butterworth. All rights reserved.
 //
 
 #import <Cocoa/Cocoa.h>

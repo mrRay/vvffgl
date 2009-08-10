@@ -9,7 +9,6 @@
 
 /*
  Maybe TODO - comment any ideas on (f)utility, plus any more...
-    - allow plugins to be unloaded
     - watch directories for changes and load/unload plugins to match - no need to restart app to add new plugins.
     - notifications
  */
