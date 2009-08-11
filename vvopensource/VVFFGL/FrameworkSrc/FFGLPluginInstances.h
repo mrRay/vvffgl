@@ -7,6 +7,8 @@
  *
  */
 
+#import "FFGLPlugin.h"
+
 @interface FFGLPlugin (Instances)
 /* 
  Here we add methods FFGLRenderer uses to deal with instance-related stuff in FFGLPlugin. This header is not

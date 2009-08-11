@@ -11,12 +11,9 @@
 
 @class FFGLPlugin;
 
-typedef struct FFGLRendererData FFGLRendererData;
-
 @interface FFGLRenderer : NSObject {
 @private
     FFGLPlugin *_plugin;
-    FFGLRendererData *_data;
     CGLContextObj _pluginContext;
     
 }

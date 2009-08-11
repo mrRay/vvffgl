@@ -8,13 +8,8 @@
 
 #import "FFGLRenderer.h"
 #import "FFGLPlugin.h"
-#import "FFGLPluginInstances.h"
-
-struct FFGLRendererData {
-    NSUInteger instanceIdentifier;
-    FFGLViewportStruct viewport;
-    VideoInfoStruct videoInfo;
-};
+#import "FFGLGPURenderer.h"
+#import "FFGLCPURenderer.h"
 
 @implementation FFGLRenderer
 
@@ -24,67 +19,31 @@ struct FFGLRendererData {
     return nil;
 }
 
-// do we want the framework users to have to pass in FFGL viewport structs? Maybe, maybe not?
-    // I say not - let's be completely opaque and expose none of the underlying FFGL stuff.
-- (id)initWithPlugin:(FFGLPlugin *)plugin context(CGLContextObj)cgl_ctx;
+- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)cgl_ctx;
 {
     if (self = [super init]) {
-        _plugin = [plugin retain];
-        _pluginContext = cgl_ctx;
-        CGLRetainContext(_pluginContext);
-        
-        _data = malloc(sizeof(FFGLRendererData));
-        if (_data == NULL) {
+        if ([self class] == [FFGLRenderer class]) {
             [self release];
-            return nil;
-        }
-        
-        // this rightnow is totally dependant on how we end up exposing the instantiate functions for the plugin, 
-        // but we will need something like this somewhere. Feel free to fiddle :)
-        
-        // if plugin is GPU, we have to do specific instantiate functions
-        if([plugin mode] == FFGLPluginModeGPU)
-        {
-                // we will need the _pluginViewport / pluginVideoInfo from somewhere.... the manager?
-                _data->instanceIdentifier = [_plugin instantiateGL:_data->viewport];
-                if(_data->instanceIdentifier == FF_FAIL) 
-                {
-                        [self release];
-                        return nil;
-                }
+            if ([plugin mode] == FFGLPluginModeGPU) {
+                return [[FFGLGPURenderer alloc] initWithPlugin:plugin context:cgl_ctx];
+            } else if ([plugin mode] == FFGLPluginModeCPU) {
+                return [[FFGLCPURenderer alloc] initWithPlugin:plugin context:cgl_ctx];
+            } else {
+                return nil;
+            }        
         } else {
-                _data->instanceIdentifier = [_plugin instantiate:_data->viewport];
-                if(_data->instanceIdentifier == FF_FAIL)
-                {
-                        [self release];
-                        return nil;
-                }
+            _plugin = [plugin retain];
+            _pluginContext = CGLRetainContext(cgl_ctx);
         }
-	}
-	
+    }	
     return self;
 }
 
 - (void)dealloc
 {
-	// same reasoning as in init
-	if([plugin mode] == FFGLPluginModeGPU)
-	{
-		if([_plugin deinstantiateGL] != FF_SUCCESS)
-			return nil;
-	}		
-	else
-	{
-		if([_plugin deinstantiate] != FF_SUCCESS)
-			return nil;
-	}
-
-	// need to keep this around so GPU plugins can deinitialize correctly.
-	if(_pluginContext != nil)
-	{
-		CGLReleaseContext(_pluginContext);
-	}
-	
+    if(_pluginContext != nil) {
+        CGLReleaseContext(_pluginContext);
+    }
     [_plugin release];
     [super dealloc];
 }
@@ -96,16 +55,16 @@ struct FFGLRendererData {
 
 - (id)valueForParameterKey:(NSString *)key
 {
-    // TODO: 
+    // TODO: or maybe subclasses override it.
 }
 
 - (void)setValue:(id)value forParameterKey:(NSString *)key
 {
-    // TODO:     
+    // TODO: or maybe subclasses override it.
 }
 
 - (void)renderAtTime:(NSTimeInterval)time
 {
-    // TODO: 
+    // Do nothing, subclasses override this. 
 }
 @end

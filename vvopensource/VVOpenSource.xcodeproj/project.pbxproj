@@ -198,6 +198,11 @@
 		96BF10B0100E95330079A2E6 /* VVOSC.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF10AD100E95330079A2E6 /* VVOSC.h */; };
 		96BF10B1100E95330079A2E6 /* VVOSC.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF10AD100E95330079A2E6 /* VVOSC.h */; };
 		96C2F2141017815F004E19B0 /* OSCConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 96C2F2131017815F004E19B0 /* OSCConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		BD8E3C681030DBDB00152772 /* FFGLCPURenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = BD8E3C661030DBDB00152772 /* FFGLCPURenderer.h */; };
+		BD8E3C691030DBDB00152772 /* FFGLCPURenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = BD8E3C671030DBDB00152772 /* FFGLCPURenderer.m */; };
+		BD8E3C6C1030DC1800152772 /* FFGLGPURenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = BD8E3C6A1030DC1800152772 /* FFGLGPURenderer.h */; };
+		BD8E3C6D1030DC1800152772 /* FFGLGPURenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = BD8E3C6B1030DC1800152772 /* FFGLGPURenderer.m */; };
+		BD8E3CC21030ED2200152772 /* FFGLRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = BD93426D101A56F600C4B805 /* FFGLRenderer.m */; };
 		BD9F6A0C10191358004D8CD9 /* FreeFrame.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6A0A10191358004D8CD9 /* FreeFrame.h */; };
 		BD9F6A88101921FD004D8CD9 /* FFGL.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6A87101921FD004D8CD9 /* FFGL.h */; };
 		BD9F6C8E101945AE004D8CD9 /* FFGLPlugin.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6C8A101945AE004D8CD9 /* FFGLPlugin.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -209,13 +214,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		9606B1691017622B00CC50B7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 961EA8EC100E8565007E6C25;
-			remoteInfo = VVBasics;
-		};
 		9606B16F1017628400CC50B7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -341,13 +339,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 9628D0C4100E89F700C3944E;
 			remoteInfo = VVOSC;
-		};
-		969166681017651F0078DF52 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 961EA8EC100E8565007E6C25;
-			remoteInfo = VVBasics;
 		};
 		9691666A101765230078DF52 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -505,6 +496,10 @@
 		96BF10C8100E98760079A2E6 /* assembleIPhoneSimSDK.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = assembleIPhoneSimSDK.sh; path = scripts/assembleIPhoneSimSDK.sh; sourceTree = "<group>"; };
 		96BF10C9100E98930079A2E6 /* assembleMacSDK.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = assembleMacSDK.sh; path = scripts/assembleMacSDK.sh; sourceTree = "<group>"; };
 		96C2F2131017815F004E19B0 /* OSCConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OSCConstants.h; path = VVOSC/FrameworkSrc/OSCConstants.h; sourceTree = "<group>"; };
+		BD8E3C661030DBDB00152772 /* FFGLCPURenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLCPURenderer.h; path = VVFFGL/FrameworkSrc/FFGLCPURenderer.h; sourceTree = "<group>"; };
+		BD8E3C671030DBDB00152772 /* FFGLCPURenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLCPURenderer.m; path = VVFFGL/FrameworkSrc/FFGLCPURenderer.m; sourceTree = "<group>"; };
+		BD8E3C6A1030DC1800152772 /* FFGLGPURenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLGPURenderer.h; path = VVFFGL/FrameworkSrc/FFGLGPURenderer.h; sourceTree = "<group>"; };
+		BD8E3C6B1030DC1800152772 /* FFGLGPURenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLGPURenderer.m; path = VVFFGL/FrameworkSrc/FFGLGPURenderer.m; sourceTree = "<group>"; };
 		BD93426C101A56F600C4B805 /* FFGLRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLRenderer.h; path = VVFFGL/FrameworkSrc/FFGLRenderer.h; sourceTree = "<group>"; };
 		BD93426D101A56F600C4B805 /* FFGLRenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLRenderer.m; path = VVFFGL/FrameworkSrc/FFGLRenderer.m; sourceTree = "<group>"; };
 		BD9F6A0A10191358004D8CD9 /* FreeFrame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FreeFrame.h; path = VVFFGL/FrameworkSrc/FreeFrame.h; sourceTree = "<group>"; };
@@ -665,17 +660,9 @@
 		9606B186101763A700CC50B7 /* VVFFGL framework */ = {
 			isa = PBXGroup;
 			children = (
-				BD9F6C8A101945AE004D8CD9 /* FFGLPlugin.h */,
-				BD9F6C8B101945AE004D8CD9 /* FFGLPlugin.m */,
-				BDD2315E101C7E98001CE112 /* FFGLPluginInstances.h */,
-				BD9F6C8C101945AE004D8CD9 /* FFGLPluginManager.h */,
-				BD9F6C8D101945AE004D8CD9 /* FFGLPluginManager.m */,
-				BD93426C101A56F600C4B805 /* FFGLRenderer.h */,
-				BD93426D101A56F600C4B805 /* FFGLRenderer.m */,
-				BD9F6A0A10191358004D8CD9 /* FreeFrame.h */,
-				BD9F6A87101921FD004D8CD9 /* FFGL.h */,
+				BD8E3C641030DB4100152772 /* Public Headers */,
+				BD8E3C651030DB4A00152772 /* Private */,
 				9606B14E101761EF00CC50B7 /* VVFFGL-Info.plist */,
-				9606B184101763A200CC50B7 /* VVFFGL.h */,
 			);
 			name = "VVFFGL framework";
 			sourceTree = "<group>";
@@ -815,6 +802,34 @@
 			name = MIDITestApp;
 			sourceTree = "<group>";
 		};
+		BD8E3C641030DB4100152772 /* Public Headers */ = {
+			isa = PBXGroup;
+			children = (
+				BD9F6C8A101945AE004D8CD9 /* FFGLPlugin.h */,
+				BD9F6C8C101945AE004D8CD9 /* FFGLPluginManager.h */,
+				BD93426C101A56F600C4B805 /* FFGLRenderer.h */,
+			);
+			name = "Public Headers";
+			sourceTree = "<group>";
+		};
+		BD8E3C651030DB4A00152772 /* Private */ = {
+			isa = PBXGroup;
+			children = (
+				BDD2315E101C7E98001CE112 /* FFGLPluginInstances.h */,
+				BD9F6C8B101945AE004D8CD9 /* FFGLPlugin.m */,
+				BD9F6C8D101945AE004D8CD9 /* FFGLPluginManager.m */,
+				BD93426D101A56F600C4B805 /* FFGLRenderer.m */,
+				BD8E3C661030DBDB00152772 /* FFGLCPURenderer.h */,
+				BD8E3C671030DBDB00152772 /* FFGLCPURenderer.m */,
+				BD8E3C6A1030DC1800152772 /* FFGLGPURenderer.h */,
+				BD8E3C6B1030DC1800152772 /* FFGLGPURenderer.m */,
+				BD9F6A0A10191358004D8CD9 /* FreeFrame.h */,
+				BD9F6A87101921FD004D8CD9 /* FFGL.h */,
+				9606B184101763A200CC50B7 /* VVFFGL.h */,
+			);
+			name = Private;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -828,6 +843,8 @@
 				BD9F6C8E101945AE004D8CD9 /* FFGLPlugin.h in Headers */,
 				BD9F6C90101945AE004D8CD9 /* FFGLPluginManager.h in Headers */,
 				BDD2315F101C7E98001CE112 /* FFGLPluginInstances.h in Headers */,
+				BD8E3C681030DBDB00152772 /* FFGLCPURenderer.h in Headers */,
+				BD8E3C6C1030DC1800152772 /* FFGLGPURenderer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -954,7 +971,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				9606B16A1017622B00CC50B7 /* PBXTargetDependency */,
 			);
 			name = VVFFGL;
 			productName = VVFFGL;
@@ -973,7 +989,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				969166691017651F0078DF52 /* PBXTargetDependency */,
 				9691666B101765230078DF52 /* PBXTargetDependency */,
 			);
 			name = FFGLTestApp;
@@ -1267,6 +1282,9 @@
 			files = (
 				BD9F6C8F101945AE004D8CD9 /* FFGLPlugin.m in Sources */,
 				BD9F6C91101945AE004D8CD9 /* FFGLPluginManager.m in Sources */,
+				BD8E3C691030DBDB00152772 /* FFGLCPURenderer.m in Sources */,
+				BD8E3C6D1030DC1800152772 /* FFGLGPURenderer.m in Sources */,
+				BD8E3CC21030ED2200152772 /* FFGLRenderer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1401,11 +1419,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		9606B16A1017622B00CC50B7 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 961EA8EC100E8565007E6C25 /* VVBasics */;
-			targetProxy = 9606B1691017622B00CC50B7 /* PBXContainerItemProxy */;
-		};
 		9606B1701017628400CC50B7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 9606B14C101761EF00CC50B7 /* VVFFGL */;
@@ -1495,11 +1508,6 @@
 			isa = PBXTargetDependency;
 			target = 9628D0C4100E89F700C3944E /* VVOSC */;
 			targetProxy = 968C0AC0100EA4BB0030080C /* PBXContainerItemProxy */;
-		};
-		969166691017651F0078DF52 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 961EA8EC100E8565007E6C25 /* VVBasics */;
-			targetProxy = 969166681017651F0078DF52 /* PBXContainerItemProxy */;
 		};
 		9691666B101765230078DF52 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
