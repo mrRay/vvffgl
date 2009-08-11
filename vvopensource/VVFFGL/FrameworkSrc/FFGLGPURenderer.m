@@ -51,6 +51,8 @@ struct FFGLGPURendererData {
 - (void)dealloc
 {
     [[self plugin] deinstantiateGL];
+    if (_data != NULL)
+        free(_data);
     [super dealloc];
 }
 
