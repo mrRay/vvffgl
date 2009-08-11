@@ -167,7 +167,7 @@ static FFGLPluginManager *_sharedPluginManager = nil;
 {
     NSArray *copy;
     @synchronized(self) {
-        if (_auto && (_libraryLoaded == NO)) {
+        if (_auto) {
             [self loadLibraryPlugins];
             [self loadApplicationPlugins];
         }
