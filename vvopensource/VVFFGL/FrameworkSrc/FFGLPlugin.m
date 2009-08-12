@@ -10,6 +10,8 @@
 #import "FreeFrame.h"
 #import "FFGL.h"
 
+#import <pthread.h> // Remove this if we switch to some other locking mechanism.
+
 struct FFGLPluginData {
     CFBundleRef bundle;
     FF_Main_FuncPtr main;
@@ -52,13 +54,19 @@ NSString * const FFGLParameterTypeString = @"FFGLParameterTypeString";
 NSString * const FFGLParameterTypeImage = @"FFGLParameterTypeImage";
 
 static NSMutableDictionary *_FFGLPluginInstances = nil;
-
+static pthread_mutex_t  _FFGLPluginInstancesLock;
 @implementation FFGLPlugin
 
 + (void)initialise
 {
-    // Create a dictionary which doesn't retain its contents, otherwise FFGLPlugins will never be released.
-    _FFGLPluginInstances = (NSMutableDictionary *)CFDictionaryCreateMutable(kCFAllocatorDefault, 10, &kCFTypeDictionaryKeyCallBacks, NULL);
+    /*
+     We keep track of all instances using a dictionary, returning an existing instance for a path passed in at init if one exists.
+     Our dictionary doesn't retain its contents, so FFGLPlugins can still be released. We intercept release messages to remove the
+     plugin from the dictionary before dealloc is called.
+     */
+    if (pthread_mutex_init(&_FFGLPluginInstancesLock, NULL) == 0) {
+        _FFGLPluginInstances = (NSMutableDictionary *)CFDictionaryCreateMutable(kCFAllocatorDefault, 10, &kCFTypeDictionaryKeyCallBacks, NULL);
+    }
 }
 
 - (id)init
@@ -71,19 +79,21 @@ static NSMutableDictionary *_FFGLPluginInstances = nil;
 {
     if (self = [super init]) {
         FFGLPlugin *p;
-        @synchronized(_FFGLPluginInstances) {
-            p = [_FFGLPluginInstances objectForKey:path];
-        }
+        pthread_mutex_lock(&_FFGLPluginInstancesLock);
+        p = [_FFGLPluginInstances objectForKey:path];
         if (p != nil) {
+            pthread_mutex_unlock(&_FFGLPluginInstancesLock);
             [self release];
             return [p retain];
         }
         if (path == nil) {
+            pthread_mutex_unlock(&_FFGLPluginInstancesLock);
             [self release];
             return nil;
         }
         _pluginData = malloc(sizeof(struct FFGLPluginData));
         if (_pluginData == NULL) {
+            pthread_mutex_unlock(&_FFGLPluginInstancesLock);
             [self release];
             return nil;
         }
@@ -98,11 +108,13 @@ static NSMutableDictionary *_FFGLPluginInstances = nil;
         // Load the plugin bundle.
         NSURL *url = [NSURL fileURLWithPath:path isDirectory:NO];
         if (url == nil) {
+            pthread_mutex_unlock(&_FFGLPluginInstancesLock);
             [self release];
             return nil;
         }
         _pluginData->bundle = CFBundleCreate(kCFAllocatorDefault, (CFURLRef)url);
         if (_pluginData->bundle == NULL) {
+            pthread_mutex_unlock(&_FFGLPluginInstancesLock);
             [self release];
             return nil;
         }
@@ -110,6 +122,7 @@ static NSMutableDictionary *_FFGLPluginInstances = nil;
         // Get a pointer to the function.
         _pluginData->main = CFBundleGetFunctionPointerForName(_pluginData->bundle, CFSTR("plugMain"));
         if (_pluginData->main == NULL) {
+            pthread_mutex_unlock(&_FFGLPluginInstancesLock);
             [self release];
             return nil;
         }
@@ -118,12 +131,14 @@ static NSMutableDictionary *_FFGLPluginInstances = nil;
         plugMainUnion result;
         result = _pluginData->main(FF_GETINFO, 0, 0);
         if (result.svalue == NULL) {
+            pthread_mutex_unlock(&_FFGLPluginInstancesLock);
             [self release];
             return nil;
         }
         PluginInfoStruct *info = (PluginInfoStruct *)result.svalue;
         if ((info->PluginType != FF_SOURCE) && (info->PluginType != FF_EFFECT)) {
             // Bail if this is some future other type of plugin.
+            pthread_mutex_unlock(&_FFGLPluginInstancesLock);
             [self release];
             return nil;
         }
@@ -286,15 +301,25 @@ static NSMutableDictionary *_FFGLPluginInstances = nil;
         // Finally initialise the plugin.
         result = _pluginData->main(FF_INITIALISE, 0, 0);
         if (result.ivalue != FF_SUCCESS) {
+            pthread_mutex_unlock(&_FFGLPluginInstancesLock);
             [self release];
             return nil;
         }
         _pluginData->initted = true;
-        @synchronized(_FFGLPluginInstances) {
-            [_FFGLPluginInstances setObject:self forKey:path];
-        }
+        [_FFGLPluginInstances setObject:self forKey:path];
+        pthread_mutex_unlock(&_FFGLPluginInstancesLock);
     }
     return self;
+}
+
+- (void)release
+{
+    pthread_mutex_lock(&_FFGLPluginInstancesLock);
+    if ([self retainCount] == 1) { // ie we're about to be dealloced
+        [_FFGLPluginInstances removeObjectForKey:[[self attributes] objectForKey:FFGLPluginAttributePathKey]];
+    }
+    [super release];
+    pthread_mutex_unlock(&_FFGLPluginInstancesLock);
 }
 
 - (void)dealloc
@@ -302,9 +327,6 @@ static NSMutableDictionary *_FFGLPluginInstances = nil;
     if (_pluginData != NULL) {
         if (_pluginData->initted == true) {
             _pluginData->main(FF_DEINITIALISE, 0, 0);
-            @synchronized(_FFGLPluginInstances) {
-                [_FFGLPluginInstances removeObjectForKey:[[self attributes] objectForKey:FFGLPluginAttributePathKey]];
-            }
         }
         if (_pluginData->bundle)
             CFRelease(_pluginData->bundle);
