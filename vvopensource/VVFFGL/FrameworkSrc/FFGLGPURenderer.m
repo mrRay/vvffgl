@@ -11,6 +11,10 @@
 
 #import <OpenGL/CGLMacro.h>
 
+@interface FFGLRenderer (Instance)
+- (NSUInteger)_instance;
+@end
+
 struct FFGLGPURendererData {
     NSUInteger instanceIdentifier;
     FFGLViewportStruct viewport;
@@ -43,13 +47,7 @@ struct FFGLGPURendererData {
         // this rightnow is totally dependant on how we end up exposing the instantiate functions for the plugin, 
         // but we will need something like this somewhere. Feel free to fiddle :)
 
-        // we will need the _pluginViewport / pluginVideoInfo from somewhere.... the manager?
-        _data->instanceIdentifier = [[self plugin] newInstanceWithBounds:bounds pixelFormat:nil];
-        if(_data->instanceIdentifier == FF_FAIL) 
-        {
-            [self release];
-            return nil;
-        }
+
 		
 		// retain GL context
 		_context = cgl_ctx;
@@ -93,7 +91,6 @@ struct FFGLGPURendererData {
 
 - (void)dealloc
 {
-    [[self plugin] deinstantiateGL];
     if (_data != NULL)
         free(_data);
     [super dealloc];

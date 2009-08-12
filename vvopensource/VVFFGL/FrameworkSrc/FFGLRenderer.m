@@ -7,6 +7,7 @@
 
 #import "FFGLRenderer.h"
 #import "FFGLPlugin.h"
+#import "FFGLPluginInstances.h"
 #import "FreeFrame.h"
 #import "FFGLGPURenderer.h"
 #import "FFGLCPURenderer.h"
@@ -35,8 +36,15 @@
                 return nil;
             }        
         } else {
+            _instance = [plugin newInstanceWithBounds:bounds pixelFormat:format];
+            if (_instance == 0) {
+                [self release];
+                return nil;
+            }
             _plugin = [plugin retain];
-            _pluginContext = CGLRetainContext(context);
+            if (_pluginContext != NULL) {
+                _pluginContext = CGLRetainContext(context);                
+            }
             _bounds = bounds;
             _pixelFormat = [format retain];
         }
@@ -61,7 +69,15 @@
     }
     [_plugin release];
     [_pixelFormat release];
+    if (_instance != 0) {
+        [[self plugin] disposeInstance:_instance];
+    }
     [super dealloc];
+}
+
+- (NSUInteger)_instance
+{
+    return _instance;
 }
 
 - (FFGLPlugin *)plugin
