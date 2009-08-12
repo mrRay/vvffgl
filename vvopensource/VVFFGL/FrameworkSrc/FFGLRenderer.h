@@ -3,7 +3,6 @@
 //  VVOpenSource
 //
 //  Created by Tom on 24/07/2009.
-//  Copyright 2009 Tom Butterworth. All rights reserved.
 //
 
 #import <Cocoa/Cocoa.h>
@@ -13,9 +12,10 @@
 
 @interface FFGLRenderer : NSObject {
 @private
-    FFGLPlugin *_plugin;
-    CGLContextObj _pluginContext;
-    
+    FFGLPlugin      *_plugin;
+    CGLContextObj   _pluginContext;
+    NSRect          _bounds;
+    NSString        *_pixelFormat;
 }
 
 // for CPU effects/sources, the last two arguments can be nil.
@@ -25,8 +25,11 @@
 // if the context changes for whatever reason, probably should re-make the object
 // need to pass in a viewport stuct
 
-- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)cgl_ctx;
+- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context forBounds:(NSRect)bounds;
+- (id)initWithPlugin:(FFGLPlugin *)plugin pixelFormat:(NSString *)format forBounds:(NSRect)bounds;
 - (FFGLPlugin *)plugin;
+- (CGLContextObj)context;
+- (NSString *)pixelFormat;
 - (id)valueForParameterKey:(NSString *)key;
 - (void)setValue:(id)value forParameterKey:(NSString *)key;
 - (void)renderAtTime:(NSTimeInterval)time;

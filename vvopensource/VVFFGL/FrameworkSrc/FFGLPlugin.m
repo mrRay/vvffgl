@@ -3,7 +3,6 @@
 //  VVOpenSource
 //
 //  Created by Tom on 23/07/2009.
-//  Copyright 2009 Tom Butterworth. All rights reserved.
 //
 
 #import "FFGLPlugin.h"
@@ -367,4 +366,45 @@ static NSMutableDictionary *_FFGLPluginInstances = nil;
 {
     return [_pluginData->parameters objectForKey:key];
 }
+
+#pragma mark Instances
+- (FFGLPluginInstance)newInstanceWithBounds:(NSRect)bounds pixelFormat:(NSString *)format
+{
+    // TODO: lock here. I'm profiling different options to check out Ray's grumble about @synchronized and we'll settle on whatever's fastest...
+    if (_pluginData->mode == FFGLPluginModeGPU) {
+        FFGLViewportStruct viewport = {bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height};
+        return _pluginData->main(FF_INSTANTIATEGL, (DWORD)&viewport, 0).ivalue;
+    } else if (_pluginData->mode == FFGLPluginModeCPU) {
+        VideoInfoStruct videoInfo;
+        if ([format isEqualToString:FFGLPluginBufferPixelFormatBGRA8888] || [format isEqualToString:FFGLPluginBufferPixelFormatARGB8888])
+            videoInfo.BitDepth = FF_CAP_32BITVIDEO;
+        else if ([format isEqualToString:FFGLPluginBufferPixelFormatBGR888] || [format isEqualToString:FFGLPluginBufferPixelFormatRGB888])
+            videoInfo.BitDepth = FF_CAP_24BITVIDEO;
+        else if ([format isEqualToString:FFGLPluginBufferPixelFormatBGR565] || [format isEqualToString:FFGLPluginBufferPixelFormatRGB565])
+            videoInfo.BitDepth == FF_CAP_16BITVIDEO;
+        else {
+            [NSException raise:@"FFGLPluginException" format:@"Unrecognized pixelFormat."];
+            return 0;
+        }
+        videoInfo.Orientation = FF_ORIENTATION_TL; // I think ;) If it's upside down then FF_ORIENTATION_BL.
+        videoInfo.FrameHeight = bounds.size.height;
+        videoInfo.FrameWidth = bounds.size.width;
+        return _pluginData->main(FF_INSTANTIATE, (DWORD)&videoInfo, 0).ivalue;
+    } else {
+        return 0; // Yikes
+    }
+}
+
+- (BOOL)disposeInstance:(FFGLPluginInstance)instance
+{
+    DWORD result;
+    if (_pluginData->mode == FFGLPluginModeGPU)
+        result = _pluginData->main(FF_DEINSTANTIATE, 0, instance).ivalue ;
+    else if (_pluginData->mode == FFGLPluginModeCPU)
+        result = _pluginData->main(FF_DEINSTANTIATEGL, 0, instance).ivalue;
+    else
+        result = FF_FAIL;
+    return (result == FF_FAIL ? NO : YES);
+}
+
 @end

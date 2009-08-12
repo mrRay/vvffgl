@@ -3,7 +3,6 @@
 //  VVOpenSource
 //
 //  Created by Tom on 10/08/2009.
-//  Copyright 2009 Tom Butterworth. All rights reserved.
 //
 
 #import "FFGLGPURenderer.h"
@@ -27,20 +26,25 @@ struct FFGLGPURendererData {
 
 // do we want the framework users to have to pass in FFGL viewport structs? Maybe, maybe not?
 // I say not - let's be completely opaque and expose none of the underlying FFGL stuff.
-- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)cgl_ctx;
+- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)cgl_ctx bounds:(NSRect)bounds;
 {
-    if (self = [super initWithPlugin:plugin context:cgl_ctx]) {        
+    if (self = [super initWithPlugin:plugin context:cgl_ctx forBounds:bounds]) {        
         _data = malloc(sizeof(struct FFGLGPURendererData));
         if (_data == NULL) {
             [self release];
             return nil;
         }
         
+        _data->viewport.x = bounds.origin.x;
+        _data->viewport.y = bounds.origin.y;
+        _data->viewport.width = bounds.size.width;
+        _data->viewport.height = bounds.size.height;
+        
         // this rightnow is totally dependant on how we end up exposing the instantiate functions for the plugin, 
         // but we will need something like this somewhere. Feel free to fiddle :)
 
         // we will need the _pluginViewport / pluginVideoInfo from somewhere.... the manager?
-        _data->instanceIdentifier = [[self plugin] instantiateGL:_data->viewport];
+        _data->instanceIdentifier = [[self plugin] newInstanceWithBounds:bounds pixelFormat:nil];
         if(_data->instanceIdentifier == FF_FAIL) 
         {
             [self release];
@@ -102,7 +106,7 @@ struct FFGLGPURendererData {
 	// attach GL context
 	// take our input image, render it to a square texture, 
 	// pass that square texture to our plugin
-	// set the params of the plugin
+	// set the params of the plugin - Only the image params which we load into whatever sort of struct. We'll set the params as soon as setValue: forParameterKey: is called (in FFGLRenderer), not every render pass..
 	// render.
 	
 	

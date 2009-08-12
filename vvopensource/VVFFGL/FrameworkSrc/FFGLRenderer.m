@@ -3,14 +3,17 @@
 //  VVOpenSource
 //
 //  Created by Tom on 24/07/2009.
-//  Copyright 2009 Tom Butterworth. All rights reserved.
 //
 
 #import "FFGLRenderer.h"
 #import "FFGLPlugin.h"
+#import "FreeFrame.h"
 #import "FFGLGPURenderer.h"
 #import "FFGLCPURenderer.h"
 
+@interface FFGLRenderer (Private)
+- (id)_initWithPlugin:(FFGLPlugin *)plugin pixelFormat:(NSString *)format context:(CGLContextObj)context forBounds:(NSRect)bounds;
+@end
 @implementation FFGLRenderer
 
 - (id)init
@@ -19,24 +22,36 @@
     return nil;
 }
 
-- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)cgl_ctx;
+- (id)_initWithPlugin:(FFGLPlugin *)plugin pixelFormat:(NSString *)format context:(CGLContextObj)context forBounds:(NSRect)bounds
 {
     if (self = [super init]) {
         if ([self class] == [FFGLRenderer class]) {
             [self release];
             if ([plugin mode] == FFGLPluginModeGPU) {
-                return [[FFGLGPURenderer alloc] initWithPlugin:plugin context:cgl_ctx];
+                return [[FFGLGPURenderer alloc] initWithPlugin:plugin context:context forBounds:bounds];
             } else if ([plugin mode] == FFGLPluginModeCPU) {
-                return [[FFGLCPURenderer alloc] initWithPlugin:plugin context:cgl_ctx];
+                return [[FFGLCPURenderer alloc] initWithPlugin:plugin pixelFormat:format forBounds:bounds];
             } else {
                 return nil;
             }        
         } else {
             _plugin = [plugin retain];
-            _pluginContext = CGLRetainContext(cgl_ctx);
+            _pluginContext = CGLRetainContext(context);
+            _bounds = bounds;
+            _pixelFormat = [format retain];
         }
     }	
     return self;
+}
+
+- (id)initWithPlugin:(FFGLPlugin *)plugin pixelFormat:(NSString *)format forBounds:(NSRect)bounds
+{
+    return [self _initWithPlugin:plugin pixelFormat:format context:NULL forBounds:bounds];
+}
+
+- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context forBounds:(NSRect)bounds
+{
+    return [self _initWithPlugin:plugin pixelFormat:nil context:context forBounds:bounds];
 }
 
 - (void)dealloc
@@ -45,12 +60,28 @@
         CGLReleaseContext(_pluginContext);
     }
     [_plugin release];
+    [_pixelFormat release];
     [super dealloc];
 }
 
 - (FFGLPlugin *)plugin
 {
     return _plugin;
+}
+
+- (CGLContextObj)context
+{
+    return _pluginContext;
+}
+
+- (NSRect)bounds
+{
+    return _bounds;
+}
+
+- (NSString *)pixelFormat
+{
+    return _pixelFormat;
 }
 
 - (id)valueForParameterKey:(NSString *)key
