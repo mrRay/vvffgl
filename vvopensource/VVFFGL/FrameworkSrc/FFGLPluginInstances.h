@@ -16,6 +16,8 @@ typedef NSUInteger FFGLPluginInstance;
  exported in the framework, it is private for FFGLPlugin and FFGLRenderer and subclasses.
  */
 // GPU renderers can pass in nil for pixelFormat
-- (FFGLPluginInstance)newInstanceWithBounds:(NSRect)bounds pixelFormat:(NSString *)format;
-- (BOOL)disposeInstance:(FFGLPluginInstance)instance;
+- (FFGLPluginInstance)_newInstanceWithBounds:(NSRect)bounds pixelFormat:(NSString *)format;
+- (BOOL)_disposeInstance:(FFGLPluginInstance)instance;
+- (id)_valueForNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance;
+- (void)_setValue:(id)value forNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance;
 @end

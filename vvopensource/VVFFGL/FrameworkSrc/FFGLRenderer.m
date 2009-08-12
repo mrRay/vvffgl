@@ -36,7 +36,7 @@
                 return nil;
             }        
         } else {
-            _instance = [plugin newInstanceWithBounds:bounds pixelFormat:format];
+            _instance = [plugin _newInstanceWithBounds:bounds pixelFormat:format];
             if (_instance == 0) {
                 [self release];
                 return nil;
@@ -47,6 +47,7 @@
             }
             _bounds = bounds;
             _pixelFormat = [format retain];
+            _imageInputs = [[NSMutableDictionary alloc] initWithCapacity:4];
         }
     }	
     return self;
@@ -69,8 +70,9 @@
     }
     [_plugin release];
     [_pixelFormat release];
+    [_imageInputs release];
     if (_instance != 0) {
-        [[self plugin] disposeInstance:_instance];
+        [[self plugin] _disposeInstance:_instance];
     }
     [super dealloc];
 }
@@ -102,12 +104,20 @@
 
 - (id)valueForParameterKey:(NSString *)key
 {
-    // TODO: or maybe subclasses override it.
+    if ([[[_plugin attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
+        return [_imageInputs objectForKey:key];
+    } else {
+        return [_plugin _valueForNonImageParameterKey:key ofInstance:_instance];
+    }
 }
 
 - (void)setValue:(id)value forParameterKey:(NSString *)key
 {
-    // TODO: or maybe subclasses override it.
+    if ([[[_plugin attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
+        [_imageInputs setObject:value forKey:key];
+    } else {
+        [_plugin _setValue:value forNonImageParameterKey:key ofInstance:_instance];
+    }
 }
 
 - (void)renderAtTime:(NSTimeInterval)time

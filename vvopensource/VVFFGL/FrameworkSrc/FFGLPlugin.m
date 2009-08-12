@@ -41,6 +41,7 @@ NSString * const FFGLParameterAttributeDefaultValueKey = @"FFGLParameterAttribut
 NSString * const FFGLParameterAttributeMinimumValueKey = @"FFGLParameterAttributeMinimumValueKey";
 NSString * const FFGLParameterAttributeMaximumValueKey = @"FFGLParameterAttributeMaximumValueKey";
 NSString * const FFGLParameterAttributeRequiredKey = @"FFGLParameterAttributeRequiredKey";
+NSString * const FFGLParameterAttributeIndexKey = @"FFGLParameterAttributeIndexKey";
 
 NSString * const FFGLParameterTypeBoolean = @"FFGLParameterTypeBoolean";
 NSString * const FFGLParameterTypeEvent = @"FFGLParameterTypeEvent";
@@ -276,6 +277,8 @@ static NSMutableDictionary *_FFGLPluginInstances = nil;
                 } else {
                     [pAttributes setValue:@"Untitled Parameter" forKey:FFGLParameterAttributeNameKey];
                 }
+                [pAttributes setValue:[NSNumber numberWithBool:YES] forKey:FFGLParameterAttributeRequiredKey];
+                [pAttributes setValue:[NSNumber numberWithUnsignedInt:i] forKey:FFGLParameterAttributeIndexKey];
                 [(NSMutableDictionary *)_pluginData->parameters setObject:pAttributes forKey:[NSString stringWithFormat:@"non-image-parameter-%u", i]];
             }
         }
@@ -368,7 +371,7 @@ static NSMutableDictionary *_FFGLPluginInstances = nil;
 }
 
 #pragma mark Instances
-- (FFGLPluginInstance)newInstanceWithBounds:(NSRect)bounds pixelFormat:(NSString *)format
+- (FFGLPluginInstance)_newInstanceWithBounds:(NSRect)bounds pixelFormat:(NSString *)format
 {
     // TODO: lock here. I'm profiling different options to check out Ray's grumble about @synchronized and we'll settle on whatever's fastest...
     if (_pluginData->mode == FFGLPluginModeGPU) {
@@ -395,7 +398,7 @@ static NSMutableDictionary *_FFGLPluginInstances = nil;
     }
 }
 
-- (BOOL)disposeInstance:(FFGLPluginInstance)instance
+- (BOOL)_disposeInstance:(FFGLPluginInstance)instance
 {
     DWORD result;
     if (_pluginData->mode == FFGLPluginModeGPU)
@@ -405,6 +408,40 @@ static NSMutableDictionary *_FFGLPluginInstances = nil;
     else
         result = FF_FAIL;
     return (result == FF_FAIL ? NO : YES);
+}
+
+- (id)_valueForNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance
+{
+    if (![[self parameterKeys] containsObject:key]) {
+        [NSException raise:@"FFGLPluginException" format:@"No such key: %@", key];
+        return nil;
+    }
+    NSDictionary *pattributes = [self attributesForParameterWithKey:key];
+    NSUInteger pindex = [[pattributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
+    plugMainUnion result = _pluginData->main(FF_GETPARAMETER, pindex, instance);
+    if ([[pattributes objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeString]) {
+        return [NSString stringWithCString:result.svalue encoding:NSASCIIStringEncoding];
+    } else {
+        return [NSNumber numberWithFloat:result.fvalue];
+    }
+}
+
+- (void)_setValue:(id)value forNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance
+{
+    if (![[self parameterKeys] containsObject:key]) {
+        [NSException raise:@"FFGLPluginException" format:@"No such key: %@", key];
+        return;
+    }
+    NSDictionary *pattributes = [self attributesForParameterWithKey:key];
+    NSUInteger pindex = [[pattributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
+    SetParameterStruct param;
+    param.ParameterNumber = pindex;
+    if ([[pattributes objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeString]) {
+        param.NewParameterValue = (DWORD)[(NSString *)value cStringUsingEncoding:NSASCIIStringEncoding];
+    } else {
+        *((float *)(unsigned)&param.NewParameterValue) = [(NSNumber *)value floatValue]; // ? Check this...
+    }
+    _pluginData->main(FF_SETPARAMETER, (DWORD)&param, instance);
 }
 
 @end

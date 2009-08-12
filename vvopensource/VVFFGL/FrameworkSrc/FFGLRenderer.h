@@ -12,11 +12,12 @@
 
 @interface FFGLRenderer : NSObject {
 @private
-    FFGLPlugin      *_plugin;
-    NSUInteger      _instance;
-    CGLContextObj   _pluginContext;
-    NSRect          _bounds;
-    NSString        *_pixelFormat;
+    FFGLPlugin          *_plugin;
+    NSUInteger          _instance;
+    CGLContextObj       _pluginContext;
+    NSRect              _bounds;
+    NSString            *_pixelFormat;
+    NSMutableDictionary *_imageInputs;
 }
 
 // for CPU effects/sources, the last two arguments can be nil.
