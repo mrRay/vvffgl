@@ -13,7 +13,7 @@
 @interface FFGLRenderer : NSObject {
 @private
     FFGLPlugin          *_plugin;
-    NSUInteger          _instance;
+    uint32_t            _instance;
     CGLContextObj       _pluginContext;
     NSRect              _bounds;
     NSString            *_pixelFormat;

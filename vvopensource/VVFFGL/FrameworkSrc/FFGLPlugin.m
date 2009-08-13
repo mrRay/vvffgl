@@ -15,9 +15,13 @@
 struct FFGLPluginData {
     CFBundleRef bundle;
     FF_Main_FuncPtr main;
-    Boolean initted;
+    BOOL initted;
     FFGLPluginType type;
     FFGLPluginMode mode;
+    NSUInteger minFrames;
+    NSUInteger maxFrames;
+    NSUInteger preferredBufferMode;
+    BOOL supportsSetTime;
     NSArray *bufferPixelFormats;
     NSDictionary *parameters;
     NSDictionary *attributes;
@@ -43,7 +47,7 @@ NSString * const FFGLParameterAttributeDefaultValueKey = @"FFGLParameterAttribut
 NSString * const FFGLParameterAttributeMinimumValueKey = @"FFGLParameterAttributeMinimumValueKey";
 NSString * const FFGLParameterAttributeMaximumValueKey = @"FFGLParameterAttributeMaximumValueKey";
 NSString * const FFGLParameterAttributeRequiredKey = @"FFGLParameterAttributeRequiredKey";
-NSString * const FFGLParameterAttributeIndexKey = @"FFGLParameterAttributeIndexKey";
+NSString * const FFGLParameterAttributeIndexKey = @"FFGLParameterAttributeIndexKey"; // Private
 
 NSString * const FFGLParameterTypeBoolean = @"FFGLParameterTypeBoolean";
 NSString * const FFGLParameterTypeEvent = @"FFGLParameterTypeEvent";
@@ -98,7 +102,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
             return nil;
         }
         // Set everything we need in dealloc, in case we bail from init.
-        _pluginData->initted = false;
+        _pluginData->initted = NO;
         _pluginData->bundle = NULL;
         _pluginData->bufferPixelFormats = nil;
         _pluginData->parameters = nil;
@@ -189,39 +193,45 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_PROCESSOPENGL, 0);
         if (result.ivalue == FF_SUPPORTED) {
             _pluginData->mode = FFGLPluginModeGPU;
+            // We don't support any pixel formats.
+            _pluginData->bufferPixelFormats = [[NSArray alloc] init];
         } else {
             _pluginData->mode = FFGLPluginModeCPU;
+            // Fill out our preferred mode
+            _pluginData->preferredBufferMode = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_COPYORINPLACE, 0).ivalue;
+            /*
+             Get information about the pixel formats we support. FF plugins only support native-endian pixel formats. We could
+             support both and handle conversion, however that doesn't seem a priority.
+             */
+            _pluginData->bufferPixelFormats = [[NSMutableArray alloc] initWithCapacity:3];
+            result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_16BITVIDEO, 0);
+            if (result.ivalue == FF_SUPPORTED) {
+#if __BIG_ENDIAN__
+                [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatRGB565];
+#else
+                [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatBGR565];
+#endif
+            }
+            result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_24BITVIDEO, 0);
+            if (result.ivalue == FF_SUPPORTED) {
+#if __BIG_ENDIAN__
+                [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatRGB888];
+#else
+                [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatBGR888];
+#endif
+            }
+            result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_32BITVIDEO, 0);
+            if (result.ivalue == FF_SUPPORTED) {
+#if __BIG_ENDIAN__
+                [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatARGB8888];
+#else
+                [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatBGRA8888];
+#endif
+            }            
         }
         
-        /*
-         Get information about the pixel formats we support. FF plugins only support native-endian pixel formats. We could
-         support both and handle conversion, however that doesn't seem a priority.
-         */
-        _pluginData->bufferPixelFormats = [[NSMutableArray alloc] initWithCapacity:3];
-        result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_16BITVIDEO, 0);
-        if (result.ivalue == FF_SUPPORTED) {
-#if __BIG_ENDIAN__
-            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatRGB565];
-#else
-            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatBGR565];
-#endif
-        }
-        result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_24BITVIDEO, 0);
-        if (result.ivalue == FF_SUPPORTED) {
-#if __BIG_ENDIAN__
-            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatRGB888];
-#else
-            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatBGR888];
-#endif
-        }
-        result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_32BITVIDEO, 0);
-        if (result.ivalue == FF_SUPPORTED) {
-#if __BIG_ENDIAN__
-            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatARGB8888];
-#else
-            [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatBGRA8888];
-#endif
-        }
+        // See if we support setTime
+        _pluginData->supportsSetTime = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_SETTIME, 0).ivalue;
         
         // Discover our parameters, which include the plugin's parameters plus video inputs.
         _pluginData->parameters = [[NSMutableDictionary alloc] initWithCapacity:4];
@@ -230,21 +240,25 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         NSString *pName;
         BOOL recognized;
         result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_MINIMUMINPUTFRAMES, 0);
+        _pluginData->minFrames = result.ivalue;
         for (i = 0; i < result.ivalue; i++) {
             pName = [NSString stringWithFormat:@"Input Image #%u", i];
             pAttributes = [NSDictionary dictionaryWithObjectsAndKeys:FFGLParameterTypeImage, FFGLParameterAttributeTypeKey,
-                          pName, FFGLParameterAttributeNameKey, [NSNumber numberWithBool:YES], FFGLParameterAttributeRequiredKey, nil];
+                           pName, FFGLParameterAttributeNameKey, [NSNumber numberWithBool:YES], FFGLParameterAttributeRequiredKey, 
+                           [NSNumber numberWithUnsignedInt:i], FFGLParameterAttributeIndexKey, nil];
             [(NSMutableDictionary *)_pluginData->parameters setObject:pAttributes forKey:pName];
         }
         result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_MAXIMUMINPUTFRAMES, 0);
+        _pluginData->maxFrames = result.ivalue;
         for (; i < result.ivalue; i++) {
             pName = [NSString stringWithFormat:@"Input Image #%u", i];
             pAttributes = [NSDictionary dictionaryWithObjectsAndKeys:FFGLParameterTypeImage, FFGLParameterAttributeTypeKey,
-                          pName, FFGLParameterAttributeNameKey, [NSNumber numberWithBool:NO], FFGLParameterAttributeRequiredKey, nil];
+                           pName, FFGLParameterAttributeNameKey, [NSNumber numberWithBool:NO], FFGLParameterAttributeRequiredKey,
+                           [NSNumber numberWithUnsignedInt:i], FFGLParameterAttributeIndexKey, nil];
             [(NSMutableDictionary *)_pluginData->parameters setObject:pAttributes forKey:pName];
         }
-        DWORD paramCount = _pluginData->main(FF_GETNUMPARAMETERS, 0, 0).ivalue;
         
+        DWORD paramCount = _pluginData->main(FF_GETNUMPARAMETERS, 0, 0).ivalue;
         for (i = 0; i < paramCount; i++) {
             pAttributes = [NSMutableDictionary dictionaryWithCapacity:4];
             result = _pluginData->main(FF_GETPARAMETERTYPE, i, 0);
@@ -305,7 +319,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
             [self release];
             return nil;
         }
-        _pluginData->initted = true;
+        _pluginData->initted = YES;
         [_FFGLPluginInstances setObject:self forKey:path];
         pthread_mutex_unlock(&_FFGLPluginInstancesLock);
     }
@@ -325,7 +339,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 - (void)dealloc
 {
     if (_pluginData != NULL) {
-        if (_pluginData->initted == true) {
+        if (_pluginData->initted == YES) {
             _pluginData->main(FF_DEINITIALISE, 0, 0);
         }
         if (_pluginData->bundle)
@@ -354,7 +368,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 
 - (NSUInteger) hash
 {
-    return [[[self attributes] objectForKey:FFGLPluginAttributePathKey] hash];
+    return [[_pluginData->attributes objectForKey:FFGLPluginAttributePathKey] hash];
 }
 
 - (FFGLPluginType)type
@@ -392,7 +406,25 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
     return [_pluginData->parameters objectForKey:key];
 }
 
+#pragma mark Plugin Private for Renderers
+
+- (NSUInteger)_minimumInputFrameCount
+{
+    return _pluginData->minFrames;
+}
+
+- (NSUInteger)_maximumInputFrameCount
+{
+    return _pluginData->maxFrames;
+}
+
+- (BOOL)_supportsSetTime
+{
+    return _pluginData->supportsSetTime;
+}
+
 #pragma mark Instances
+
 - (FFGLPluginInstance)_newInstanceWithBounds:(NSRect)bounds pixelFormat:(NSString *)format
 {
     // TODO: lock here. I'm profiling different options to check out Ray's grumble about @synchronized and we'll settle on whatever's fastest...
@@ -464,6 +496,11 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         *((float *)(unsigned)&param.NewParameterValue) = [(NSNumber *)value floatValue]; // ? Check this...
     }
     _pluginData->main(FF_SETPARAMETER, (DWORD)&param, instance);
+}
+
+- (void)_setTime:(NSTimeInterval)time ofInstance:(FFGLPluginInstance)instance
+{
+    _pluginData->main(FF_SETTIME, (DWORD)&time, instance);
 }
 
 @end

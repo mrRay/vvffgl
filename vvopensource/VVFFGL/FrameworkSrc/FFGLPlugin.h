@@ -57,7 +57,7 @@ typedef struct FFGLPluginData FFGLPluginData; // Private
 - (FFGLPluginType)type;
 - (FFGLPluginMode)mode;
 - (NSArray *)supportedBufferPixelFormats;
-- (NSString *)identifier;
+- (NSString *)identifier; // Maybe move this into the attributes dict?
 - (NSDictionary *)attributes;
 - (NSArray *)parameterKeys;
 - (NSDictionary *)attributesForParameterWithKey:(NSString *)key;
