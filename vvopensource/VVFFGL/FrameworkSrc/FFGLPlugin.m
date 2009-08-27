@@ -239,25 +239,26 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         NSDictionary *pAttributes;
         NSString *pName;
         BOOL recognized;
+        // Image inputs as parameters
         result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_MINIMUMINPUTFRAMES, 0);
         _pluginData->minFrames = result.ivalue;
-        for (i = 0; i < result.ivalue; i++) {
+        result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_MAXIMUMINPUTFRAMES, 0);
+        _pluginData->maxFrames = result.ivalue;
+        for (i = 0; i < _pluginData->minFrames; i++) {
             pName = [NSString stringWithFormat:@"Input Image #%u", i];
             pAttributes = [NSDictionary dictionaryWithObjectsAndKeys:FFGLParameterTypeImage, FFGLParameterAttributeTypeKey,
                            pName, FFGLParameterAttributeNameKey, [NSNumber numberWithBool:YES], FFGLParameterAttributeRequiredKey, 
                            [NSNumber numberWithUnsignedInt:i], FFGLParameterAttributeIndexKey, nil];
             [(NSMutableDictionary *)_pluginData->parameters setObject:pAttributes forKey:pName];
         }
-        result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_MAXIMUMINPUTFRAMES, 0);
-        _pluginData->maxFrames = result.ivalue;
-        for (; i < result.ivalue; i++) {
+        for (; i < _pluginData->maxFrames; i++) {
             pName = [NSString stringWithFormat:@"Input Image #%u", i];
             pAttributes = [NSDictionary dictionaryWithObjectsAndKeys:FFGLParameterTypeImage, FFGLParameterAttributeTypeKey,
                            pName, FFGLParameterAttributeNameKey, [NSNumber numberWithBool:NO], FFGLParameterAttributeRequiredKey,
                            [NSNumber numberWithUnsignedInt:i], FFGLParameterAttributeIndexKey, nil];
             [(NSMutableDictionary *)_pluginData->parameters setObject:pAttributes forKey:pName];
-        }
-        
+        }        
+        // Non-image parameters
         DWORD paramCount = _pluginData->main(FF_GETNUMPARAMETERS, 0, 0).ivalue;
         for (i = 0; i < paramCount; i++) {
             pAttributes = [NSMutableDictionary dictionaryWithCapacity:4];
@@ -342,7 +343,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         if (_pluginData->initted == YES) {
             _pluginData->main(FF_DEINITIALISE, 0, 0);
         }
-        if (_pluginData->bundle)
+        if (_pluginData->bundle != NULL)
             CFRelease(_pluginData->bundle);
         [_pluginData->bufferPixelFormats release];
         [_pluginData->parameters release];
@@ -423,6 +424,11 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
     return _pluginData->supportsSetTime;
 }
 
+- (BOOL)_prefersFrameCopy
+{
+    return (_pluginData->preferredBufferMode == FF_CAP_PREFER_COPY) || (_pluginData->preferredBufferMode == FF_CAP_PREFER_BOTH) ? YES : NO;
+}
+
 #pragma mark Instances
 
 - (FFGLPluginInstance)_newInstanceWithBounds:(NSRect)bounds pixelFormat:(NSString *)format
@@ -452,7 +458,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
     }
 }
 
-- (BOOL)_disposeInstance:(FFGLPluginInstance)instance
+- (void)_disposeInstance:(FFGLPluginInstance)instance
 {
     DWORD result;
     if (_pluginData->mode == FFGLPluginModeGPU)
@@ -461,7 +467,8 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         result = _pluginData->main(FF_DEINSTANTIATEGL, 0, instance).ivalue;
     else
         result = FF_FAIL;
-    return (result == FF_FAIL ? NO : YES);
+    // As it's not clear what failure means, let's ignore it.
+//    return (result == FF_FAIL ? NO : YES);
 }
 
 - (id)_valueForNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance
@@ -503,4 +510,13 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
     _pluginData->main(FF_SETTIME, (DWORD)&time, instance);
 }
 
+- (void)_processFrameCopy:(ProcessFrameCopyStruct *)frameInfo forInstance:(FFGLPluginInstance)instance
+{
+    _pluginData->main(FF_PROCESSFRAMECOPY, (DWORD)frameInfo, instance);
+}
+
+- (void)_processFrameInPlace:(void *)buffer forInstance:(FFGLPluginInstance)instance
+{
+    _pluginData->main(FF_PROCESSFRAME, (DWORD)buffer, instance);
+}
 @end

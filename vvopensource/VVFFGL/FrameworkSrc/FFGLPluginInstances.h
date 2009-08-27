@@ -7,6 +7,9 @@
  */
 
 #import "FFGLPlugin.h"
+#import "FFGL.h"
+
+extern NSString * const FFGLParameterAttributeIndexKey;
 
 typedef uint32_t FFGLPluginInstance;
 
@@ -19,16 +22,19 @@ typedef uint32_t FFGLPluginInstance;
 /*
  Plugin properties
  */
-- (NSUInteger)_minimumInputFrameCount;
-- (NSUInteger)_maximumInputFrameCount;
+- (NSUInteger)_minimumInputFrameCount; // TODO: may not need this, could go
+- (NSUInteger)_maximumInputFrameCount; // TODO: beth ditto
 - (BOOL)_supportsSetTime;
+- (BOOL)_prefersFrameCopy;
 
 /*
  Instances
  */
 - (FFGLPluginInstance)_newInstanceWithBounds:(NSRect)bounds pixelFormat:(NSString *)format; // GPU renderers can pass in nil for pixelFormat
-- (BOOL)_disposeInstance:(FFGLPluginInstance)instance;
+- (void)_disposeInstance:(FFGLPluginInstance)instance;
 - (id)_valueForNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance;
 - (void)_setValue:(id)value forNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance;
 - (void)_setTime:(NSTimeInterval)time ofInstance:(FFGLPluginInstance)instance;
+- (void)_processFrameCopy:(ProcessFrameCopyStruct *)frameInfo forInstance:(FFGLPluginInstance)instance;
+- (void)_processFrameInPlace:(void *)buffer forInstance:(FFGLPluginInstance)instance;
 @end
