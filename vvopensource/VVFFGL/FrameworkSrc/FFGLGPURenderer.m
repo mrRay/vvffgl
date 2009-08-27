@@ -7,18 +7,16 @@
 
 #import "FFGLGPURenderer.h"
 #import "FFGLPluginInstances.h"
+#import "FFGLRendererSubclassing.h"
 #import "FFGL.h"
 
 #import <OpenGL/CGLMacro.h>
-
-@interface FFGLRenderer (Instance)
-- (NSUInteger)_instance;
-@end
 
 struct FFGLGPURendererData {
     NSUInteger instanceIdentifier;
     FFGLViewportStruct viewport;
     VideoInfoStruct videoInfo;
+    ProcessOpenGLStruct frameStruct;
 };
 
 @implementation FFGLGPURenderer
@@ -47,7 +45,7 @@ struct FFGLGPURendererData {
         // this rightnow is totally dependant on how we end up exposing the instantiate functions for the plugin, 
         // but we will need something like this somewhere. Feel free to fiddle :)
 
-
+        // TODO: set up our ProcessOpenGLStruct struct.
 		
 		// retain GL context
 		_context = cgl_ctx;
@@ -96,7 +94,25 @@ struct FFGLGPURendererData {
     [super dealloc];
 }
 
-- (void)renderAtTime:(NSTimeInterval)time
+- (void)_setImage:(id)image forInputAtIndex:(NSUInteger)index
+{
+    // Get the texture from the image, then
+    // [self _setTexture:ourtexture forInputAtIndex:index];
+}
+
+- (void)_setTexture:(GLuint)texture forInputAtIndex:(NSUInteger)index
+{
+    CGLContextObj cgl_ctx = _context;
+	CGLLockContext(cgl_ctx);
+	
+	GLuint inputSquareTexture = [self rectTextureToSquareTexture:texture withCoords:NSZeroRect]; // some coords.
+	
+    // TODO: add the texture to the appropriate position in our ProcessOpenGLStruct. Note there can be several inputs...
+	
+	CGLUnlockContext(cgl_ctx);
+}
+
+- (void)_render
 {
     // the steps are roughly:
 	
@@ -109,10 +125,8 @@ struct FFGLGPURendererData {
 	
 	CGLContextObj cgl_ctx = _context;
 	CGLLockContext(cgl_ctx);
-	
-	GLuint inputSquareTexture = [self rectTextureToSquareTexture:someInputRectTextureFromSomeplace withCoords:NSZeroRect]; // some coords.
-	
-	// pass that texture into in to the plugin
+		
+	// pass our ProcessOpenGLStruct in to the plugin
 	
 	CGLUnlockContext(cgl_ctx);
 }
@@ -120,6 +134,7 @@ struct FFGLGPURendererData {
 - (GLuint) rectTextureToSquareTexture:(GLuint)inputTexture withCoords:(NSRect) rectCoords
 {
 	// do we necessarily need to re-cache our previous FBO every frame? 
+    // // Have moved that out of rendering, so it only happens when input changes... but you need as many square textures as there are inputs, not neccessarily one.
 	// do we even need that iVar at all, should that be handled outside of the framework?
 
 	// also, do we want to/need to generate a new texture attachment every frame? \

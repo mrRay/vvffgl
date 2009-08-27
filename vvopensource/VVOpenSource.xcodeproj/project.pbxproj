@@ -211,6 +211,7 @@
 		BD9F6C91101945AE004D8CD9 /* FFGLPluginManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BD9F6C8D101945AE004D8CD9 /* FFGLPluginManager.m */; };
 		BDA25B51102B9030000BE743 /* VVFFGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9606B14D101761EF00CC50B7 /* VVFFGL.framework */; };
 		BDD2315F101C7E98001CE112 /* FFGLPluginInstances.h in Headers */ = {isa = PBXBuildFile; fileRef = BDD2315E101C7E98001CE112 /* FFGLPluginInstances.h */; };
+		BDEC26FE10442457008BF49D /* FFGLRendererSubclassing.h in Headers */ = {isa = PBXBuildFile; fileRef = BDEC26FD10442457008BF49D /* FFGLRendererSubclassing.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -509,6 +510,7 @@
 		BD9F6C8C101945AE004D8CD9 /* FFGLPluginManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLPluginManager.h; path = VVFFGL/FrameworkSrc/FFGLPluginManager.h; sourceTree = "<group>"; };
 		BD9F6C8D101945AE004D8CD9 /* FFGLPluginManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLPluginManager.m; path = VVFFGL/FrameworkSrc/FFGLPluginManager.m; sourceTree = "<group>"; };
 		BDD2315E101C7E98001CE112 /* FFGLPluginInstances.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLPluginInstances.h; path = VVFFGL/FrameworkSrc/FFGLPluginInstances.h; sourceTree = "<group>"; };
+		BDEC26FD10442457008BF49D /* FFGLRendererSubclassing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLRendererSubclassing.h; path = VVFFGL/FrameworkSrc/FFGLRendererSubclassing.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -819,6 +821,7 @@
 				BD9F6C8B101945AE004D8CD9 /* FFGLPlugin.m */,
 				BD9F6C8D101945AE004D8CD9 /* FFGLPluginManager.m */,
 				BD93426D101A56F600C4B805 /* FFGLRenderer.m */,
+				BDEC26FD10442457008BF49D /* FFGLRendererSubclassing.h */,
 				BD8E3C661030DBDB00152772 /* FFGLCPURenderer.h */,
 				BD8E3C671030DBDB00152772 /* FFGLCPURenderer.m */,
 				BD8E3C6A1030DC1800152772 /* FFGLGPURenderer.h */,
@@ -845,6 +848,7 @@
 				BDD2315F101C7E98001CE112 /* FFGLPluginInstances.h in Headers */,
 				BD8E3C681030DBDB00152772 /* FFGLCPURenderer.h in Headers */,
 				BD8E3C6C1030DC1800152772 /* FFGLGPURenderer.h in Headers */,
+				BDEC26FE10442457008BF49D /* FFGLRendererSubclassing.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

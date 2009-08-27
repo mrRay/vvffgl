@@ -7,9 +7,12 @@
 
 #import <Cocoa/Cocoa.h>
 #import "FFGLRenderer.h"
+#import "FFGL.h"
 
 @interface FFGLCPURenderer : FFGLRenderer {
-
+    void **_buffers;
+    ProcessFrameCopyStruct _fcStruct;
+    BOOL _frameCopies;
 }
 
 @end
