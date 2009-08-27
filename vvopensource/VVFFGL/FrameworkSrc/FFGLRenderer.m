@@ -6,6 +6,7 @@
 //
 
 #import "FFGLRenderer.h"
+#import "FFGLRendererSubclassing.h"
 #import "FFGLPlugin.h"
 #import "FFGLPluginInstances.h"
 #import "FreeFrame.h"
@@ -113,7 +114,9 @@
 
 - (void)setValue:(id)value forParameterKey:(NSString *)key
 {
-    if ([[[_plugin attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
+    NSDictionary *attributes = [_plugin attributesForParameterWithKey:key];
+    if ([[attributes objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
+        [self _setImage:value forInputAtIndex:[[attributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue]];
         [_imageInputs setObject:value forKey:key];
     } else {
         [_plugin _setValue:value forNonImageParameterKey:key ofInstance:_instance];
@@ -122,6 +125,9 @@
 
 - (void)renderAtTime:(NSTimeInterval)time
 {
-    // Do nothing, subclasses override this. 
+    if ([_plugin _supportsSetTime]) {
+        [_plugin _setTime:time ofInstance:_instance];
+    }
+    [self _render];
 }
 @end
