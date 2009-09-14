@@ -6,17 +6,9 @@
 //
 
 #import "FFGLGPURenderer.h"
-#import "FFGLPluginInstances.h"
 #import "FFGLRendererSubclassing.h"
 
 #import <OpenGL/CGLMacro.h>
-
-struct FFGLGPURendererData {
-    NSUInteger instanceIdentifier;
-    NSRect viewport;
-    VideoInfoStruct videoInfo;
-    FFGLProcessGLStruct frameStruct;
-};
 
 @implementation FFGLGPURenderer
 - (id)init
@@ -25,21 +17,9 @@ struct FFGLGPURendererData {
     return nil;
 }
 
-// do we want the framework users to have to pass in FFGL viewport structs? Maybe, maybe not?
-// I say not - let's be completely opaque and expose none of the underlying FFGL stuff.
 - (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)cgl_ctx bounds:(NSRect)bounds;
 {
-    if (self = [super initWithPlugin:plugin context:cgl_ctx forBounds:bounds]) {        
-        _data = malloc(sizeof(struct FFGLGPURendererData));
-        if (_data == NULL) {
-            [self release];
-            return nil;
-        }
-        
-        _data->viewport.origin.x = bounds.origin.x;
-        _data->viewport.origin.y = bounds.origin.y;
-        _data->viewport.size.width = bounds.size.width;
-        _data->viewport.size.height = bounds.size.height;
+    if (self = [super initWithPlugin:plugin context:cgl_ctx forBounds:bounds]) {
         
         // this rightnow is totally dependant on how we end up exposing the instantiate functions for the plugin, 
         // but we will need something like this somewhere. Feel free to fiddle :)
@@ -48,7 +28,7 @@ struct FFGLGPURendererData {
 		
 		// retain GL context
 		_context = cgl_ctx;
-		CGLRetainContext(_context);
+		CGLRetainContext(cgl_ctx);
 		
 		// make the rect to 2D texture FBO.
 		CGLLockContext(cgl_ctx);
@@ -57,7 +37,7 @@ struct FFGLGPURendererData {
 		glBindTexture(GL_TEXTURE_2D, _squareFBOTexture);
 		
 		// NOTE: we get the size from our viewport struct. So, we may end making temp textures rather than keeping one around.
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, _data->viewport.size.width, _data->viewport.size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, bounds.size.width, bounds.size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 		
 		// cache previous FBO.
 		glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &_previousFBO);
@@ -88,8 +68,7 @@ struct FFGLGPURendererData {
 
 - (void)dealloc
 {
-    if (_data != NULL)
-        free(_data);
+    CGLReleaseContext(_context);
     [super dealloc];
 }
 
@@ -125,7 +104,7 @@ struct FFGLGPURendererData {
 	CGLContextObj cgl_ctx = _context;
 	CGLLockContext(cgl_ctx);
 		
-    [[self plugin] _processFrameGL:frameStruct forInstance:[self _instance]];
+    [[self plugin] _processFrameGL:&_frameStruct forInstance:[self _instance]];
 	
 	CGLUnlockContext(cgl_ctx);
 }
@@ -145,14 +124,14 @@ struct FFGLGPURendererData {
 	// argh. JUST. FUCKING. SUPPORT. RECT. TEXTURES. PLEASE.
 	
         CGLContextObj cgl_ctx = _context;
-
+        NSRect viewport = [self bounds];
 	glPushAttrib(GL_COLOR_BUFFER_BIT | GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
 	
 	// bind our FBO
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rectToSquareFBO);
 	
 	// set the viewport to the size of our input viewport...
-	glViewport(0, 0,  _data->viewport.size.width, _data->viewport.size.height);
+	glViewport(0, 0,  viewport.size.width, viewport.size.height);
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -172,11 +151,11 @@ struct FFGLGPURendererData {
 	glTexCoord2f(0, 0);
 	glVertex2f(0, 0);
 	glTexCoord2f(0, rectCoords.size.height);
-	glVertex2f(0, _data->viewport.size.height);
+	glVertex2f(0, viewport.size.height);
 	glTexCoord2f(rectCoords.size.width, rectCoords.size.height);
-	glVertex2f(_data->viewport.size.width, _data->viewport.size.height);
+	glVertex2f(viewport.size.width, viewport.size.height);
 	glTexCoord2f(rectCoords.size.width, 0);
-	glVertex2f(_data->viewport.size.width, 0);
+	glVertex2f(viewport.size.width, 0);
 	glEnd();		
 		
 	// Restore OpenGL states 
