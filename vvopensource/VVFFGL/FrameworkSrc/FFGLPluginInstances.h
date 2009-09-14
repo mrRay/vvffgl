@@ -7,11 +7,23 @@
  */
 
 #import "FFGLPlugin.h"
-#import "FFGL.h"
+#import <OpenGL/OpenGL.h>
 
 extern NSString * const FFGLParameterAttributeIndexKey;
 
 typedef uint32_t FFGLPluginInstance;
+
+typedef struct FFGLProcessFrameCopyStruct {
+    unsigned int    inputFrameCount;
+    void**          inputFrames;
+    void*           outputFrame;
+} FFGLProcessFrameCopyStruct;
+
+typedef struct FFGLProcessGLStruct {
+    unsigned int    inputTextureCount;
+    void**          inputTextures;
+    GLuint          hostFBO;
+} FFGLProcessGLStruct;
 
 @interface FFGLPlugin (Instances)
 /* 
@@ -35,6 +47,7 @@ typedef uint32_t FFGLPluginInstance;
 - (id)_valueForNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance;
 - (void)_setValue:(id)value forNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance;
 - (void)_setTime:(NSTimeInterval)time ofInstance:(FFGLPluginInstance)instance;
-- (void)_processFrameCopy:(ProcessFrameCopyStruct *)frameInfo forInstance:(FFGLPluginInstance)instance;
+- (void)_processFrameCopy:(FFGLProcessFrameCopyStruct *)frameInfo forInstance:(FFGLPluginInstance)instance;
 - (void)_processFrameInPlace:(void *)buffer forInstance:(FFGLPluginInstance)instance;
+- (void)_processFrameGL:(FFGLProcessGLStruct *)frameInfo forInstance:(FFGLPluginInstance)instance;
 @end

@@ -272,7 +272,6 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
                     break;
                 case FF_TYPE_EVENT:
                     [pAttributes setValue:FFGLParameterTypeEvent forKey:FFGLParameterAttributeTypeKey];
-                    result = _pluginData->main(FF_GETPARAMETERDEFAULT, i, 0);
                     break;
                 case FF_TYPE_RED: // TODO: we may want to synthesize color inputs if we can reliably detect sets of RGBA inputs...
                 case FF_TYPE_GREEN:
@@ -329,6 +328,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 
 - (void)release
 {
+    // TODO: This probably won't work with garbage collection, need another plan.
     pthread_mutex_lock(&_FFGLPluginInstancesLock);
     if ([self retainCount] == 1) { // ie we're about to be dealloced
         [_FFGLPluginInstances removeObjectForKey:[[self attributes] objectForKey:FFGLPluginAttributePathKey]];
@@ -510,7 +510,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
     _pluginData->main(FF_SETTIME, (DWORD)&time, instance);
 }
 
-- (void)_processFrameCopy:(ProcessFrameCopyStruct *)frameInfo forInstance:(FFGLPluginInstance)instance
+- (void)_processFrameCopy:(FFGLProcessFrameCopyStruct *)frameInfo forInstance:(FFGLPluginInstance)instance
 {
     _pluginData->main(FF_PROCESSFRAMECOPY, (DWORD)frameInfo, instance);
 }
@@ -518,5 +518,10 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 - (void)_processFrameInPlace:(void *)buffer forInstance:(FFGLPluginInstance)instance
 {
     _pluginData->main(FF_PROCESSFRAME, (DWORD)buffer, instance);
+}
+
+- (void)_processFrameGL:(FFGLProcessGLStruct *)frameInfo forInstance:(FFGLPluginInstance)instance
+{
+    _pluginData->main(FF_PROCESSFRAME, (DWORD)frameInfo, instance);
 }
 @end

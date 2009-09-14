@@ -13,7 +13,6 @@ typedef struct FFGLGPURendererData FFGLGPURendererData;
 
 @interface FFGLGPURenderer : FFGLRenderer {
     FFGLGPURendererData *_data;
-	
 	CGLContextObj _context;		// prob a good idea to cache the context. - superclass has it, should expose it, so [self context] would return it... but cache it if you like :)
 	GLuint _rectToSquareFBO;	// this FBO is responsible for providing the GL_TEXTURE_2D texture that FFGL requires.
 	GLuint _squareFBOTexture;	// COLOR_ATTACHMENT_0 for our above FBO

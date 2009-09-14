@@ -8,15 +8,14 @@
 #import "FFGLGPURenderer.h"
 #import "FFGLPluginInstances.h"
 #import "FFGLRendererSubclassing.h"
-#import "FFGL.h"
 
 #import <OpenGL/CGLMacro.h>
 
 struct FFGLGPURendererData {
     NSUInteger instanceIdentifier;
-    FFGLViewportStruct viewport;
+    NSRect viewport;
     VideoInfoStruct videoInfo;
-    ProcessOpenGLStruct frameStruct;
+    FFGLProcessGLStruct frameStruct;
 };
 
 @implementation FFGLGPURenderer
@@ -37,10 +36,10 @@ struct FFGLGPURendererData {
             return nil;
         }
         
-        _data->viewport.x = bounds.origin.x;
-        _data->viewport.y = bounds.origin.y;
-        _data->viewport.width = bounds.size.width;
-        _data->viewport.height = bounds.size.height;
+        _data->viewport.origin.x = bounds.origin.x;
+        _data->viewport.origin.y = bounds.origin.y;
+        _data->viewport.size.width = bounds.size.width;
+        _data->viewport.size.height = bounds.size.height;
         
         // this rightnow is totally dependant on how we end up exposing the instantiate functions for the plugin, 
         // but we will need something like this somewhere. Feel free to fiddle :)
@@ -58,7 +57,7 @@ struct FFGLGPURendererData {
 		glBindTexture(GL_TEXTURE_2D, _squareFBOTexture);
 		
 		// NOTE: we get the size from our viewport struct. So, we may end making temp textures rather than keeping one around.
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, _data->viewport.width, _data->viewport.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, _data->viewport.size.width, _data->viewport.size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 		
 		// cache previous FBO.
 		glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &_previousFBO);
@@ -126,13 +125,15 @@ struct FFGLGPURendererData {
 	CGLContextObj cgl_ctx = _context;
 	CGLLockContext(cgl_ctx);
 		
-	// pass our ProcessOpenGLStruct in to the plugin
+    [[self plugin] _processFrameGL:frameStruct forInstance:[self _instance]];
 	
 	CGLUnlockContext(cgl_ctx);
 }
 
 - (GLuint) rectTextureToSquareTexture:(GLuint)inputTexture withCoords:(NSRect) rectCoords
 {
+    // TODO: we can have any number of image inputs, so we need this to be able to handle that
+    
 	// do we necessarily need to re-cache our previous FBO every frame? 
     // // Have moved that out of rendering, so it only happens when input changes... but you need as many square textures as there are inputs, not neccessarily one.
 	// do we even need that iVar at all, should that be handled outside of the framework?
@@ -143,13 +144,15 @@ struct FFGLGPURendererData {
 	// we also will probably need to round to the nearest power of two for the texture dimensions and viewport dimensions.
 	// argh. JUST. FUCKING. SUPPORT. RECT. TEXTURES. PLEASE.
 	
+        CGLContextObj cgl_ctx = _context;
+
 	glPushAttrib(GL_COLOR_BUFFER_BIT | GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
 	
 	// bind our FBO
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rectToSquareFBO);
 	
 	// set the viewport to the size of our input viewport...
-	glViewport(0, 0,  _data->viewport.width, _data->viewport.height);
+	glViewport(0, 0,  _data->viewport.size.width, _data->viewport.size.height);
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -169,11 +172,11 @@ struct FFGLGPURendererData {
 	glTexCoord2f(0, 0);
 	glVertex2f(0, 0);
 	glTexCoord2f(0, rectCoords.size.height);
-	glVertex2f(0, _data->viewport.height);
+	glVertex2f(0, _data->viewport.size.height);
 	glTexCoord2f(rectCoords.size.width, rectCoords.size.height);
-	glVertex2f(_data->viewport.width, _data->viewport.height);
+	glVertex2f(_data->viewport.size.width, _data->viewport.size.height);
 	glTexCoord2f(rectCoords.size.width, 0);
-	glVertex2f(_data->viewport.width, 0);
+	glVertex2f(_data->viewport.size.width, 0);
 	glEnd();		
 		
 	// Restore OpenGL states 

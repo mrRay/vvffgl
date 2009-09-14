@@ -7,8 +7,6 @@
 
 #import "FFGLCPURenderer.h"
 #import "FFGLRendererSubclassing.h"
-#import "FFGLPluginInstances.h"
-#import "FreeFrame.h"
 #import <QuartzCore/QuartzCore.h>
 
 @interface FFGLCPURenderer (Private)
@@ -23,8 +21,8 @@
         if (numBuffers > 0) {
             _buffers = malloc(sizeof(void *) * numBuffers);
         }
-        _fcStruct.numInputFrames = numBuffers;
-        _fcStruct.ppInputFrames = _buffers;
+        _fcStruct.inputFrameCount = numBuffers;
+        _fcStruct.inputFrames = _buffers;
     }
     return self;
 }
@@ -47,13 +45,20 @@
     _buffers[index] = buffer;
 }
 
+- (void)_attachOutputBuffer:(void *)buffer
+{
+    _fcStruct.outputFrame = buffer;
+}
+
 - (void)_render
 {
     FFGLPlugin *plugin = [self plugin];
     if ([plugin _prefersFrameCopy]) {
         [plugin _processFrameCopy:&_fcStruct forInstance:[self _instance]];
     } else {
-        [plugin _processFrameInPlace:_buffers[0] forInstance:[self _instance]];
+        NSRect bounds = [self bounds];
+        memcpy(_fcStruct.outputFrame, _buffers[0], bounds.size.width * bounds.size.height);
+        [plugin _processFrameInPlace:_fcStruct.outputFrame forInstance:[self _instance]];
     }
 }
 
