@@ -50,8 +50,10 @@
             }
             for (i = 0; i < numInputs; i++) {
                 _frameStruct.inputTextures[i] = malloc(sizeof(FFGLTextureInfo));
-                if (_frameStruct.inputTextures[i] != NULL)
+                if (_frameStruct.inputTextures[i] != NULL) {
                     allocated++;
+                    // TODO: set up the FFGLTextureInfo struct for each input
+                }
             }
             if (allocated != numInputs) {
                 [self release];
@@ -61,7 +63,7 @@
             _frameStruct.inputTextures = NULL;
         }
         
-            _frameStruct.inputTextureCount 
+        // TODO: the following needs to happen for each input, not just one
 		// make the rect to 2D texture FBO.
 		CGLLockContext(cgl_ctx);
 		
@@ -104,8 +106,11 @@
     if (_frameStruct.inputTextures != NULL) {
         NSUInteger i;
         for (i = 0; i < _frameStruct.inputTextureCount; i++) {
-            <#statements#>
+            if (_frameStruct.inputTextures[i] != NULL) {
+                free(_frameStruct.inputTextures[i]);
+            }
         }
+        free(_frameStruct.inputTextures);
     }
     [super dealloc];
 }
@@ -207,6 +212,8 @@
 	
 	// restore previous FBO
 	
+    // TODO: bug?:
+    // We're using the value which we got at init, but isn't that likely to have changed? Shouldn't we inspect and restore every time?
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
 	
 	// we need to flush to make sure FBO Texture attachment is rendered
