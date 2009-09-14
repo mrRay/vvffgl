@@ -14,15 +14,23 @@ extern NSString * const FFGLParameterAttributeIndexKey;
 typedef uint32_t FFGLPluginInstance;
 
 typedef struct FFGLProcessFrameCopyStruct {
-    unsigned int    inputFrameCount;
-    void**          inputFrames;
-    void*           outputFrame;
+    unsigned int        inputFrameCount;
+    void**              inputFrames;
+    void*               outputFrame;
 } FFGLProcessFrameCopyStruct;
 
+typedef struct FFGLTextureInfo {
+    unsigned int        width;
+    unsigned int        height;
+    unsigned int        hardwareWidth;
+    unsigned int        hardwareHeight;
+    GLuint              texture;
+} FFGLTextureInfo;
+
 typedef struct FFGLProcessGLStruct {
-    unsigned int    inputTextureCount;
-    void**          inputTextures;
-    GLuint          hostFBO;
+    unsigned int        inputTextureCount;
+    FFGLTextureInfo**   inputTextures;
+    GLuint              hostFBO;
 } FFGLProcessGLStruct;
 
 @interface FFGLPlugin (Instances)

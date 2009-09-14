@@ -20,9 +20,4 @@ typedef struct FFGLGPURendererData FFGLGPURendererData;
     GLuint _squareFBOTexture;	// COLOR_ATTACHMENT_0 for our above FBO
     GLint _previousFBO;			// our previously bound FBO so when we pop out of one we dont mess up the stack.
 }
-
-// render a rectangular texture (from QC, Core video etc) to a square texture for FFGL.
-// bounds are the input texture coords for the rect texture.
-- (GLuint) rectTextureToSquareTexture:(GLuint)inputTexture withCoords:(NSRect) rectCoords;
-
 @end

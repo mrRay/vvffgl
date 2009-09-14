@@ -10,6 +10,12 @@
 
 #import <OpenGL/CGLMacro.h>
 
+@interface FFGLGPURenderer (Private)
+// render a rectangular texture (from QC, Core video etc) to a square texture for FFGL.
+// bounds are the input texture coords for the rect texture.
+- (GLuint) rectTextureToSquareTexture:(GLuint)inputTexture withCoords:(NSRect) rectCoords;
+@end
+
 @implementation FFGLGPURenderer
 - (id)init
 {
@@ -30,6 +36,32 @@
 		_context = cgl_ctx;
 		CGLRetainContext(cgl_ctx);
 		
+        // set up our _frameStruct
+        NSUInteger numInputs = [plugin _maximumInputFrameCount];
+        _frameStruct.inputTextureCount = numInputs;
+        FFGLTextureInfo *textureInfos;
+        NSUInteger i;
+        NSUInteger allocated = 0;
+        if (numInputs > 0) {
+            _frameStruct.inputTextures = malloc(sizeof(void *) * numInputs);
+            if (_frameStruct.inputTextures == NULL) {
+                [self release];
+                return nil;
+            }
+            for (i = 0; i < numInputs; i++) {
+                _frameStruct.inputTextures[i] = malloc(sizeof(FFGLTextureInfo));
+                if (_frameStruct.inputTextures[i] != NULL)
+                    allocated++;
+            }
+            if (allocated != numInputs) {
+                [self release];
+                return nil;
+            }
+        } else {
+            _frameStruct.inputTextures = NULL;
+        }
+        
+            _frameStruct.inputTextureCount 
 		// make the rect to 2D texture FBO.
 		CGLLockContext(cgl_ctx);
 		
@@ -69,6 +101,12 @@
 - (void)dealloc
 {
     CGLReleaseContext(_context);
+    if (_frameStruct.inputTextures != NULL) {
+        NSUInteger i;
+        for (i = 0; i < _frameStruct.inputTextureCount; i++) {
+            <#statements#>
+        }
+    }
     [super dealloc];
 }
 
