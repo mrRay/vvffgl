@@ -32,6 +32,7 @@
 - (FFGLPlugin *)plugin;
 - (CGLContextObj)context;
 - (NSString *)pixelFormat;
+- (NSRect)bounds;
 - (id)valueForParameterKey:(NSString *)key;
 - (void)setValue:(id)value forParameterKey:(NSString *)key;
 - (void)renderAtTime:(NSTimeInterval)time;
