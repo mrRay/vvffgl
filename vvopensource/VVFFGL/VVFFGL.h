@@ -1,3 +1,4 @@
 
-#import "VVFFGLPluginManager.h"
-#import "VVFFGLPlugin.h"
+#import "FFGLPluginManager.h"
+#import "FFGLPlugin.h"
+#import "FFGLRenderer.h"

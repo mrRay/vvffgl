@@ -135,9 +135,9 @@ static FFGLPluginManager *_sharedPluginManager = nil;
                || [[file pathExtension] isEqualToString:@"plugin"]) {
                 plugin = [[[FFGLPlugin alloc] initWithPath:[path stringByAppendingPathComponent:file]] autorelease];
                 if (plugin != nil) {
-                    if (([plugin type] == FFGLPluginSourceType) && ![_sources containsObject:plugin]) {
+                    if (([plugin type] == FFGLPluginTypeSource) && ![_sources containsObject:plugin]) {
                         [_sources addObject:plugin];  
-                    } else if(([plugin type] == FFGLPluginEffectType) && ![_effects containsObject:plugin]) {
+                    } else if(([plugin type] == FFGLPluginTypeEffect) && ![_effects containsObject:plugin]) {
                         [_effects addObject:plugin];
                     }
                 }
@@ -149,7 +149,7 @@ static FFGLPluginManager *_sharedPluginManager = nil;
 - (void)unloadPlugin:(FFGLPlugin *)plugin
 {
     @synchronized(self) {
-        [([plugin type] == FFGLPluginSourceType ? _sources : _effects) removeObject:plugin];        
+        [([plugin type] == FFGLPluginTypeSource ? _sources : _effects) removeObject:plugin];        
     }
 }
 

@@ -9,8 +9,8 @@
 
 typedef NSUInteger FFGLPluginType;
 enum {
-    FFGLPluginEffectType = 0,
-    FFGLPluginSourceType = 1
+    FFGLPluginTypeEffect = 0,
+    FFGLPluginTypeSource = 1
 };
 
 extern NSString * const FFGLPluginBufferPixelFormatARGB8888;
