@@ -68,8 +68,10 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
      Our dictionary doesn't retain its contents, so FFGLPlugins can still be released. We intercept release messages to remove the
      plugin from the dictionary before dealloc is called.
      */
-    if (pthread_mutex_init(&_FFGLPluginInstancesLock, NULL) == 0) {
-        _FFGLPluginInstances = (NSMutableDictionary *)CFDictionaryCreateMutable(kCFAllocatorDefault, 10, &kCFTypeDictionaryKeyCallBacks, NULL);
+    if (self == [FFGLPlugin class]) { // so we only do this once (not for a subclass)
+        if (pthread_mutex_init(&_FFGLPluginInstancesLock, NULL) == 0) {
+            _FFGLPluginInstances = (NSMutableDictionary *)CFDictionaryCreateMutable(kCFAllocatorDefault, 10, &kCFTypeDictionaryKeyCallBacks, NULL);
+        }
     }
 }
 
@@ -468,16 +470,15 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
     else
         result = FF_FAIL;
     // As it's not clear what failure means, let's ignore it.
-//    return (result == FF_FAIL ? NO : YES);
 }
 
 - (id)_valueForNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance
 {
-    if (![[self parameterKeys] containsObject:key]) {
-        [NSException raise:@"FFGLPluginException" format:@"No such key: %@", key];
-        return nil;
-    }
     NSDictionary *pattributes = [self attributesForParameterWithKey:key];
+    if (pattributes == nil) {
+        [NSException raise:@"FFGLPluginException" format:@"No such key: %@", key];
+        return nil;        
+    }
     NSUInteger pindex = [[pattributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
     plugMainUnion result = _pluginData->main(FF_GETPARAMETER, pindex, instance);
     if ([[pattributes objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeString]) {
@@ -489,11 +490,11 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 
 - (void)_setValue:(id)value forNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance
 {
-    if (![[self parameterKeys] containsObject:key]) {
-        [NSException raise:@"FFGLPluginException" format:@"No such key: %@", key];
-        return;
-    }
     NSDictionary *pattributes = [self attributesForParameterWithKey:key];
+    if (pattributes == nil) {
+        [NSException raise:@"FFGLPluginException" format:@"No such key: %@", key];
+        return nil;        
+    }
     NSUInteger pindex = [[pattributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
     SetParameterStruct param;
     param.ParameterNumber = pindex;
