@@ -213,6 +213,8 @@
 		BD9F6C90101945AE004D8CD9 /* FFGLPluginManager.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6C8C101945AE004D8CD9 /* FFGLPluginManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BD9F6C91101945AE004D8CD9 /* FFGLPluginManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BD9F6C8D101945AE004D8CD9 /* FFGLPluginManager.m */; };
 		BDA25B51102B9030000BE743 /* VVFFGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9606B14D101761EF00CC50B7 /* VVFFGL.framework */; };
+		BDAA2CCC107928A90053E947 /* FFGLImage.h in Headers */ = {isa = PBXBuildFile; fileRef = BDAA2CCA107928A90053E947 /* FFGLImage.h */; };
+		BDAA2CCD107928A90053E947 /* FFGLImage.m in Sources */ = {isa = PBXBuildFile; fileRef = BDAA2CCB107928A90053E947 /* FFGLImage.m */; };
 		BDD2315F101C7E98001CE112 /* FFGLPluginInstances.h in Headers */ = {isa = PBXBuildFile; fileRef = BDD2315E101C7E98001CE112 /* FFGLPluginInstances.h */; };
 		BDEC26FE10442457008BF49D /* FFGLRendererSubclassing.h in Headers */ = {isa = PBXBuildFile; fileRef = BDEC26FD10442457008BF49D /* FFGLRendererSubclassing.h */; };
 /* End PBXBuildFile section */
@@ -518,6 +520,8 @@
 		BD9F6C8B101945AE004D8CD9 /* FFGLPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLPlugin.m; path = VVFFGL/FrameworkSrc/FFGLPlugin.m; sourceTree = "<group>"; };
 		BD9F6C8C101945AE004D8CD9 /* FFGLPluginManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLPluginManager.h; path = VVFFGL/FrameworkSrc/FFGLPluginManager.h; sourceTree = "<group>"; };
 		BD9F6C8D101945AE004D8CD9 /* FFGLPluginManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLPluginManager.m; path = VVFFGL/FrameworkSrc/FFGLPluginManager.m; sourceTree = "<group>"; };
+		BDAA2CCA107928A90053E947 /* FFGLImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLImage.h; path = VVFFGL/FrameworkSrc/FFGLImage.h; sourceTree = "<group>"; };
+		BDAA2CCB107928A90053E947 /* FFGLImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLImage.m; path = VVFFGL/FrameworkSrc/FFGLImage.m; sourceTree = "<group>"; };
 		BDD2315E101C7E98001CE112 /* FFGLPluginInstances.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLPluginInstances.h; path = VVFFGL/FrameworkSrc/FFGLPluginInstances.h; sourceTree = "<group>"; };
 		BDEC26FD10442457008BF49D /* FFGLRendererSubclassing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLRendererSubclassing.h; path = VVFFGL/FrameworkSrc/FFGLRendererSubclassing.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -824,6 +828,7 @@
 				BD9F6C8A101945AE004D8CD9 /* FFGLPlugin.h */,
 				BD9F6C8C101945AE004D8CD9 /* FFGLPluginManager.h */,
 				BD93426C101A56F600C4B805 /* FFGLRenderer.h */,
+				BDAA2CCA107928A90053E947 /* FFGLImage.h */,
 				BD90FB0C10790FC6009A6273 /* FFGLHack.h */,
 				9606B184101763A200CC50B7 /* VVFFGL.h */,
 			);
@@ -842,6 +847,7 @@
 				BD8E3C671030DBDB00152772 /* FFGLCPURenderer.m */,
 				BD8E3C6A1030DC1800152772 /* FFGLGPURenderer.h */,
 				BD8E3C6B1030DC1800152772 /* FFGLGPURenderer.m */,
+				BDAA2CCB107928A90053E947 /* FFGLImage.m */,
 				BD9F6A0A10191358004D8CD9 /* FreeFrame.h */,
 				BD9F6A87101921FD004D8CD9 /* FFGL.h */,
 			);
@@ -866,6 +872,7 @@
 				BDEC26FE10442457008BF49D /* FFGLRendererSubclassing.h in Headers */,
 				1B07E19810785E3B005479A1 /* TestAppController.h in Headers */,
 				BD90FB0D10790FC6009A6273 /* FFGLHack.h in Headers */,
+				BDAA2CCC107928A90053E947 /* FFGLImage.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1306,6 +1313,7 @@
 				BD8E3C691030DBDB00152772 /* FFGLCPURenderer.m in Sources */,
 				BD8E3C6D1030DC1800152772 /* FFGLGPURenderer.m in Sources */,
 				BD8E3CC21030ED2200152772 /* FFGLRenderer.m in Sources */,
+				BDAA2CCD107928A90053E947 /* FFGLImage.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
