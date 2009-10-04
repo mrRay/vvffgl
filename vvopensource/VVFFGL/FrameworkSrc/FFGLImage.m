@@ -32,6 +32,13 @@
     [super dealloc];
 }
 
+- (void)finalize {
+    if (_texture2DReleaseCallback != NULL) {
+        _texture2DReleaseCallback(_texture2D, _texture2DReleaseContext);
+    }
+    [super finalize];
+}
+
 - (NSUInteger)imagePixelsWide {
     return _imageWidth;
 }
