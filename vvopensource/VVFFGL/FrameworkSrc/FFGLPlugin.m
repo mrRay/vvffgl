@@ -65,8 +65,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 {
     /*
      We keep track of all instances using a dictionary, returning an existing instance for a path passed in at init if one exists.
-     Our dictionary doesn't retain its contents, so FFGLPlugins can still be released. We intercept release messages to remove the
-     plugin from the dictionary before dealloc is called.
+     Our dictionary doesn't retain its contents, so FFGLPlugins can still be released.
      */
     if (self == [FFGLPlugin class]) { // so we only do this once (not for a subclass)
         if (pthread_mutex_init(&_FFGLPluginInstancesLock, NULL) == 0) {
@@ -328,20 +327,15 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
     return self;
 }
 
-- (void)release
-{
-    // TODO: This probably won't work with garbage collection, need another plan.
-    pthread_mutex_lock(&_FFGLPluginInstancesLock);
-    if ([self retainCount] == 1) { // ie we're about to be dealloced
-        [_FFGLPluginInstances removeObjectForKey:[[self attributes] objectForKey:FFGLPluginAttributePathKey]];
-    }
-    [super release];
-    pthread_mutex_unlock(&_FFGLPluginInstancesLock);
-}
-
 - (void)dealloc
-{
+{   
     if (_pluginData != NULL) {
+        pthread_mutex_lock(&_FFGLPluginInstancesLock);
+        NSString *path = [_pluginData->attributes objectForKey:FFGLPluginAttributePathKey];
+        if (path != nil) {
+            [_FFGLPluginInstances removeObjectForKey:path];
+        }
+        pthread_mutex_unlock(&_FFGLPluginInstancesLock); 
         if (_pluginData->initted == YES) {
             _pluginData->main(FF_DEINITIALISE, 0, 0);
         }
@@ -354,6 +348,25 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         free(_pluginData);
     }
     [super dealloc];
+}
+
+- (void)finalize
+{
+    if (_pluginData != NULL) {
+        pthread_mutex_lock(&_FFGLPluginInstancesLock);
+        NSString *path = [_pluginData->attributes objectForKey:FFGLPluginAttributePathKey];
+        if (path != nil) {
+            [_FFGLPluginInstances removeObjectForKey:path];
+        }
+        pthread_mutex_unlock(&_FFGLPluginInstancesLock); 
+        if (_pluginData->initted == YES) {
+            _pluginData->main(FF_DEINITIALISE, 0, 0);
+        }
+        if (_pluginData->bundle != NULL)
+            CFRelease(_pluginData->bundle);
+        free(_pluginData);
+    }
+    [super finalize];
 }
 
 - (id)copyWithZone:(NSZone *)zone
@@ -369,7 +382,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
     return NO;
 }
 
-- (NSUInteger) hash
+- (NSUInteger)hash
 {
     return [[_pluginData->attributes objectForKey:FFGLPluginAttributePathKey] hash];
 }
