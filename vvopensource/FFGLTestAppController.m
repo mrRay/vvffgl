@@ -47,7 +47,6 @@
 
 	// resize window notification
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateRenderView:) name:NSViewFrameDidChangeNotification object:ffglRenderView];
-
 	
 	// add a basic NSTimer renderer for our main thread, no need to get fancy for now.
 	ffglRenderTimer = [NSTimer timerWithTimeInterval:(1.0/60.0) target:self selector:@selector(render) userInfo:nil repeats:YES];
@@ -55,11 +54,15 @@
 	[[NSRunLoop currentRunLoop] addTimer:ffglRenderTimer forMode:NSDefaultRunLoopMode];
 	[[NSRunLoop currentRunLoop] addTimer:ffglRenderTimer forMode:NSModalPanelRunLoopMode];
 	[[NSRunLoop currentRunLoop] addTimer:ffglRenderTimer forMode:NSEventTrackingRunLoopMode];
+
+	// for shits and giggles lets make sure we have some plugins in our plugin manager
+	NSLog(@"Loaded source plugins: %@, loaded effect plugins: %@", [ffglManager sourcePlugins], [ffglManager effectPlugins]);
+
 }
 
 - (void) render
 {
-	NSLog(@"render callback");
+	//NSLog(@"render callback");
 }
 
 - (void) updateRenderView:(NSNotification *) notification

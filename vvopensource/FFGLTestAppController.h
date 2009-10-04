@@ -8,10 +8,16 @@
 
 #import <Cocoa/Cocoa.h>
 #import <OpenGL/OpenGL.h>
-
+#import "VVFFGL.h"
 
 @interface FFGLTestAppController : NSObject 
 {
+	// FFGL plugin manager from IB
+	IBOutlet FFGLPluginManager* ffglManager;
+	
+	// our plugin renderer. Render an instance of a plugin to our GL Context
+	FFGLRenderer* ffglRenderRenderer; // yea, this needs a better name.
+	
 	// context, view and window
 	NSOpenGLContext* ffglRenderContext;
 	IBOutlet NSView* ffglRenderView;

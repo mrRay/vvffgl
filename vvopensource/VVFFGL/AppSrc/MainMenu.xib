@@ -1098,7 +1098,7 @@
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSCustomView" id="1011897839">
+						<object class="NSCustomView" id="467908701">
 							<reference key="NSNextResponder" ref="414427165"/>
 							<int key="NSvFlags">274</int>
 							<string key="NSFrame">{{0, 20}, {480, 250}}</string>
@@ -1897,7 +1897,7 @@
 				<bool key="NSFilterRestrictsInsertion">YES</bool>
 				<bool key="NSClearsFilterPredicateOnInsertion">YES</bool>
 			</object>
-			<object class="NSCustomObject" id="1044466899">
+			<object class="NSCustomObject" id="672713853">
 				<string key="NSClassName">FFGLTestAppController</string>
 			</object>
 		</object>
@@ -2651,15 +2651,15 @@
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">ffglRenderView</string>
-						<reference key="source" ref="1044466899"/>
-						<reference key="destination" ref="1011897839"/>
+						<reference key="source" ref="672713853"/>
+						<reference key="destination" ref="467908701"/>
 					</object>
 					<int key="connectionID">692</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">ffglRenderWindow</string>
-						<reference key="source" ref="1044466899"/>
+						<reference key="source" ref="672713853"/>
 						<reference key="destination" ref="513744381"/>
 					</object>
 					<int key="connectionID">693</int>
@@ -2668,7 +2668,7 @@
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">delegate</string>
 						<reference key="source" ref="1021"/>
-						<reference key="destination" ref="1044466899"/>
+						<reference key="destination" ref="672713853"/>
 					</object>
 					<int key="connectionID">694</int>
 				</object>
@@ -2676,9 +2676,17 @@
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">delegate</string>
 						<reference key="source" ref="1050"/>
-						<reference key="destination" ref="1044466899"/>
+						<reference key="destination" ref="672713853"/>
 					</object>
 					<int key="connectionID">695</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">ffglManager</string>
+						<reference key="source" ref="672713853"/>
+						<reference key="destination" ref="770858429"/>
+					</object>
+					<int key="connectionID">696</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -3251,7 +3259,7 @@
 						<reference key="object" ref="414427165"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="1011897839"/>
+							<reference ref="467908701"/>
 						</object>
 						<reference key="parent" ref="513744381"/>
 					</object>
@@ -4024,12 +4032,12 @@
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">690</int>
-						<reference key="object" ref="1011897839"/>
+						<reference key="object" ref="467908701"/>
 						<reference key="parent" ref="414427165"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">691</int>
-						<reference key="object" ref="1044466899"/>
+						<reference key="object" ref="672713853"/>
 						<reference key="parent" ref="0"/>
 						<string key="objectName">FFGLTestAppController</string>
 					</object>
@@ -4646,7 +4654,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">695</int>
+			<int key="maxID">696</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -4674,11 +4682,13 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>ffglManager</string>
 							<string>ffglRenderView</string>
 							<string>ffglRenderWindow</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>FFGLPluginManager</string>
 							<string>NSView</string>
 							<string>NSWindow</string>
 						</object>
