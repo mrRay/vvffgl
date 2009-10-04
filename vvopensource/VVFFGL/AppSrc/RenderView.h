@@ -7,7 +7,6 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import <QuartzCore/QuartzCore.h>
 //#import "RenderChain.h"
 
 @interface RenderView : NSOpenGLView {
