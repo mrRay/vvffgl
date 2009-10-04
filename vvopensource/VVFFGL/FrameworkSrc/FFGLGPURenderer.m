@@ -118,6 +118,8 @@
 - (void)_setImage:(id)image forInputAtIndex:(NSUInteger)index
 {
     // Get the texture from the image, then
+//    GLuint inputSquareTexture = [self rectTextureToSquareTexture:texture withCoords:NSZeroRect]; // some coords.
+
     // [self _setTexture:ourtexture forInputAtIndex:index];
 }
 
@@ -126,7 +128,6 @@
     CGLContextObj cgl_ctx = _context;
 	CGLLockContext(cgl_ctx);
 	
-	GLuint inputSquareTexture = [self rectTextureToSquareTexture:texture withCoords:NSZeroRect]; // some coords.
 	
     // TODO: add the texture to the appropriate position in our ProcessOpenGLStruct. Note there can be several inputs...
 	
@@ -165,7 +166,7 @@
 
 	// we also will probably need to round to the nearest power of two for the texture dimensions and viewport dimensions.
 	// argh. JUST. FUCKING. SUPPORT. RECT. TEXTURES. PLEASE.
-	
+/*	
         CGLContextObj cgl_ctx = _context;
         NSRect viewport = [self bounds];
 	glPushAttrib(GL_COLOR_BUFFER_BIT | GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
@@ -219,6 +220,7 @@
 	glFlushRenderAPPLE();
 	
 	// our input rect texture should now be represented in the returned texture below.
+ */
 	return _squareFBOTexture;
 }
 
