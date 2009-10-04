@@ -29,8 +29,6 @@
         
         // this rightnow is totally dependant on how we end up exposing the instantiate functions for the plugin, 
         // but we will need something like this somewhere. Feel free to fiddle :)
-
-        // TODO: set up our ProcessOpenGLStruct struct.
 		
 		// retain GL context
 		_context = cgl_ctx;
@@ -39,7 +37,6 @@
         // set up our _frameStruct
         NSUInteger numInputs = [plugin _maximumInputFrameCount];
         _frameStruct.inputTextureCount = numInputs;
-        FFGLTextureInfo *textureInfos;
         NSUInteger i;
         NSUInteger allocated = 0;
         if (numInputs > 0) {
@@ -52,7 +49,12 @@
                 _frameStruct.inputTextures[i] = malloc(sizeof(FFGLTextureInfo));
                 if (_frameStruct.inputTextures[i] != NULL) {
                     allocated++;
-                    // TODO: set up the FFGLTextureInfo struct for each input
+                    _frameStruct.inputTextures[i]->width = bounds.size.width;
+                    _frameStruct.inputTextures[i]->height = bounds.size.height;
+                    // TODO: what should these be?
+//                    _frameStruct.inputTextures[i]->hardwareWidth = ??;
+//                    _frameStruct.inputTextures[i]->hardwareHeight = ??;
+                    _frameStruct.inputTextures[i]->texture = 0; // It will be set later hopefully
                 }
             }
             if (allocated != numInputs) {
@@ -63,7 +65,10 @@
             _frameStruct.inputTextures = NULL;
         }
         
-        // TODO: the following needs to happen for each input, not just one
+        // TODO: I'm all for having FFGLImage which takes care of stuff like this, and also can handle locking etc, so several renderers can share inputs
+        // and, and and...
+        // If it stays here, then it has to happen for every input, not just a fixed number (one, here).
+        /*
 		// make the rect to 2D texture FBO.
 		CGLLockContext(cgl_ctx);
 		
@@ -96,6 +101,7 @@
 		// looks like everything worked... cleanup!
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
 		CGLUnlockContext(cgl_ctx);
+         */
     }
     return self;
 }
@@ -126,12 +132,10 @@
 - (void)_setTexture:(GLuint)texture forInputAtIndex:(NSUInteger)index
 {
     CGLContextObj cgl_ctx = _context;
-	CGLLockContext(cgl_ctx);
-	
-	
-    // TODO: add the texture to the appropriate position in our ProcessOpenGLStruct. Note there can be several inputs...
-	
-	CGLUnlockContext(cgl_ctx);
+    CGLLockContext(cgl_ctx);
+    _frameStruct.inputTextures[index]->texture = texture;
+    // This OK? Do we need anything else here? I'm guessing we're using dimensions of a certain fixed size while we get things up and running?
+    CGLUnlockContext(cgl_ctx);
 }
 
 - (void)_render
@@ -155,7 +159,7 @@
 
 - (GLuint) rectTextureToSquareTexture:(GLuint)inputTexture withCoords:(NSRect) rectCoords
 {
-    // TODO: we can have any number of image inputs, so we need this to be able to handle that
+    // TODO: we can have any number of image inputs, so we need this to be able to handle that, but I'd rather move this into an image class.
     
 	// do we necessarily need to re-cache our previous FBO every frame? 
     // // Have moved that out of rendering, so it only happens when input changes... but you need as many square textures as there are inputs, not neccessarily one.
