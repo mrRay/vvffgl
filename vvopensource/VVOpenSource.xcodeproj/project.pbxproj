@@ -42,6 +42,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		1B07E19810785E3B005479A1 /* FFGLTestAppController.h in Headers */ = {isa = PBXBuildFile; fileRef = 1B07E19610785E3B005479A1 /* FFGLTestAppController.h */; };
+		1B07E19A10785E3B005479A1 /* FFGLTestAppController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B07E19710785E3B005479A1 /* FFGLTestAppController.m */; };
 		1BCF31B1101A5AEC00D50A21 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BCF31B0101A5AEC00D50A21 /* OpenGL.framework */; };
 		1BCF31B2101A5AEC00D50A21 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BCF31B0101A5AEC00D50A21 /* OpenGL.framework */; };
 		9606B16C1017624000CC50B7 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
@@ -409,6 +411,8 @@
 
 /* Begin PBXFileReference section */
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		1B07E19610785E3B005479A1 /* FFGLTestAppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFGLTestAppController.h; sourceTree = "<group>"; };
+		1B07E19710785E3B005479A1 /* FFGLTestAppController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FFGLTestAppController.m; sourceTree = "<group>"; };
 		1BCF31B0101A5AEC00D50A21 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		32DBCF5E0370ADEE00C91783 /* VVOpenSource_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VVOpenSource_Prefix.pch; sourceTree = "<group>"; };
 		9606B14D101761EF00CC50B7 /* VVFFGL.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = VVFFGL.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -675,6 +679,8 @@
 				9606B15E1017621200CC50B7 /* FFGLTestApp-Info.plist */,
 				9606B18D101763C900CC50B7 /* MainMenu.xib */,
 				9606B18E101763C900CC50B7 /* main.m */,
+				1B07E19610785E3B005479A1 /* FFGLTestAppController.h */,
+				1B07E19710785E3B005479A1 /* FFGLTestAppController.m */,
 			);
 			name = VVFFGLTestApp;
 			sourceTree = "<group>";
@@ -849,6 +855,7 @@
 				BD8E3C681030DBDB00152772 /* FFGLCPURenderer.h in Headers */,
 				BD8E3C6C1030DC1800152772 /* FFGLGPURenderer.h in Headers */,
 				BDEC26FE10442457008BF49D /* FFGLRendererSubclassing.h in Headers */,
+				1B07E19810785E3B005479A1 /* FFGLTestAppController.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1297,6 +1304,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9606B190101763C900CC50B7 /* main.m in Sources */,
+				1B07E19A10785E3B005479A1 /* FFGLTestAppController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

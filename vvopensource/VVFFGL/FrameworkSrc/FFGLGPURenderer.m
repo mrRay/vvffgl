@@ -179,7 +179,7 @@
 	glPushMatrix();
 	glLoadIdentity();
 	
-	glOrtho(0.0, width,  0.0,  height, -1, 1);		
+	glOrtho(0.0, viewport.size.width,  0.0,  viewport.size.width, -1, 1);		
 	
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
@@ -211,13 +211,11 @@
 	glPopAttrib();
 	
 	// restore previous FBO
-	
     // TODO: bug?:
     // We're using the value which we got at init, but isn't that likely to have changed? Shouldn't we inspect and restore every time?
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
 	
 	// we need to flush to make sure FBO Texture attachment is rendered
-	
 	glFlushRenderAPPLE();
 	
 	// our input rect texture should now be represented in the returned texture below.
