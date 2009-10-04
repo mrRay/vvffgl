@@ -28,12 +28,12 @@ struct FFGLPluginData {
     NSString *identifier;
 };
 
-NSString * const FFGLPluginBufferPixelFormatARGB8888 = @"FFGLPluginBufferPixelFormatARGB8888";
-NSString * const FFGLPluginBufferPixelFormatBGRA8888 = @"FFGLPluginBufferPixelFormatBGRA8888";
-NSString * const FFGLPluginBufferPixelFormatRGB888 = @"FFGLPluginBufferPixelFormatRGB888";
-NSString * const FFGLPluginBufferPixelFormatBGR888 = @"FFGLPluginBufferPixelFormatBGR888";
-NSString * const FFGLPluginBufferPixelFormatRGB565 = @"FFGLPluginBufferPixelFormatRGB565";
-NSString * const FFGLPluginBufferPixelFormatBGR565 = @"FFGLPluginBufferPixelFormatBGR565";
+NSString * const FFGLPixelFormatARGB8888 = @"FFGLPixelFormatARGB8888";
+NSString * const FFGLPixelFormatBGRA8888 = @"FFGLPixelFormatBGRA8888";
+NSString * const FFGLPixelFormatRGB888 = @"FFGLPixelFormatRGB888";
+NSString * const FFGLPixelFormatBGR888 = @"FFGLPixelFormatBGR888";
+NSString * const FFGLPixelFormatRGB565 = @"FFGLPixelFormatRGB565";
+NSString * const FFGLPixelFormatBGR565 = @"FFGLPixelFormatBGR565";
 
 NSString * const FFGLPluginAttributeNameKey = @"FFGLPluginAttributeNameKey";
 NSString * const FFGLPluginAttributeVersionKey = @"FFGLPluginAttributeVersionKey";
@@ -209,25 +209,25 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
             result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_16BITVIDEO, 0);
             if (result.ivalue == FF_SUPPORTED) {
 #if __BIG_ENDIAN__
-                [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatRGB565];
+                [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPixelFormatRGB565];
 #else
-                [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatBGR565];
+                [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPixelFormatBGR565];
 #endif
             }
             result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_24BITVIDEO, 0);
             if (result.ivalue == FF_SUPPORTED) {
 #if __BIG_ENDIAN__
-                [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatRGB888];
+                [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPixelFormatRGB888];
 #else
-                [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatBGR888];
+                [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPixelFormatBGR888];
 #endif
             }
             result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_32BITVIDEO, 0);
             if (result.ivalue == FF_SUPPORTED) {
 #if __BIG_ENDIAN__
-                [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatARGB8888];
+                [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPixelFormatARGB8888];
 #else
-                [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPluginBufferPixelFormatBGRA8888];
+                [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPixelFormatBGRA8888];
 #endif
             }            
         }
@@ -441,11 +441,11 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         return _pluginData->main(FF_INSTANTIATEGL, (DWORD)&viewport, 0).ivalue;
     } else if (_pluginData->mode == FFGLPluginModeCPU) {
         VideoInfoStruct videoInfo;
-        if ([format isEqualToString:FFGLPluginBufferPixelFormatBGRA8888] || [format isEqualToString:FFGLPluginBufferPixelFormatARGB8888])
+        if ([format isEqualToString:FFGLPixelFormatBGRA8888] || [format isEqualToString:FFGLPixelFormatARGB8888])
             videoInfo.BitDepth = FF_CAP_32BITVIDEO;
-        else if ([format isEqualToString:FFGLPluginBufferPixelFormatBGR888] || [format isEqualToString:FFGLPluginBufferPixelFormatRGB888])
+        else if ([format isEqualToString:FFGLPixelFormatBGR888] || [format isEqualToString:FFGLPixelFormatRGB888])
             videoInfo.BitDepth = FF_CAP_24BITVIDEO;
-        else if ([format isEqualToString:FFGLPluginBufferPixelFormatBGR565] || [format isEqualToString:FFGLPluginBufferPixelFormatRGB565])
+        else if ([format isEqualToString:FFGLPixelFormatBGR565] || [format isEqualToString:FFGLPixelFormatRGB565])
             videoInfo.BitDepth == FF_CAP_16BITVIDEO;
         else {
             [NSException raise:@"FFGLPluginException" format:@"Unrecognized pixelFormat."];

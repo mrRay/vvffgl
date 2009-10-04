@@ -13,12 +13,12 @@ enum {
     FFGLPluginTypeSource = 1
 };
 
-extern NSString * const FFGLPluginBufferPixelFormatARGB8888;
-extern NSString * const FFGLPluginBufferPixelFormatBGRA8888;
-extern NSString * const FFGLPluginBufferPixelFormatRGB888;
-extern NSString * const FFGLPluginBufferPixelFormatBGR888;
-extern NSString * const FFGLPluginBufferPixelFormatRGB565;
-extern NSString * const FFGLPluginBufferPixelFormatBGR565;
+extern NSString * const FFGLPixelFormatARGB8888;
+extern NSString * const FFGLPixelFormatBGRA8888;
+extern NSString * const FFGLPixelFormatRGB888;
+extern NSString * const FFGLPixelFormatBGR888;
+extern NSString * const FFGLPixelFormatRGB565;
+extern NSString * const FFGLPixelFormatBGR565;
 
 typedef NSUInteger FFGLPluginMode;
 enum {

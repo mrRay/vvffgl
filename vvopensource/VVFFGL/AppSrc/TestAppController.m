@@ -9,9 +9,9 @@
 #import "TestAppController.h"
 
 #if __BIG_ENDIAN__
-#define kFFPixelFormat FFGLPluginBufferPixelFormatRGBA8888
+#define kFFPixelFormat FFGLPixelFormatRGBA8888
 #else
-#define kFFPixelFormat FFGLPluginBufferPixelFormatBGRA8888
+#define kFFPixelFormat FFGLPixelFormatBGRA8888
 #endif
 
 #define kRenderBounds NSMakeRect(0, 0, 640, 480)
