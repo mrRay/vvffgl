@@ -10,7 +10,7 @@
 #import <OpenGL/OpenGL.h>
 #import "VVFFGL.h"
 
-@interface FFGLTestAppController : NSObject 
+@interface TestAppController : NSObject 
 {
 	// FFGL plugin manager from IB
 	IBOutlet FFGLPluginManager* ffglManager;

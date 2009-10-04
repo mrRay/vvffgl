@@ -6,10 +6,10 @@
 //  Copyright 2009 __MyCompanyName__. All rights reserved.
 //
 
-#import "FFGLTestAppController.h"
+#import "TestAppController.h"
 
 
-@implementation FFGLTestAppController
+@implementation TestAppController
 
 - (void) applicationDidFinishLaunching:(NSNotification *)notification
 {
