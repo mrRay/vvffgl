@@ -493,7 +493,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
     NSDictionary *pattributes = [self attributesForParameterWithKey:key];
     if (pattributes == nil) {
         [NSException raise:@"FFGLPluginException" format:@"No such key: %@", key];
-        return nil;        
+        return;        
     }
     NSUInteger pindex = [[pattributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
     SetParameterStruct param;
