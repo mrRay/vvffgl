@@ -13,8 +13,16 @@
 #import "FFGLGPURenderer.h"
 #import "FFGLCPURenderer.h"
 
+@interface FFGLRendererParametersBindable : NSObject
+{
+    FFGLRenderer *_renderer;
+}
+- (id)initWithRenderer:(FFGLRenderer *)renderer;
+@end
+
 @interface FFGLRenderer (Private)
 - (id)_initWithPlugin:(FFGLPlugin *)plugin pixelFormat:(NSString *)format context:(CGLContextObj)context forBounds:(NSRect)bounds;
+- (void)_performSetValue:(id)value forParameterKey:(NSString *)key;
 @end
 @implementation FFGLRenderer
 
@@ -66,6 +74,7 @@
 
 - (void)dealloc
 {
+    [_params release];
     if(_pluginContext != nil) {
         CGLReleaseContext(_pluginContext);
     }
@@ -114,6 +123,13 @@
 
 - (void)setValue:(id)value forParameterKey:(NSString *)key
 {
+    [_params willChangeValueForKey:key];
+    [self _performSetValue:value forParameterKey:key];
+    [_params didChangeValueForKey:key];
+}
+
+- (void)_performSetValue:(id)value forParameterKey:(NSString *)key
+{
     NSDictionary *attributes = [_plugin attributesForParameterWithKey:key];
     if ([[attributes objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
         [self _setImage:value forInputAtIndex:[[attributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue]];
@@ -123,11 +139,55 @@
     }
 }
 
+- (id)parameters
+{
+    if (_params == nil) {
+        _params = [[FFGLRendererParametersBindable alloc] initWithRenderer:self];
+    }
+    return _params;
+}
+
 - (void)renderAtTime:(NSTimeInterval)time
 {
     if ([_plugin _supportsSetTime]) {
         [_plugin _setTime:time ofInstance:_instance];
     }
     [self _render];
+}
+@end
+
+@implementation FFGLRendererParametersBindable
+- (id)initWithRenderer:(FFGLRenderer *)renderer
+{
+    if (self = [super init]) {
+        _renderer = [renderer retain];
+    }
+    return self;
+}
+
+- (void)dealloc
+{
+    [_renderer release];
+    [super dealloc];
+}
+
+- (id)valueForKeyPath:(NSString *)keyPath
+{
+    NSArray *pathParts = [keyPath componentsSeparatedByString:@"."];
+    if ([[pathParts lastObject] isEqualToString:@"value"] && ([pathParts count] > 1)) {
+        return [_renderer valueForParameterKey:[pathParts objectAtIndex:[pathParts count] - 2]];
+    } else {
+        return [super valueForKeyPath:keyPath];
+    }
+}
+
+- (void)setValue:(id)value forKeyPath:(NSString *)keyPath
+{
+    NSArray *pathParts = [keyPath componentsSeparatedByString:@"."];
+    if ([[pathParts lastObject] isEqualToString:@"value"] && ([pathParts count] > 1)) {
+        [_renderer _performSetValue:value forParameterKey:[pathParts objectAtIndex:[pathParts count] - 2]];
+    } else {
+        [super setValue:value forKeyPath:keyPath];
+    }
 }
 @end
