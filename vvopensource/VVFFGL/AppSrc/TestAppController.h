@@ -20,18 +20,17 @@
 	
 	// context, view and window
 	NSOpenGLContext* ffglRenderContext;
-	IBOutlet NSView* ffglRenderView;
+        IBOutlet NSTableView *_sourcesTableView;
+        IBOutlet NSTableView *_effectsTableView;
+	IBOutlet NSView *_renderView;
 	IBOutlet NSWindow* ffglRenderWindow;
 
 	// render timer
 	NSTimer* ffglRenderTimer;
 	NSTimeInterval* ffglRenderTimerStartInterval;
 }
-
-// render method
-- (void) render;
-
+- (IBAction)addRendererFromTableView:(id)sender;
 // window resize notification handler and gl handler
-- (void) updateRenderView:(NSNotification *) notification;
+//- (void) updateRenderView:(NSNotification *) notification;
 
 @end
