@@ -411,8 +411,8 @@
 
 /* Begin PBXFileReference section */
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
-		1B07E19610785E3B005479A1 /* TestAppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestAppController.h; sourceTree = "<group>"; };
-		1B07E19710785E3B005479A1 /* TestAppController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestAppController.m; sourceTree = "<group>"; };
+		1B07E19610785E3B005479A1 /* TestAppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TestAppController.h; path = VVFFGL/AppSrc/TestAppController.h; sourceTree = "<group>"; };
+		1B07E19710785E3B005479A1 /* TestAppController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TestAppController.m; path = VVFFGL/AppSrc/TestAppController.m; sourceTree = "<group>"; };
 		1BCF31B0101A5AEC00D50A21 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		32DBCF5E0370ADEE00C91783 /* VVOpenSource_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VVOpenSource_Prefix.pch; sourceTree = "<group>"; };
 		9606B14D101761EF00CC50B7 /* VVFFGL.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = VVFFGL.framework; sourceTree = BUILT_PRODUCTS_DIR; };
