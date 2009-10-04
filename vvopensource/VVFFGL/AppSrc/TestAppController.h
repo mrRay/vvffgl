@@ -9,28 +9,27 @@
 #import <Cocoa/Cocoa.h>
 #import <OpenGL/OpenGL.h>
 #import "VVFFGL.h"
+#import "RenderView.h"
+#import "RenderChain.h"
 
 @interface TestAppController : NSObject 
 {
 	// FFGL plugin manager from IB
-	IBOutlet FFGLPluginManager* ffglManager;
+    // This is a singleton object, so we can get it with [FFGLPluginManager sharedManager]
+//	IBOutlet FFGLPluginManager* ffglManager;
 	
 	// our plugin renderer. Render an instance of a plugin to our GL Context
-	FFGLRenderer* ffglRenderRenderer; // yea, this needs a better name.
-	
+//	FFGLRenderer* ffglRenderRenderer; // yea, this needs a better name.
+        RenderChain *_chain;
 	// context, view and window
-	NSOpenGLContext* ffglRenderContext;
         IBOutlet NSTableView *_sourcesTableView;
         IBOutlet NSTableView *_effectsTableView;
-	IBOutlet NSView *_renderView;
+	IBOutlet RenderView *_renderView;
 	IBOutlet NSWindow* ffglRenderWindow;
 
 	// render timer
 	NSTimer* ffglRenderTimer;
-	NSTimeInterval* ffglRenderTimerStartInterval;
+	NSTimeInterval _renderStart;
 }
 - (IBAction)addRendererFromTableView:(id)sender;
-// window resize notification handler and gl handler
-//- (void) updateRenderView:(NSNotification *) notification;
-
 @end

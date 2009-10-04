@@ -7,11 +7,11 @@
 //
 
 #import <Cocoa/Cocoa.h>
-//#import "RenderChain.h"
+#import "RenderChain.h"
 
 @interface RenderView : NSOpenGLView {
-//    RenderChain *_chain;
+    RenderChain *_chain;
     BOOL _needsReshape;
 }
-//@property (retain, readwrite) RenderChain *renderChain;
+@property (retain, readwrite) RenderChain *renderChain;
 @end

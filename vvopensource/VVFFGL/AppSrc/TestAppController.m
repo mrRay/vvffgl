@@ -23,9 +23,14 @@
     [_sourcesTableView setDoubleAction:@selector(addRendererFromTableView:)];
     [_effectsTableView setTarget:self];
     [_effectsTableView setDoubleAction:@selector(addRendererFromTableView:)];
-// Coming:
-//    _chain = [[RenderChain alloc] initWithOpenGLContext:[_view openGLContext] pixelFormat:kPixelFormat forBounds:kBounds];
-//    [_view setRenderChain:self.renderChain];
+    _chain = [[RenderChain alloc] initWithOpenGLContext:[_renderView openGLContext] pixelFormat:kFFPixelFormat forBounds:kRenderBounds];
+    [_renderView setRenderChain:_chain];
+}
+
+- (void)dealloc
+{
+    [_chain release];
+    [super dealloc];
 }
 
 - (void) applicationDidFinishLaunching:(NSNotification *)notification
@@ -37,6 +42,7 @@
      I've also made the view our own subclass which isn't going to do much, but makes the code clearer I hope.
      
      */
+        _renderStart = [NSDate timeIntervalSinceReferenceDate];
         ffglRenderTimer = [NSTimer timerWithTimeInterval:(1.0/60.0) target:self selector:@selector(renderForTimer:) userInfo:nil repeats:YES];
 	[ffglRenderTimer retain];
 	[[NSRunLoop currentRunLoop] addTimer:ffglRenderTimer forMode:NSDefaultRunLoopMode];
@@ -51,7 +57,7 @@
 
 - (void)renderForTimer:(NSTimer *)timer
 {
-//	NSLog(@"render callback");
+    [_chain renderAtTime:[NSDate timeIntervalSinceReferenceDate] - _renderStart];
 }
 
 - (IBAction)addRendererFromTableView:(NSTableView *)sender
@@ -65,12 +71,12 @@
         if ([plugin mode] == FFGLPluginModeCPU) {
             renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin pixelFormat:kFFPixelFormat forBounds:kRenderBounds] autorelease];
         } else {
-            renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:[ffglRenderContext CGLContextObj] forBounds:kRenderBounds] autorelease];
+            renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:[[_renderView openGLContext] CGLContextObj] forBounds:kRenderBounds] autorelease];
         }
         if ([plugin type] == FFGLPluginTypeSource) {
-//            [self.renderChain setSource:renderer]; // Coming.
+            [_chain setSource:renderer];
         } else {
-//            [self.renderChain insertObject:renderer inEffectsAtIndex:[[_chain effects] count]]; // Coming.
+            [_chain insertObject:renderer inEffectsAtIndex:[[_chain effects] count]];
         }
     }
 }

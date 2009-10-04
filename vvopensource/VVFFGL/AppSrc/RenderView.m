@@ -17,7 +17,7 @@
     return self;
 }
 
-//@synthesize renderChain = _chain;
+@synthesize renderChain = _chain;
 
 - (void)prepareOpenGL {
     _needsReshape = YES;
