@@ -12,9 +12,20 @@
 
 @interface FFGLTestAppController : NSObject 
 {
+	// context, view and window
 	NSOpenGLContext* ffglRenderContext;
 	IBOutlet NSView* ffglRenderView;
 	IBOutlet NSWindow* ffglRenderWindow;
+
+	// render timer
+	NSTimer* ffglRenderTimer;
+	NSTimeInterval* ffglRenderTimerStartInterval;
 }
+
+// render method
+- (void) render;
+
+// window resize notification handler and gl handler
+- (void) updateRenderView:(NSNotification *) notification;
 
 @end
