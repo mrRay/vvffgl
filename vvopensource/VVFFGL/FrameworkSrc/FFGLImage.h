@@ -8,17 +8,29 @@
 
 #import <Cocoa/Cocoa.h>
 
-typedef void (*FFGLImageTextureReleaseCallback)(GLuint name, void* context);
+typedef void (*FFGLImageTextureReleaseCallback)(GLuint name, void *context);
+typedef void (*FFGLImageBufferReleaseCallback)(void *baseAddress, void *context);
 
 @interface FFGLImage : NSObject {
 @private
+    NSUInteger                      _imageWidth;
+    NSUInteger                      _imageHeight;
     GLuint                          _texture2D;
     NSUInteger                      _texture2DWidth;
     NSUInteger                      _texture2DHeight;
-    NSUInteger                      _imageWidth;
-    NSUInteger                      _imageHeight;
     FFGLImageTextureReleaseCallback _texture2DReleaseCallback;
     void                            *_texture2DReleaseContext;
+    GLuint                          _textureRect;
+    NSUInteger                      _textureRectWidth;
+    NSUInteger                      _textureRectHeight;
+    FFGLImageTextureReleaseCallback _textureRectReleaseCallback;
+    void                            *_textureRectReleaseContext;
+    void                            *_buffer;
+    NSUInteger                      _bufferWidth;
+    NSUInteger                      _bufferHeight;
+    NSString                        *_bufferPixelFormat;
+    FFGLImageBufferReleaseCallback  _bufferReleaseCallback;
+    void                            *_bufferReleaseContext;
 }
 /*
  Init would look something like this
@@ -28,22 +40,17 @@ typedef void (*FFGLImageTextureReleaseCallback)(GLuint name, void* context);
  We probably need a CGLContext in here too, yea?
  */
 - (id)initWithTexture2D:(GLuint)texture imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseContext:(void *)context;
-
-/*
- We could also support
- - (id)initWithTextureRect:(GLuint)texture pixelsWide:(NSUInteger)width pixelsHigh:(CGFloat)height releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseContext:(void *)context;
- */
+- (id)initWithTextureRect:(GLuint)texture pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseContext:(void *)context;
+- (id)initWithBuffer:(void *)buffer pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseContext:(void *)context;
 
 - (NSUInteger)imagePixelsWide;
 - (NSUInteger)imagePixelsHigh;
 
 /*
  lockTexture2DRepresentation
-    so it can't be altered while being drawn and vice versa.
-    later we can generate it if we convert from pixelbuffers and GL_TEXTURE_RECTANGLE_EXT
+    Creates a GL_TEXTURE_2D representation of the image if none already exists. This will remain valid until a call to unlockTexture2DRepresentation.
  */
-
-- (void)lockTexture2DRepresentation;
+- (BOOL)lockTexture2DRepresentation;
 - (void)unlockTexture2DRepresentation;
 - (GLuint)texture2DName;
 - (NSUInteger)texture2DPixelsWide;
@@ -52,4 +59,19 @@ typedef void (*FFGLImageTextureReleaseCallback)(GLuint name, void* context);
 /*
  and then the same for GL_TEXTURE_RECTANGLE_EXT and pixel buffers, and internal conversion between the types.
  */
+
+- (BOOL)lockTextureRectRepresentation;
+- (void)unlockTextureRectRepresentation;
+- (GLuint)textureRectName;
+- (NSUInteger)textureRectPixelsWide; // or will these just be imagePixelsWide?
+- (NSUInteger)textureRectPixelsHigh;
+
+- (BOOL)lockBufferRepresentationWithPixelFormat:(NSString *)format;
+- (void)unlockBufferRepresentation;
+- (void *)bufferBaseAddress;
+- (NSUInteger)bufferPixelsWide; // or will these just be imagePixelsWide?
+- (NSUInteger)bufferPixelsHigh;
+- (NSUInteger)bufferBytesPerRow;
+- (NSString *)bufferPixelFormat;
+
 @end

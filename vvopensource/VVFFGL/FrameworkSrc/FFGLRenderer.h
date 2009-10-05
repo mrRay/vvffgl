@@ -7,8 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 #import <OpenGL/OpenGL.h>
+//#import <pthread.h> // maybe obscure our ivars in a struct and move this to the .m?
 
-@class FFGLPlugin;
+@class FFGLPlugin, FFGLImage;
 
 @interface FFGLRenderer : NSObject {
 @private
@@ -18,14 +19,12 @@
     NSRect              _bounds;
     NSString            *_pixelFormat;
     NSMutableDictionary *_imageInputs;
+    FFGLImage           *_output;
     id                  _params;
+//    pthread_mutex_t     _lock; // coming
+    
 }
-
-// for CPU effects/sources, the last two arguments can be nil.
-//
-// for GPU effects/sources, they are required.
-// context should be set and stick around for the duration of the pluginRenderers lifetime
-
+// or one long init to support both
 - (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context forBounds:(NSRect)bounds;
 - (id)initWithPlugin:(FFGLPlugin *)plugin pixelFormat:(NSString *)format forBounds:(NSRect)bounds;
 - (FFGLPlugin *)plugin;
@@ -36,10 +35,29 @@
 - (void)setValue:(id)value forParameterKey:(NSString *)key;
 /*
  - (id)parameters
-    Returns an object interested parties can bind to to get/set parameter values. Bind to anObject.parameters.key.
+    Returns an object interested parties can bind to to get/set parameter values. Bind to anObject.parameters.key.value.
  */
 - (id)parameters;
+
+/*
+ 
+ Output
+ 
+ Either
+    we have one outputImage method, and create a new image every renderAtTime:
+        Advantage - FFGLImage remains truly immutable, so if you're using output downstream, you can be sure it won't change.
+ Or
+    we have a setRenderDestination: method, and reuse the same image until it is changed.
+        Advantage - If clients have simple linear pipelines and can only call this once, this avoids constant reallocation of resources.
+ Or
+    some other solution I haven't thought of
+ 
+ Thoughts?
+ 
+ //- (void)setRenderDestination:(FFGLImage *)image;
+ //- (FFGLImage *)renderDestination;
+ 
+ */
+- (FFGLImage *)outputImage;
 - (void)renderAtTime:(NSTimeInterval)time;
-// TODO: some way of setting the target image, once we have our own image class to handle both pixel-buffers and textures.
-// At present this functionality is in the CPU/GPU subclasses.
 @end

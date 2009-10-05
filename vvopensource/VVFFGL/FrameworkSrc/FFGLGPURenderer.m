@@ -7,14 +7,8 @@
 
 #import "FFGLGPURenderer.h"
 #import "FFGLRendererSubclassing.h"
-
+#import "FFGLImage.h"
 #import <OpenGL/CGLMacro.h>
-
-@interface FFGLGPURenderer (Private)
-// render a rectangular texture (from QC, Core video etc) to a square texture for FFGL.
-// bounds are the input texture coords for the rect texture.
-- (GLuint) rectTextureToSquareTexture:(GLuint)inputTexture withCoords:(NSRect) rectCoords;
-@end
 
 @implementation FFGLGPURenderer
 - (id)init
@@ -49,12 +43,6 @@
                 _frameStruct.inputTextures[i] = malloc(sizeof(FFGLTextureInfo));
                 if (_frameStruct.inputTextures[i] != NULL) {
                     allocated++;
-                    _frameStruct.inputTextures[i]->width = bounds.size.width;
-                    _frameStruct.inputTextures[i]->height = bounds.size.height;
-                    // TODO: what should these be?
-//                    _frameStruct.inputTextures[i]->hardwareWidth = ??;
-//                    _frameStruct.inputTextures[i]->hardwareHeight = ??;
-                    _frameStruct.inputTextures[i]->texture = 0; // It will be set later hopefully
                 }
             }
             if (allocated != numInputs) {
@@ -64,50 +52,14 @@
         } else {
             _frameStruct.inputTextures = NULL;
         }
-        
-        // TODO: I'm all for having FFGLImage which takes care of stuff like this, and also can handle locking etc, so several renderers can share inputs
-        // and, and and...
-        // If it stays here, then it has to happen for every input, not just a fixed number (one, here).
-        /*
-		// make the rect to 2D texture FBO.
-		CGLLockContext(cgl_ctx);
-		
-		glGenTextures(1, &_squareFBOTexture);
-		glBindTexture(GL_TEXTURE_2D, _squareFBOTexture);
-		
-		// NOTE: we get the size from our viewport struct. So, we may end making temp textures rather than keeping one around.
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, bounds.size.width, bounds.size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-		
-		// cache previous FBO.
-		glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &_previousFBO);
-		
-		// Create temporary FBO to render in texture 
-		glGenFramebuffersEXT(1, &_rectToSquareFBO);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rectToSquareFBO);
-		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, _squareFBOTexture, 0);
-		
-		GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-		if(status != GL_FRAMEBUFFER_COMPLETE_EXT)
-		{	
-			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
-			glDeleteFramebuffersEXT(1, &_rectToSquareFBO);
-			glDeleteTextures(1, &_squareFBOTexture);
-			
-			CGLUnlockContext(cgl_ctx);
-			NSLog(@"Cannot create FFGL FBO");
-			return nil;
-		}	
-		
-		// looks like everything worked... cleanup!
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
-		CGLUnlockContext(cgl_ctx);
-         */
+        // TODO: do we need an FBO to reuse for rendering into our output texture?
     }
     return self;
 }
 
-- (void)dealloc
+- (void)nonGCCleanup
 {
+    // TODO: if we add an FBO in init, delete it here.
     CGLReleaseContext(_context);
     if (_frameStruct.inputTextures != NULL) {
         NSUInteger i;
@@ -117,116 +69,43 @@
             }
         }
         free(_frameStruct.inputTextures);
-    }
+    }    
+}
+
+- (void)dealloc
+{
+    [self nonGCCleanup];
     [super dealloc];
 }
 
-- (void)_setImage:(id)image forInputAtIndex:(NSUInteger)index
+- (void)finalize
 {
-    // Get the texture from the image, then
-//    GLuint inputSquareTexture = [self rectTextureToSquareTexture:texture withCoords:NSZeroRect]; // some coords.
-
-    // [self _setTexture:ourtexture forInputAtIndex:index];
+    [self nonGCCleanup];
+    [super finalize];
 }
 
-- (void)_setTexture:(GLuint)texture forInputAtIndex:(NSUInteger)index
+- (void)_implementationSetImage:(FFGLImage *)image forInputAtIndex:(NSUInteger)index
 {
-    CGLContextObj cgl_ctx = _context;
-    CGLLockContext(cgl_ctx);
-    _frameStruct.inputTextures[index]->texture = texture;
-    // This OK? Do we need anything else here? I'm guessing we're using dimensions of a certain fixed size while we get things up and running?
-    CGLUnlockContext(cgl_ctx);
+    if ([image lockTexture2DRepresentation]) {
+        _frameStruct.inputTextures[index]->texture = [image texture2DName];
+        _frameStruct.inputTextures[index]->width = [image imagePixelsWide];
+        _frameStruct.inputTextures[index]->height = [image imagePixelsHigh];
+        _frameStruct.inputTextures[index]->hardwareWidth = [image texture2DPixelsWide];
+        _frameStruct.inputTextures[index]->hardwareHeight = [image texture2DPixelsHigh];
+    }
 }
 
 - (void)_render
 {
-    // the steps are roughly:
-	
-	// attach GL context
-	// take our input image, render it to a square texture, 
-	// pass that square texture to our plugin
-	// set the params of the plugin - Only the image params which we load into whatever sort of struct. We'll set the params as soon as setValue: forParameterKey: is called (in FFGLRenderer), not every render pass..
-	// render.
-	
-	
 	CGLContextObj cgl_ctx = _context;
 	CGLLockContext(cgl_ctx);
-		
+    
+    // TODO: need to set output, bind FBO so we render in output's texture, register FBO in _frameStruct, then do this:
+//    _frameStruct.hostFBO = whatever; // or if we reuse the same FBO, do this once in init, and not here.
     [[self plugin] _processFrameGL:&_frameStruct forInstance:[self _instance]];
 	
 	CGLUnlockContext(cgl_ctx);
+//    [self setOutputImage:output];
 }
-
-- (GLuint) rectTextureToSquareTexture:(GLuint)inputTexture withCoords:(NSRect) rectCoords
-{
-    // TODO: we can have any number of image inputs, so we need this to be able to handle that, but I'd rather move this into an image class.
-    
-	// do we necessarily need to re-cache our previous FBO every frame? 
-    // // Have moved that out of rendering, so it only happens when input changes... but you need as many square textures as there are inputs, not neccessarily one.
-	// do we even need that iVar at all, should that be handled outside of the framework?
-
-	// also, do we want to/need to generate a new texture attachment every frame? \
-	// that may be required for changing input image dimensions
-
-	// we also will probably need to round to the nearest power of two for the texture dimensions and viewport dimensions.
-	// argh. JUST. FUCKING. SUPPORT. RECT. TEXTURES. PLEASE.
-/*	
-        CGLContextObj cgl_ctx = _context;
-        NSRect viewport = [self bounds];
-	glPushAttrib(GL_COLOR_BUFFER_BIT | GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
-	
-	// bind our FBO
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rectToSquareFBO);
-	
-	// set the viewport to the size of our input viewport...
-	glViewport(0, 0,  viewport.size.width, viewport.size.height);
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	
-	glOrtho(0.0, viewport.size.width,  0.0,  viewport.size.width, -1, 1);		
-	
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	
-	// this may not be necessary if we use GL_REPLACE for texturing the entire quad.
-	glClearColor(0.0, 0.0, 0.0, 0.0);
-	glClear(GL_COLOR_BUFFER_BIT);		
-	
-	// attach our rect texture and draw it the entire size of the viewport, with the proper rect coords.
-	glBegin(GL_QUADS);
-	glTexCoord2f(0, 0);
-	glVertex2f(0, 0);
-	glTexCoord2f(0, rectCoords.size.height);
-	glVertex2f(0, viewport.size.height);
-	glTexCoord2f(rectCoords.size.width, rectCoords.size.height);
-	glVertex2f(viewport.size.width, viewport.size.height);
-	glTexCoord2f(rectCoords.size.width, 0);
-	glVertex2f(viewport.size.width, 0);
-	glEnd();		
-		
-	// Restore OpenGL states 
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	
-	// restore states // assume this is balanced with above 
-	glPopAttrib();
-	
-	// restore previous FBO
-    // TODO: bug?:
-    // We're using the value which we got at init, but isn't that likely to have changed? Shouldn't we inspect and restore every time?
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
-	
-	// we need to flush to make sure FBO Texture attachment is rendered
-	glFlushRenderAPPLE();
-	
-	// our input rect texture should now be represented in the returned texture below.
- */
-	return _squareFBOTexture;
-}
-
 
 @end

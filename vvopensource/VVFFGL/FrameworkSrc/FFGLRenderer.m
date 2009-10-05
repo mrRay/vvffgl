@@ -57,6 +57,7 @@
             _bounds = bounds;
             _pixelFormat = [format retain];
             _imageInputs = [[NSMutableDictionary alloc] initWithCapacity:4];
+            
         }
     }	
     return self;
@@ -132,7 +133,7 @@
 {
     NSDictionary *attributes = [_plugin attributesForParameterWithKey:key];
     if ([[attributes objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
-        [self _setImage:value forInputAtIndex:[[attributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue]];
+        [self _implementationSetImage:value forInputAtIndex:[[attributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue]];
         [_imageInputs setObject:value forKey:key];
     } else {
         [_plugin _setValue:value forNonImageParameterKey:key ofInstance:_instance];
@@ -147,12 +148,24 @@
     return _params;
 }
 
+- (FFGLImage *)outputImage
+{
+    return _output;
+}
+
+- (void)setOutputImage:(FFGLImage *)image
+{
+    [image retain];
+    [_output release];
+    _output = image;
+}
+
 - (void)renderAtTime:(NSTimeInterval)time
 {
     if ([_plugin _supportsSetTime]) {
         [_plugin _setTime:time ofInstance:_instance];
     }
-    [self _render];
+    [self _implementationRender];
 }
 @end
 

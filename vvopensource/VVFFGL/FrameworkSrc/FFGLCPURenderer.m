@@ -7,11 +7,14 @@
 
 #import "FFGLCPURenderer.h"
 #import "FFGLRendererSubclassing.h"
+#import "FFGLImage.h"
 #import <QuartzCore/QuartzCore.h>
 
-@interface FFGLCPURenderer (Private)
-- (void)_setBuffer:(void *)buffer forInputAtIndex:(NSUInteger)index;
-@end
+static void FFGLCPURendererBufferRelease(void *baseAddress, void* context) {
+    // for now, just free the buffer, could make them reusable
+    free(baseAddress);
+}
+
 @implementation FFGLCPURenderer
 
 - (id)initWithPlugin:(FFGLPlugin *)plugin pixelFormat:(NSString *)format forBounds:(NSRect)bounds
@@ -34,32 +37,53 @@
     [super dealloc];
 }
 
-- (void)_setImage:(id)image forInputAtIndex:(NSUInteger)index
+- (void)_implementationSetImage:(id)image forInputAtIndex:(NSUInteger)index
 {
-    // TODO: check image conforms to the pixelFormat and bounds we were inited with, get buffer from image
-//    [self _setBuffer:buffer forInputAtIndex:index];
+    [image lockBufferRepresentationWithPixelFormat:[self pixelFormat]];
+    if (([image bufferPixelsHigh] != [self bounds].size.height) || ([image bufferPixelsWide] != [self bounds].size.width)
+        || ([image bufferPixelFormat] != [self pixelFormat])) {
+        [image unlockBufferRepresentation];
+        [NSException raise:@"FFGLRendererException" format:@"Input image dimensions or format do not match renderer."];
+        return;
+    }
+    _buffers[index] = [image bufferBaseAddress];
+    
 }
 
-- (void)_setBuffer:(void *)buffer forInputAtIndex:(NSUInteger)index
-{
-    _buffers[index] = buffer;
-}
-
-- (void)_attachOutputBuffer:(void *)buffer
-{
-    _fcStruct.outputFrame = buffer;
-}
-
-- (void)_render
+- (void)_implementationRender
 {
     FFGLPlugin *plugin = [self plugin];
+    NSRect bounds = [self bounds];
+    NSString *pFormat = [self pixelFormat];
+    NSUInteger bpp;
+#if __BIG_ENDIAN__
+    if (pFormat == FFGLPixelFormatRGB565) { bpp = 2; }
+    else if (pFormat == FFGLPixelFormatRGB888) { bpp = 3; }
+    else if (pFormat == FFGLPixelFormatARGB8888) { bpp = 4; }
+#else
+    if (pFormat == FFGLPixelFormatBGR565) { bpp = 2; }
+    else if (pFormat == FFGLPixelFormatBGR565) { bpp = 3; }
+    else if (pFormat == FFGLPixelFormatBGRA8888) { bpp = 4; }
+#endif
+    else { NSLog(@"Unexpected pixel format"); } // TODO: deal with this
+    
+    _fcStruct.outputFrame = valloc(bounds.size.width * bpp * bounds.size.height);
     if ([plugin _prefersFrameCopy]) {
         [plugin _processFrameCopy:&_fcStruct forInstance:[self _instance]];
     } else {
-        NSRect bounds = [self bounds];
-        memcpy(_fcStruct.outputFrame, _buffers[0], bounds.size.width * bounds.size.height);
+        if (_fcStruct.inputFrameCount > 0) { // ie we are not a source
+            memcpy(_fcStruct.outputFrame, _buffers[0], bounds.size.width * bpp * bounds.size.height);
+        }
         [plugin _processFrameInPlace:_fcStruct.outputFrame forInstance:[self _instance]];
     }
+    FFGLImage *output = [[[FFGLImage alloc] initWithBuffer:_fcStruct.outputFrame
+                                                pixelFormat:pFormat
+                                                 pixelsWide:bounds.size.width
+                                                 pixelsHigh:bounds.size.height
+                                                bytesPerRow:bounds.size.width * bpp
+                                            releaseCallback:FFGLCPURendererBufferRelease
+                                             releaseContext:NULL] autorelease];
+    [self setOutputImage:output];
 }
 
 @end
