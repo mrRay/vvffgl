@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import <OpenGL/OpenGL.h>
-//#import <pthread.h> // maybe obscure our ivars in a struct and move this to the .m?
+#import <pthread.h> // maybe obscure our ivars in a struct and move this to the .m?
 
 @class FFGLPlugin, FFGLImage;
 
@@ -21,7 +21,7 @@
     NSMutableDictionary *_imageInputs;
     FFGLImage           *_output;
     id                  _params;
-//    pthread_mutex_t     _lock; // coming
+    pthread_mutex_t     _lock;
     
 }
 // or one long init to support both

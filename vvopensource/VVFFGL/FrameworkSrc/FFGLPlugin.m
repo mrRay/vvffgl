@@ -10,7 +10,18 @@
 #import "FreeFrame.h"
 #import "FFGL.h"
 
-#import <pthread.h> // Remove this if we switch to some other locking mechanism.
+#import <pthread.h>
+
+/*
+ 
+ LOCKING
+    Currently no locking occurs around calls to plugins, except that which occurs in FFGLRenderer.
+    This means plugins instances are accessed serially, but plugMain is assumed to be thread-safe.
+    Discussion on the FF list suggests this might work, but we should
+        a) discuss with the list if this is an acceptable policy
+        b) request that a future FF standard makes explicit the locking requirements of plugins and clients
+        c) experiment like crazy, see if we can crash some plugins doing it this way
+ */
 
 struct FFGLPluginData {
     CFBundleRef bundle;
@@ -448,7 +459,6 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 
 - (FFGLPluginInstance)_newInstanceWithBounds:(NSRect)bounds pixelFormat:(NSString *)format
 {
-    // TODO: lock here. I'm profiling different options to check out Ray's grumble about @synchronized and we'll settle on whatever's fastest...
     if (_pluginData->mode == FFGLPluginModeGPU) {
         FFGLViewportStruct viewport = {bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height};
         return _pluginData->main(FF_INSTANTIATEGL, (DWORD)&viewport, 0).ivalue;

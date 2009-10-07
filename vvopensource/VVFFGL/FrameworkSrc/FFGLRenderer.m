@@ -6,10 +6,7 @@
 //
 
 #import "FFGLRenderer.h"
-//#import "FFGLRendererSubclassing.h"
 #import "FFGLPlugin.h"
-//#import "FFGLPluginInstances.h"
-#import "FreeFrame.h"
 #import "FFGLGPURenderer.h"
 #import "FFGLCPURenderer.h"
 #import "FFGLInternal.h"
@@ -74,7 +71,10 @@
             _bounds = bounds;
             _pixelFormat = [format retain];
             _imageInputs = [[NSMutableDictionary alloc] initWithCapacity:4];
-            
+            if (pthread_mutex_init(&_lock, NULL) != 0) {
+                [self release];
+                return nil;
+            }
         }
     }	
     return self;
@@ -90,18 +90,29 @@
     return [self _initWithPlugin:plugin pixelFormat:nil context:context forBounds:bounds];
 }
 
-- (void)dealloc
-{
-    [_params release];
+- (void)releaseResources {
     if(_pluginContext != nil) {
         CGLReleaseContext(_pluginContext);
     }
-    [_plugin release];
-    [_pixelFormat release];
-    [_imageInputs release];
     if (_instance != 0) {
         [[self plugin] _disposeInstance:_instance];
     }
+    pthread_mutex_destroy(&_lock);
+}
+
+- (void)finalize
+{
+    [self releaseResources];
+    [super finalize];
+}
+
+- (void)dealloc
+{
+    [_params release];
+    [_plugin release];
+    [_pixelFormat release];
+    [_imageInputs release];
+    [self releaseResources];
     [super dealloc];
 }
 
@@ -132,11 +143,15 @@
 
 - (id)valueForParameterKey:(NSString *)key
 {
+    id output;
+    pthread_mutex_lock(&_lock);
     if ([[[_plugin attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
-        return [_imageInputs objectForKey:key];
+        output = [_imageInputs objectForKey:key];
     } else {
-        return [_plugin _valueForNonImageParameterKey:key ofInstance:_instance];
+        output = [_plugin _valueForNonImageParameterKey:key ofInstance:_instance];
     }
+    pthread_mutex_unlock(&_lock);
+    return output;
 }
 
 - (void)setValue:(id)value forParameterKey:(NSString *)key
@@ -149,18 +164,20 @@
 - (void)_performSetValue:(id)value forParameterKey:(NSString *)key
 {
     NSDictionary *attributes = [_plugin attributesForParameterWithKey:key];
+    pthread_mutex_lock(&_lock);
     if ([[attributes objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
         [self _implementationSetImage:value forInputAtIndex:[[attributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue]];
         [_imageInputs setObject:value forKey:key];
     } else {
         [_plugin _setValue:value forNonImageParameterKey:key ofInstance:_instance];
     }
+    pthread_mutex_unlock(&_lock);
 }
 
 - (id)parameters
 {
     if (_params == nil) {
-        _params = [[FFGLRendererParametersBindable alloc] initWithRenderer:self];
+        _params = [[FFGLRendererParametersBindable alloc] initWithRenderer:self]; // released in dealloc
     }
     return _params;
 }
@@ -172,6 +189,7 @@
 
 - (void)setOutputImage:(FFGLImage *)image
 {
+    // This is called by subclasses from _implementationRender, so we already have the lock.
     [image retain];
     [_output release];
     _output = image;
@@ -179,10 +197,12 @@
 
 - (void)renderAtTime:(NSTimeInterval)time
 {
+    pthread_mutex_lock(&_lock);
     if ([_plugin _supportsSetTime]) {
         [_plugin _setTime:time ofInstance:_instance];
     }
     [self _implementationRender];
+    pthread_mutex_unlock(&_lock);
 }
 @end
 
