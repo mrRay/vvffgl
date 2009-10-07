@@ -7,7 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 #import "FFGLRenderer.h"
-#import "FFGLPluginInstances.h"
+//#import "FFGLPluginInstances.h"
+#import "FFGLInternal.h"
 
 @interface FFGLCPURenderer : FFGLRenderer {
     void **_buffers;

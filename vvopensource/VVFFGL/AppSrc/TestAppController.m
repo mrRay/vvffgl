@@ -58,6 +58,7 @@
 - (void)renderForTimer:(NSTimer *)timer
 {
     [_chain renderAtTime:[NSDate timeIntervalSinceReferenceDate] - _renderStart];
+    [_renderView setNeedsDisplay:YES];
 }
 
 - (IBAction)addRendererFromTableView:(NSTableView *)sender

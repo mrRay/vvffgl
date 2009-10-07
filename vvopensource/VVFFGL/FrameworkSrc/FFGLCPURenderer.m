@@ -6,7 +6,7 @@
 //
 
 #import "FFGLCPURenderer.h"
-#import "FFGLRendererSubclassing.h"
+//#import "FFGLRendererSubclassing.h"
 #import "FFGLImage.h"
 #import <QuartzCore/QuartzCore.h>
 

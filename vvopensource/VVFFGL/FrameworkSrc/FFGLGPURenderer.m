@@ -6,9 +6,13 @@
 //
 
 #import "FFGLGPURenderer.h"
-#import "FFGLRendererSubclassing.h"
+#import "FFGLInternal.h"
 #import "FFGLImage.h"
 #import <OpenGL/CGLMacro.h>
+
+static void FFGLGPURendererTextureReleaseCallback(GLuint name, void *context) {
+    // TODO: destroy the texture we create for our output image
+}
 
 @implementation FFGLGPURenderer
 - (id)init
@@ -31,21 +35,9 @@
         // set up our _frameStruct
         NSUInteger numInputs = [plugin _maximumInputFrameCount];
         _frameStruct.inputTextureCount = numInputs;
-        NSUInteger i;
-        NSUInteger allocated = 0;
         if (numInputs > 0) {
             _frameStruct.inputTextures = malloc(sizeof(void *) * numInputs);
             if (_frameStruct.inputTextures == NULL) {
-                [self release];
-                return nil;
-            }
-            for (i = 0; i < numInputs; i++) {
-                _frameStruct.inputTextures[i] = malloc(sizeof(FFGLTextureInfo));
-                if (_frameStruct.inputTextures[i] != NULL) {
-                    allocated++;
-                }
-            }
-            if (allocated != numInputs) {
                 [self release];
                 return nil;
             }
@@ -87,25 +79,25 @@
 - (void)_implementationSetImage:(FFGLImage *)image forInputAtIndex:(NSUInteger)index
 {
     if ([image lockTexture2DRepresentation]) {
-        _frameStruct.inputTextures[index]->texture = [image texture2DName];
-        _frameStruct.inputTextures[index]->width = [image imagePixelsWide];
-        _frameStruct.inputTextures[index]->height = [image imagePixelsHigh];
-        _frameStruct.inputTextures[index]->hardwareWidth = [image texture2DPixelsWide];
-        _frameStruct.inputTextures[index]->hardwareHeight = [image texture2DPixelsHigh];
+        _frameStruct.inputTextures[index] = [image _texture2DInfo];
     }
 }
 
-- (void)_render
+- (void)_implementationRender
 {
-	CGLContextObj cgl_ctx = _context;
-	CGLLockContext(cgl_ctx);
+    CGLContextObj cgl_ctx = _context;
+    CGLLockContext(cgl_ctx);
     
     // TODO: need to set output, bind FBO so we render in output's texture, register FBO in _frameStruct, then do this:
 //    _frameStruct.hostFBO = whatever; // or if we reuse the same FBO, do this once in init, and not here.
     [[self plugin] _processFrameGL:&_frameStruct forInstance:[self _instance]];
 	
-	CGLUnlockContext(cgl_ctx);
-//    [self setOutputImage:output];
+    CGLUnlockContext(cgl_ctx);
+    NSRect bounds = [self bounds];
+    /*
+    FFGLImage *output = [[[FFGLImage alloc] initWithTexture2D:texture imagePixelsWide:bounds.size.width imagePixelsHigh:bounds.size.height texturePixelsWide:whatever texturePixelsHigh:whatever releaseCallback:FFGLGPURendererTextureReleaseCallback releaseContext:NULL] autorelease];
+    [self setOutputImage:output];
+     */
 }
 
 @end

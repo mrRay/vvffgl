@@ -17,13 +17,15 @@
     FFGLRenderer    *_source;
     NSMutableArray  *_effects;
     NSLock          *_lock;
+    FFGLImage       *_output;
 }
 - (id)initWithOpenGLContext:(NSOpenGLContext *)context pixelFormat:(NSString *)pixelFormat forBounds:(NSRect)bounds;
-@property (retain, readonly) NSOpenGLContext *openGLContext;
-@property (retain, readonly) NSString *pixelFormat;
-@property (assign, readonly) NSRect bounds;
+@property (readonly) NSOpenGLContext *openGLContext;
+@property (readonly) NSString *pixelFormat;
+@property (readonly) NSRect bounds;
 @property (retain, readwrite) FFGLRenderer *source;
-@property (retain, readonly) NSArray *effects;
+@property (readonly) NSArray *effects;
+@property (readonly) FFGLImage *output;
 - (void)insertObject:(FFGLRenderer *)renderer inEffectsAtIndex:(NSUInteger)index;
 - (void)removeObjectFromEffectsAtIndex:(NSUInteger)index;
 - (void)renderAtTime:(NSTimeInterval)time;

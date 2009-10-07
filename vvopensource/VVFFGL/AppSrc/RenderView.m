@@ -66,7 +66,12 @@
 	glClear(GL_COLOR_BUFFER_BIT);
 	_needsReshape = NO;
     }
-    // draw our frame
+    FFGLImage *image = [_chain output];
+    if ([image lockTexture2DRepresentation]) {
+        // TODO: draw it
+    } else if (image != nil) {
+        NSLog(@"lockTexture2DRepresentation failed");
+    }
     [context flushBuffer];
 }
 

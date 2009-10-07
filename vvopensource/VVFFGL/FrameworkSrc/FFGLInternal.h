@@ -1,13 +1,16 @@
 /*
- *  FFGLPluginInstances.h
+ *  FFGLInternal.h
  *  VVOpenSource
  *
- *  Created by Tom on 26/07/2009.
+ *  Created by Tom on 07/10/2009.
+ *  Extended functionality for internal use.
  *
  */
 
-#import "FFGLPlugin.h"
 #import <OpenGL/OpenGL.h>
+#import "FFGLImage.h"
+#import "FFGLPlugin.h"
+#import "FFGLRenderer.h"
 
 extern NSString * const FFGLParameterAttributeIndexKey;
 
@@ -34,11 +37,6 @@ typedef struct FFGLProcessGLStruct {
 } FFGLProcessGLStruct;
 
 @interface FFGLPlugin (Instances)
-/* 
- Here we add methods FFGLRenderer uses to deal with instance-related stuff in FFGLPlugin. This header is not
- exported in the framework, it is private for FFGLPlugin and FFGLRenderer and subclasses.
- */
-
 /*
  Plugin properties
  */
@@ -58,4 +56,21 @@ typedef struct FFGLProcessGLStruct {
 - (void)_processFrameCopy:(FFGLProcessFrameCopyStruct *)frameInfo forInstance:(FFGLPluginInstance)instance;
 - (void)_processFrameInPlace:(void *)buffer forInstance:(FFGLPluginInstance)instance;
 - (void)_processFrameGL:(FFGLProcessGLStruct *)frameInfo forInstance:(FFGLPluginInstance)instance;
+@end
+
+
+@interface FFGLRenderer (Subclassing)
+/* This method is provided by FFGLRenderer for subclasses to use when calling FFGLPlugin's instance methods */
+- (FFGLPluginInstance)_instance;
+
+/* Subclasses must implement these methods */
+- (void)_implementationSetImage:(FFGLImage *)image forInputAtIndex:(NSUInteger)index;
+- (void)_implementationRender;
+
+/* Subclasses should emit output after render using this */
+- (void)setOutputImage:(FFGLImage *)image; // using a setter for our public outputImage method makes it play friendly with KVO.
+@end
+
+@interface FFGLImage (FFGL)
+- (FFGLTextureInfo *)_texture2DInfo;
 @end

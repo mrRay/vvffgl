@@ -6,7 +6,7 @@
 //
 
 #import "FFGLPlugin.h"
-#import "FFGLPluginInstances.h"
+#import "FFGLInternal.h"
 #import "FreeFrame.h"
 #import "FFGL.h"
 

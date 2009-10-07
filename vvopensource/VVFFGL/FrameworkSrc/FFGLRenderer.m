@@ -6,12 +6,13 @@
 //
 
 #import "FFGLRenderer.h"
-#import "FFGLRendererSubclassing.h"
+//#import "FFGLRendererSubclassing.h"
 #import "FFGLPlugin.h"
-#import "FFGLPluginInstances.h"
+//#import "FFGLPluginInstances.h"
 #import "FreeFrame.h"
 #import "FFGLGPURenderer.h"
 #import "FFGLCPURenderer.h"
+#import "FFGLInternal.h"
 
 @interface FFGLRendererParametersBindable : NSObject
 {

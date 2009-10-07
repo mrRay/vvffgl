@@ -8,6 +8,7 @@
 
 #import "FFGLImage.h"
 #import "FFGLPlugin.h"
+#import "FFGLInternal.h"
 
 enum FFGLImageSource {
     FFGLImageSourceTexture2D,
@@ -30,12 +31,17 @@ static void FFGLImageBufferRelease(void *baseAddress, void* context) {
 - (id)initWithTexture2D:(GLuint)texture imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseContext:(void *)context
 {
     if (self = [super init]) {
+        _texture2DInfo = malloc(sizeof(FFGLTextureInfo));
+        if (_texture2DInfo == NULL) {
+            [self release];
+            return nil;
+        }
         _source = FFGLImageSourceTexture2D;
-        _texture2D = texture;
-        _imageWidth = imageWidth;
-        _imageHeight = imageHeight;
-        _texture2DWidth = textureWidth;
-        _texture2DHeight = textureHeight;
+        ((FFGLTextureInfo *)_texture2DInfo)->texture = texture;
+        ((FFGLTextureInfo *)_texture2DInfo)->width = _imageWidth = imageWidth;
+        ((FFGLTextureInfo *)_texture2DInfo)->height = _imageHeight = imageHeight;
+        ((FFGLTextureInfo *)_texture2DInfo)->hardwareWidth = textureWidth;
+        ((FFGLTextureInfo *)_texture2DInfo)->hardwareHeight = textureHeight;
         _texture2DReleaseCallback = callback;
         _texture2DReleaseContext = context;
         _hasTexture2D = YES;
@@ -98,8 +104,11 @@ static void FFGLImageBufferRelease(void *baseAddress, void* context) {
 }
 
 - (void)releaseResources {
+    if (_texture2DInfo != NULL) {
+        free(_texture2DInfo);
+    }
     if (_hasTexture2D == YES) {
-        _texture2DReleaseCallback(_texture2D, _texture2DReleaseContext);
+        _texture2DReleaseCallback(((FFGLTextureInfo *)_texture2DInfo)->texture, _texture2DReleaseContext);
     }
     if (_hasTextureRect == YES) {
         _textureRectReleaseCallback(_textureRect, _textureRectReleaseContext);
@@ -143,15 +152,19 @@ static void FFGLImageBufferRelease(void *baseAddress, void* context) {
 }
 
 - (GLuint)texture2DName {
-    return _texture2D;
+    return ((FFGLTextureInfo *)_texture2DInfo)->texture;
 }
 
 - (NSUInteger)texture2DPixelsWide {
-    return _texture2DWidth;
+    return ((FFGLTextureInfo *)_texture2DInfo)->hardwareWidth;
 }
 
 - (NSUInteger)texture2DPixelsHigh {
-    return _texture2DHeight;
+    return ((FFGLTextureInfo *)_texture2DInfo)->hardwareHeight;
+}
+
+- (FFGLTextureInfo *)_texture2DInfo {
+    return _texture2DInfo;
 }
 
 #pragma mark GL_TEXTURE_RECTANGLE_EXT

@@ -19,9 +19,7 @@ typedef void (*FFGLImageBufferReleaseCallback)(void *baseAddress, void *context)
     BOOL                            _hasTextureRect;
     NSUInteger                      _imageWidth;
     NSUInteger                      _imageHeight;
-    GLuint                          _texture2D;
-    NSUInteger                      _texture2DWidth;
-    NSUInteger                      _texture2DHeight;
+    void                            *_texture2DInfo;
     FFGLImageTextureReleaseCallback _texture2DReleaseCallback;
     void                            *_texture2DReleaseContext;
     GLuint                          _textureRect;

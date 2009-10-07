@@ -41,6 +41,7 @@
 @synthesize openGLContext = _context;
 @synthesize bounds = _bounds;
 @synthesize source = _source;
+@synthesize output = _output;
 
 - (NSArray *)effects
 {
@@ -68,8 +69,23 @@
 - (void)renderAtTime:(NSTimeInterval)time
 {
     [_lock lock];
-    NSLog(@"renderrrr");
+    if (_source) {
+        [self willChangeValueForKey:@"output"];
+        [_source renderAtTime:time];
+        _output = [_source outputImage];
+        for (FFGLRenderer *effect in _effects) {
+            NSArray *parameters = [[effect plugin] parameterKeys];
+            for (NSString *key in parameters) {
+                if ([[[[effect plugin] attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
+                    [effect setValue:_output forParameterKey:key];
+                    break;
+                }
+            }
+            [effect renderAtTime:time];
+            _output = [effect outputImage];
+        }
+        [self didChangeValueForKey:@"output"];
+    }
     [_lock unlock];
 }
-
 @end
