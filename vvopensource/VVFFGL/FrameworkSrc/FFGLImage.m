@@ -104,11 +104,9 @@ static void FFGLImageBufferRelease(void *baseAddress, void* context) {
 }
 
 - (void)releaseResources {
-    if (_texture2DInfo != NULL) {
-        free(_texture2DInfo);
-    }
-    if (_hasTexture2D == YES) {
+    if (_hasTexture2D == YES && _texture2DInfo != NULL) {
         _texture2DReleaseCallback(((FFGLTextureInfo *)_texture2DInfo)->texture, _texture2DReleaseContext);
+        free(_texture2DInfo);
     }
     if (_hasTextureRect == YES) {
         _textureRectReleaseCallback(_textureRect, _textureRectReleaseContext);
