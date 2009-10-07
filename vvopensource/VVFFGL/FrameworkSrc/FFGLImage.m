@@ -7,13 +7,30 @@
 //
 
 #import "FFGLImage.h"
+#import "FFGLPlugin.h"
 
+enum FFGLImageSource {
+    FFGLImageSourceTexture2D,
+    FFGLImageSourceTextureRect,
+    FFGLImageSourceBuffer
+};
+
+static void FFGLImageBufferRelease(void *baseAddress, void* context) {
+    // for now, just free the buffer, could make them reusable
+    free(baseAddress);
+}
+
+@interface FFGLImage (Private)
+- (void)releaseResources;
+- (NSUInteger)bytesPerPixelForPixelFormat:(NSString *)format;
+@end
 
 @implementation FFGLImage
 
 - (id)initWithTexture2D:(GLuint)texture imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseContext:(void *)context
 {
     if (self = [super init]) {
+        _source = FFGLImageSourceTexture2D;
         _texture2D = texture;
         _imageWidth = imageWidth;
         _imageHeight = imageHeight;
@@ -21,43 +38,84 @@
         _texture2DHeight = textureHeight;
         _texture2DReleaseCallback = callback;
         _texture2DReleaseContext = context;
+        _hasTexture2D = YES;
     }
     return self;
 }
 
 - (id)initWithTextureRect:(GLuint)texture pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseContext:(void *)context {
     if (self = [super init]) {
-        // TODO
+        _source = FFGLImageSourceTextureRect;
+        _textureRect = texture;
+        _textureRectWidth = _imageWidth = width;
+        _textureRectHeight = _imageHeight = height;
+        _textureRectReleaseCallback = callback;
+        _textureRectReleaseContext = context;
+        _hasTextureRect = YES;
     }
     return self;
 }
 
 - (id)initWithBuffer:(void *)buffer pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseContext:(void *)context {
     if (self = [super init]) {
-        _buffer = buffer;
+        _source = FFGLImageSourceBuffer;
         _bufferPixelFormat = [format retain];
-        _bufferWidth = _imageWidth = width;
-        _bufferHeight = _imageHeight = height;
-        // should check rowBytes is valid for pixelsWide and format, and fail or deal with it if not
-        _bufferReleaseCallback = callback;
-        _bufferReleaseContext = context;
+        _imageWidth = width;
+        _imageHeight = height;
+        // Check the pixel-format is valid
+        NSUInteger bpp = [self bytesPerPixelForPixelFormat:format];
+        if (bpp == 0) { 
+            [NSException raise:@"FFGLImageException" format:@"Invalid pixel-format."];
+            [self release];
+            return nil;
+        }
+        if ((width * bpp) != rowBytes) {
+            // FF plugins don't support pixel buffers where image width != row width.
+            // We could just fiddle the reported image width, but this would give wrong results if the plugin takes borders into account.
+            // In these cases we make a new buffer with no padding.
+            void *newBuffer = valloc(width * bpp * height);
+            if (newBuffer == NULL) {
+                [self release];
+                return nil;
+            }
+            NSUInteger i;
+            for (i = 0; i < height; i++) {
+                memcpy(newBuffer, buffer, width * bpp);
+            }
+            if (callback != NULL) {
+                callback(buffer, context);
+            }
+            _buffer = newBuffer;
+            _bufferReleaseCallback = FFGLImageBufferRelease;
+            _bufferReleaseContext = NULL;
+        } else {
+            _buffer = buffer;
+            _bufferReleaseCallback = callback;
+            _bufferReleaseContext = context;
+        }
     }
     return self;
 }
 
-- (void)dealloc {
-    if (_texture2DReleaseCallback != NULL) {
+- (void)releaseResources {
+    if (_hasTexture2D == YES) {
         _texture2DReleaseCallback(_texture2D, _texture2DReleaseContext);
     }
-    // release other types if neccessary
+    if (_hasTextureRect == YES) {
+        _textureRectReleaseCallback(_textureRect, _textureRectReleaseContext);
+    }
+    if (_hasBuffer == YES) {
+        _bufferReleaseCallback(_buffer, _bufferReleaseContext);
+    }
+}
+
+- (void)dealloc {
+    [self releaseResources];
     [super dealloc];
 }
 
 - (void)finalize {
-    if (_texture2DReleaseCallback != NULL) {
-        _texture2DReleaseCallback(_texture2D, _texture2DReleaseContext);
-    }
-    // release other types if neccessary
+    [self releaseResources];
     [super finalize];
 }
 
@@ -69,14 +127,19 @@
     return _imageHeight;
 }
 
+#pragma mark GL_TEXTURE_2D
+
 - (BOOL)lockTexture2DRepresentation {
-    // check we have one, generate it if not
-    // lock
-    return NO; // return yes once we've implemented this ;)
+    if (_hasTexture2D == YES) {
+        return YES;
+    } else {
+        // TODO: generate it, return YES;
+    }
+    return NO;
 }
 
 - (void)unlockTexture2DRepresentation {
-    // unlock
+    // do nothing
 }
 
 - (GLuint)texture2DName {
@@ -91,12 +154,19 @@
     return _texture2DHeight;
 }
 
+#pragma mark GL_TEXTURE_RECTANGLE_EXT
+
 - (BOOL)lockTextureRectRepresentation {
+    if (_hasTextureRect == YES) {
+        return YES;
+    } else {
+        // TODO: generate it, return YES;
+    }
     return NO;
 }
 
 - (void)unlockTextureRectRepresentation {
-    
+    // do nothing
 }
 
 - (GLuint)textureRectName {
@@ -111,13 +181,24 @@
     return _textureRectHeight;
 }
 
+#pragma mark Pixel Buffers
+
 - (BOOL)lockBufferRepresentationWithPixelFormat:(NSString *)format {
-    // TODO: 
+    if (_hasBuffer == YES) {
+        if (![format isEqualToString:_bufferPixelFormat]) {
+            // We don't support converting between different formats (yet?).
+            return NO;
+        } else {
+            return YES;
+        }
+    } else {
+        // TODO: Conversion from GL textures.
+    }
     return NO;
 }
 
 - (void)unlockBufferRepresentation {
-    // TODO: 
+    // Do nothing.
 }
 
 - (void *)bufferBaseAddress {
@@ -125,21 +206,35 @@
 }
 
 - (NSUInteger)bufferPixelsWide {
-    return _bufferWidth;
+    return _imageWidth;
 }
 
 - (NSUInteger)bufferPixelsHigh {
-    return _bufferHeight;
+    return _imageHeight;
 }
 
 - (NSUInteger)bufferBytesPerRow {
-    // TODO:
+    return _imageWidth * [self bytesPerPixelForPixelFormat:_bufferPixelFormat];
 }
 
 - (NSString *)bufferPixelFormat {
     return _bufferPixelFormat;
 }
 
+#pragma mark Utility
+
+- (NSUInteger)bytesPerPixelForPixelFormat:(NSString *)format {
+    if ([format isEqualToString:FFGLPixelFormatRGB565] || [format isEqualToString:FFGLPixelFormatBGR565]) {
+        return 2;
+    } else if ([format isEqualToString:FFGLPixelFormatRGB888] || [format isEqualToString:FFGLPixelFormatBGR888]) {
+        return 3;
+    } else if ([format isEqualToString:FFGLPixelFormatARGB8888] || [format isEqualToString:FFGLPixelFormatBGRA8888]) {
+        return 4;
+    } else {
+        return 0;
+    }
+}
+                                                                  
 /*
  
  The following is copied and pasted from FFGLGPURenderer, needs a little tweaking for use here.
