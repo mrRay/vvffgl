@@ -45,6 +45,22 @@
                 return nil;
             }        
         } else {
+            if ((plugin == nil)
+                || (format != nil
+#if __BIG_ENDIAN__
+                    && ![format isEqualToString:FFGLPixelFormatRGB565]
+                    && ![format isEqualToString:FFGLPixelFormatRGB888]
+                    && ![format isEqualToString:FFGLPixelFormatARGB8888]
+#else
+                    && ![format isEqualToString:FFGLPixelFormatBGR565]
+                    && ![format isEqualToString:FFGLPixelFormatBGR565]
+                    && ![format isEqualToString:FFGLPixelFormatBGRA8888]
+#endif
+                )) {
+                [NSException raise:@"FFGLRendererException" format:@"Invalid arguments in init"];
+                [self release];
+                return nil;
+            }
             _instance = [plugin _newInstanceWithBounds:bounds pixelFormat:format];
             if (_instance == 0) {
                 [self release];
