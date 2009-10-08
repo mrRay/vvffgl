@@ -23,7 +23,9 @@
     [_sourcesTableView setDoubleAction:@selector(addRendererFromTableView:)];
     [_effectsTableView setTarget:self];
     [_effectsTableView setDoubleAction:@selector(addRendererFromTableView:)];
+    [self willChangeValueForKey:@"renderChain"];
     _chain = [[RenderChain alloc] initWithOpenGLContext:[_renderView openGLContext] pixelFormat:kFFPixelFormat forBounds:kRenderBounds];
+    [self didChangeValueForKey:@"renderChain"];
     [_renderView setRenderChain:_chain];
     if ([[[FFGLPluginManager sharedManager] sourcePlugins] count] == 0) {
         NSLog(@"No source plugins loaded. Copy some to your \"~/Library/Graphics/Free Frame Plug-Ins\" folder.");
@@ -61,9 +63,29 @@
 
 }
 
+@synthesize FPS = _fps;
+
+- (RenderChain *)renderChain
+{
+    return _chain;
+}
+
 - (void)renderForTimer:(NSTimer *)timer
 {
-    [_chain renderAtTime:[NSDate timeIntervalSinceReferenceDate] - _renderStart];
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+    [_chain renderAtTime:now - _renderStart];
+    NSTimeInterval fpsTime = now - _fpsStart;
+    _frameCount++;
+    if (fpsTime > 0.5) {
+        double fps;
+        if (_frameCount > 5)
+            fps = _frameCount * 2;
+        else
+            fps = _frameCount / fpsTime;
+        _frameCount = 0;
+        _fpsStart = now;            
+        [self setFPS:fps];
+    }
     [_renderView setNeedsDisplay:YES];
 }
 

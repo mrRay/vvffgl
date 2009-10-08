@@ -29,7 +29,12 @@
 
 	// render timer
 	NSTimer* ffglRenderTimer;
-	NSTimeInterval _renderStart;
+	NSTimeInterval  _renderStart;
+        NSTimeInterval  _fpsStart;
+        NSUInteger      _frameCount;
+        double          _fps;
 }
 - (IBAction)addRendererFromTableView:(id)sender;
+- (RenderChain *)renderChain;
+@property (readwrite, assign) double FPS;
 @end
