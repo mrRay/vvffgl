@@ -53,9 +53,9 @@ typedef struct FFGLProcessGLStruct {
 - (id)_valueForNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance;
 - (void)_setValue:(id)value forNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance;
 - (void)_setTime:(NSTimeInterval)time ofInstance:(FFGLPluginInstance)instance;
-- (void)_processFrameCopy:(FFGLProcessFrameCopyStruct *)frameInfo forInstance:(FFGLPluginInstance)instance;
-- (void)_processFrameInPlace:(void *)buffer forInstance:(FFGLPluginInstance)instance;
-- (void)_processFrameGL:(FFGLProcessGLStruct *)frameInfo forInstance:(FFGLPluginInstance)instance;
+- (BOOL)_processFrameCopy:(FFGLProcessFrameCopyStruct *)frameInfo forInstance:(FFGLPluginInstance)instance;
+- (BOOL)_processFrameInPlace:(void *)buffer forInstance:(FFGLPluginInstance)instance;
+- (BOOL)_processFrameGL:(FFGLProcessGLStruct *)frameInfo forInstance:(FFGLPluginInstance)instance;
 @end
 
 
@@ -65,7 +65,7 @@ typedef struct FFGLProcessGLStruct {
 
 /* Subclasses must implement these methods */
 - (void)_implementationSetImage:(FFGLImage *)image forInputAtIndex:(NSUInteger)index;
-- (void)_implementationRender;
+- (BOOL)_implementationRender;
 
 /* Subclasses should emit output after render using this */
 - (void)setOutputImage:(FFGLImage *)image; // using a setter for our public outputImage method makes it play friendly with KVO.

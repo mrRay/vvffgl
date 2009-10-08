@@ -59,5 +59,5 @@
  
  */
 - (FFGLImage *)outputImage;
-- (void)renderAtTime:(NSTimeInterval)time;
+- (BOOL)renderAtTime:(NSTimeInterval)time;
 @end

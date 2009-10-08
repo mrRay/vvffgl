@@ -54,7 +54,10 @@
                     && ![format isEqualToString:FFGLPixelFormatBGR565]
                     && ![format isEqualToString:FFGLPixelFormatBGRA8888]
 #endif
-                )) {
+                )
+                || (([plugin mode] == FFGLPluginModeCPU)
+                    && ![[plugin supportedBufferPixelFormats] containsObject:format])
+                ) {
                 [NSException raise:@"FFGLRendererException" format:@"Invalid arguments in init"];
                 [self release];
                 return nil;
@@ -195,14 +198,15 @@
     _output = image;
 }
 
-- (void)renderAtTime:(NSTimeInterval)time
+- (BOOL)renderAtTime:(NSTimeInterval)time
 {
     pthread_mutex_lock(&_lock);
     if ([_plugin _supportsSetTime]) {
         [_plugin _setTime:time ofInstance:_instance];
     }
-    [self _implementationRender];
+    BOOL success = [self _implementationRender];
     pthread_mutex_unlock(&_lock);
+    return success;
 }
 @end
 

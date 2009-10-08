@@ -534,18 +534,21 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
     _pluginData->main(FF_SETTIME, (DWORD)&time, instance);
 }
 
-- (void)_processFrameCopy:(FFGLProcessFrameCopyStruct *)frameInfo forInstance:(FFGLPluginInstance)instance
+- (BOOL)_processFrameCopy:(FFGLProcessFrameCopyStruct *)frameInfo forInstance:(FFGLPluginInstance)instance
 {
-    _pluginData->main(FF_PROCESSFRAMECOPY, (DWORD)frameInfo, instance);
+    plugMainUnion result = _pluginData->main(FF_PROCESSFRAMECOPY, (DWORD)frameInfo, instance);
+    return result.ivalue == FF_SUCCESS ? YES : NO;
 }
 
-- (void)_processFrameInPlace:(void *)buffer forInstance:(FFGLPluginInstance)instance
+- (BOOL)_processFrameInPlace:(void *)buffer forInstance:(FFGLPluginInstance)instance
 {
-    _pluginData->main(FF_PROCESSFRAME, (DWORD)buffer, instance);
+    plugMainUnion result = _pluginData->main(FF_PROCESSFRAME, (DWORD)buffer, instance);
+    return result.ivalue == FF_SUCCESS ? YES : NO;
 }
 
-- (void)_processFrameGL:(FFGLProcessGLStruct *)frameInfo forInstance:(FFGLPluginInstance)instance
+- (BOOL)_processFrameGL:(FFGLProcessGLStruct *)frameInfo forInstance:(FFGLPluginInstance)instance
 {
-    _pluginData->main(FF_PROCESSFRAME, (DWORD)frameInfo, instance);
+    plugMainUnion result = _pluginData->main(FF_PROCESSFRAME, (DWORD)frameInfo, instance);
+    return result.ivalue == FF_SUCCESS ? YES : NO;
 }
 @end

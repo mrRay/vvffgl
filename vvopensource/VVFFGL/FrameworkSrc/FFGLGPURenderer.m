@@ -83,14 +83,14 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, void *context) {
     }
 }
 
-- (void)_implementationRender
+- (BOOL)_implementationRender
 {
     CGLContextObj cgl_ctx = _context;
     CGLLockContext(cgl_ctx);
     
     // TODO: need to set output, bind FBO so we render in output's texture, register FBO in _frameStruct, then do this:
 //    _frameStruct.hostFBO = whatever; // or if we reuse the same FBO, do this once in init, and not here.
-    [[self plugin] _processFrameGL:&_frameStruct forInstance:[self _instance]];
+    BOOL result = [[self plugin] _processFrameGL:&_frameStruct forInstance:[self _instance]];
 	
     CGLUnlockContext(cgl_ctx);
     NSRect bounds = [self bounds];
@@ -98,6 +98,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, void *context) {
     FFGLImage *output = [[[FFGLImage alloc] initWithTexture2D:texture imagePixelsWide:bounds.size.width imagePixelsHigh:bounds.size.height texturePixelsWide:whatever texturePixelsHigh:whatever releaseCallback:FFGLGPURendererTextureReleaseCallback releaseContext:NULL] autorelease];
     [self setOutputImage:output];
      */
+    return result;
 }
 
 @end
