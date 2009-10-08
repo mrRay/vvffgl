@@ -65,6 +65,7 @@ static void FFGLImageBufferRelease(void *baseAddress, void* context) {
 - (id)initWithBuffer:(void *)buffer pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseContext:(void *)context {
     if (self = [super init]) {
         _source = FFGLImageSourceBuffer;
+        _hasBuffer = YES;
         _bufferPixelFormat = [format retain];
         _imageWidth = width;
         _imageHeight = height;
