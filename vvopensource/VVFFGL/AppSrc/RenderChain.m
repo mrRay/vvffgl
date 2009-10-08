@@ -46,9 +46,9 @@
 - (NSArray *)effects
 {
     [_lock lock];
-    NSArray *output = [NSArray arrayWithArray:_effects];
+    NSArray *e = [NSArray arrayWithArray:_effects];
     [_lock unlock];
-    return output; // return a copy to preserve our thread-safety
+    return e; // return a copy to preserve our thread-safety
 }
 
 - (void)insertObject:(FFGLRenderer *)renderer inEffectsAtIndex:(NSUInteger)index
@@ -71,19 +71,36 @@
     [_lock lock];
     if (_source) {
         [self willChangeValueForKey:@"output"];
-        [_source renderAtTime:time];
-        _output = [_source outputImage];
+        BOOL result;
+        result = [_source renderAtTime:time];
+        if (result == NO) {
+//            NSLog(@"Render failed");
+        }
+        FFGLImage *image = [_source outputImage];
+        if (image == nil) {
+//            NSLog(@"No output from source.");
+            [_output release];
+            _output = nil;
+            [_lock unlock];
+            return;
+        }
         for (FFGLRenderer *effect in _effects) {
             NSArray *parameters = [[effect plugin] parameterKeys];
             for (NSString *key in parameters) {
                 if ([[[[effect plugin] attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
-                    [effect setValue:_output forParameterKey:key];
+                    [effect setValue:image forParameterKey:key];
                     break;
                 }
             }
-            [effect renderAtTime:time];
-            _output = [effect outputImage];
+            result = [effect renderAtTime:time];
+            if (result == NO) {
+                NSLog(@"Render failed");
+            }
+            image = [effect outputImage];
         }
+        [image retain];
+        [_output release];
+        _output = image;
         [self didChangeValueForKey:@"output"];
     }
     [_lock unlock];

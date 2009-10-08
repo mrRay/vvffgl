@@ -197,6 +197,7 @@
 		96BF10B0100E95330079A2E6 /* VVOSC.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF10AD100E95330079A2E6 /* VVOSC.h */; };
 		96BF10B1100E95330079A2E6 /* VVOSC.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF10AD100E95330079A2E6 /* VVOSC.h */; };
 		96C2F2141017815F004E19B0 /* OSCConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 96C2F2131017815F004E19B0 /* OSCConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		BD617C96107DE03100125336 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BD617C95107DE03100125336 /* QuartzCore.framework */; };
 		BD8E3C681030DBDB00152772 /* FFGLCPURenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = BD8E3C661030DBDB00152772 /* FFGLCPURenderer.h */; };
 		BD8E3C691030DBDB00152772 /* FFGLCPURenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = BD8E3C671030DBDB00152772 /* FFGLCPURenderer.m */; };
 		BD8E3C6C1030DC1800152772 /* FFGLGPURenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = BD8E3C6A1030DC1800152772 /* FFGLGPURenderer.h */; };
@@ -500,6 +501,7 @@
 		96BF10C8100E98760079A2E6 /* assembleIPhoneSimSDK.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = assembleIPhoneSimSDK.sh; path = scripts/assembleIPhoneSimSDK.sh; sourceTree = "<group>"; };
 		96BF10C9100E98930079A2E6 /* assembleMacSDK.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = assembleMacSDK.sh; path = scripts/assembleMacSDK.sh; sourceTree = "<group>"; };
 		96C2F2131017815F004E19B0 /* OSCConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OSCConstants.h; path = VVOSC/FrameworkSrc/OSCConstants.h; sourceTree = "<group>"; };
+		BD617C95107DE03100125336 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		BD8E3C661030DBDB00152772 /* FFGLCPURenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLCPURenderer.h; path = VVFFGL/FrameworkSrc/FFGLCPURenderer.h; sourceTree = "<group>"; };
 		BD8E3C671030DBDB00152772 /* FFGLCPURenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLCPURenderer.m; path = VVFFGL/FrameworkSrc/FFGLCPURenderer.m; sourceTree = "<group>"; };
 		BD8E3C6A1030DC1800152772 /* FFGLGPURenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLGPURenderer.h; path = VVFFGL/FrameworkSrc/FFGLGPURenderer.h; sourceTree = "<group>"; };
@@ -537,6 +539,7 @@
 			files = (
 				BDA25B51102B9030000BE743 /* VVFFGL.framework in Frameworks */,
 				1BCF31B2101A5AEC00D50A21 /* OpenGL.framework in Frameworks */,
+				BD617C96107DE03100125336 /* QuartzCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -640,6 +643,7 @@
 				32C88DFF0371C24200C91783 /* Other Sources */,
 				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
 				034768DFFF38A50411DB9C8B /* Products */,
+				BD617C95107DE03100125336 /* QuartzCore.framework */,
 			);
 			name = VVOpenSource;
 			sourceTree = "<group>";

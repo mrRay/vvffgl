@@ -25,6 +25,12 @@
     [_effectsTableView setDoubleAction:@selector(addRendererFromTableView:)];
     _chain = [[RenderChain alloc] initWithOpenGLContext:[_renderView openGLContext] pixelFormat:kFFPixelFormat forBounds:kRenderBounds];
     [_renderView setRenderChain:_chain];
+    if ([[[FFGLPluginManager sharedManager] sourcePlugins] count] == 0) {
+        NSLog(@"No source plugins loaded. Copy some to your \"~/Library/Graphics/Free Frame Plug-Ins\" folder.");
+    }
+    if ([[[FFGLPluginManager sharedManager] effectPlugins] count] == 0) {
+        NSLog(@"No effect plugins loaded. Copy some to your \"~/Library/Graphics/Free Frame Plug-Ins\" folder.");
+    }
 }
 
 - (void)dealloc
@@ -67,17 +73,23 @@
     NSArray *sourceArray = (sender == _sourcesTableView ? [[FFGLPluginManager sharedManager] sourcePlugins] : [[FFGLPluginManager sharedManager] effectPlugins]);
     if ((selectedRow >= 0) && (selectedRow < [sourceArray count])) {
         FFGLPlugin *plugin = [sourceArray objectAtIndex:selectedRow];
-        NSLog(@"Adding renderer for plugin: %@", (NSString *)[[plugin attributes] objectForKey:FFGLPluginAttributeNameKey]);
-        FFGLRenderer *renderer;
+        NSLog(@"Adding renderer for %@ plugin: %@", [plugin mode] == FFGLPluginModeCPU ? @"CPU" : @"GPU", (NSString *)[[plugin attributes] objectForKey:FFGLPluginAttributeNameKey]);
+        FFGLRenderer *renderer = nil;
         if ([plugin mode] == FFGLPluginModeCPU) {
-            renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin pixelFormat:kFFPixelFormat forBounds:kRenderBounds] autorelease];
+            if ([[plugin supportedBufferPixelFormats] containsObject:kFFPixelFormat]) {
+                renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin pixelFormat:kFFPixelFormat forBounds:kRenderBounds] autorelease];
+            }
         } else {
             renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:[[_renderView openGLContext] CGLContextObj] forBounds:kRenderBounds] autorelease];
         }
-        if ([plugin type] == FFGLPluginTypeSource) {
-            [_chain setSource:renderer];
+        if (renderer == nil) {
+            NSLog(@"Couldn't create plugin renderer.");
         } else {
-            [_chain insertObject:renderer inEffectsAtIndex:[[_chain effects] count]];
+            if ([plugin type] == FFGLPluginTypeSource) {
+                [_chain setSource:renderer];
+            } else {
+                [_chain insertObject:renderer inEffectsAtIndex:[[_chain effects] count]];
+            }
         }
     }
 }

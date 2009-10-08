@@ -12,6 +12,8 @@
 @interface RenderView : NSOpenGLView {
     RenderChain *_chain;
     BOOL _needsReshape;
+    CIContext *_ciContext;
+    CGColorSpaceRef _cspace;
 }
 @property (retain, readwrite) RenderChain *renderChain;
 @end
