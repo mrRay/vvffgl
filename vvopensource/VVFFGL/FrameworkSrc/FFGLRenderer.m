@@ -225,8 +225,16 @@
     [super dealloc];
 }
 
+- (id)valueForUndefinedKey:(NSString *)key
+{
+    NSLog(@"valueForUndefinedKey:");
+    return [_renderer valueForParameterKey:key];
+}
+
+/*
 - (id)valueForKeyPath:(NSString *)keyPath
 {
+    NSLog(@"valueForKeyPath:");
     NSArray *pathParts = [keyPath componentsSeparatedByString:@"."];
     if ([[pathParts lastObject] isEqualToString:@"value"] && ([pathParts count] > 1)) {
         return [_renderer valueForParameterKey:[pathParts objectAtIndex:[pathParts count] - 2]];
@@ -234,9 +242,16 @@
         return [super valueForKeyPath:keyPath];
     }
 }
-
+*/
+- (void)setValue:(id)value forUndefinedKey:(NSString *)key
+{
+    NSLog(@"setValue: forUndefinedKey:");
+    [_renderer _performSetValue:value forParameterKey:key];
+}
+/*
 - (void)setValue:(id)value forKeyPath:(NSString *)keyPath
 {
+    NSLog(@"setValue: forKeyPath:");
     NSArray *pathParts = [keyPath componentsSeparatedByString:@"."];
     if ([[pathParts lastObject] isEqualToString:@"value"] && ([pathParts count] > 1)) {
         [_renderer _performSetValue:value forParameterKey:[pathParts objectAtIndex:[pathParts count] - 2]];
@@ -244,4 +259,5 @@
         [super setValue:value forKeyPath:keyPath];
     }
 }
+ */
 @end
