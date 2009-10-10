@@ -10,23 +10,17 @@
 #import <OpenGL/OpenGL.h>
 #import "VVFFGL.h"
 #import "RenderView.h"
+#import "ParametersView.h"
 #import "RenderChain.h"
 
 @interface TestAppController : NSObject 
 {
-	// FFGL plugin manager from IB
-    // This is a singleton object, so we can get it with [FFGLPluginManager sharedManager]
-//	IBOutlet FFGLPluginManager* ffglManager;
-	
-	// our plugin renderer. Render an instance of a plugin to our GL Context
-//	FFGLRenderer* ffglRenderRenderer; // yea, this needs a better name.
         RenderChain *_chain;
-	// context, view and window
         IBOutlet NSTableView *_sourcesTableView;
         IBOutlet NSTableView *_effectsTableView;
 	IBOutlet RenderView *_renderView;
-	IBOutlet NSWindow* ffglRenderWindow;
-
+        IBOutlet ParametersView *_paramsView;
+        IBOutlet NSArrayController *_renderChainRenderersController; // frickin bindings, ugh.
 	// render timer
 	NSTimer* ffglRenderTimer;
 	NSTimeInterval  _renderStart;

@@ -9,6 +9,7 @@
 #import "FFGLImage.h"
 #import "FFGLPlugin.h"
 #import "FFGLInternal.h"
+//#import <libkern/OSAtomic.h>
 
 enum FFGLImageSource {
     FFGLImageSourceTexture2D,
@@ -141,6 +142,13 @@ static void FFGLImageBufferRelease(void *baseAddress, void* context) {
     if (_hasTexture2D == YES) {
         return YES;
     } else {
+        if (_hasTextureRect == YES) { // or would we rather check them in the other order?
+            
+        } else if (_hasBuffer == YES) {
+            
+        } else {
+            // huh?
+        }
         // TODO: generate it, return YES;
     }
     return NO;

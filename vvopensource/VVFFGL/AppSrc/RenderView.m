@@ -85,7 +85,7 @@
     if ([image lockTexture2DRepresentation]) {
         
         // draw it
-    } else if ([image lockBufferRepresentationWithPixelFormat:FFGLPixelFormatBGRA8888]) {
+    } else if ([image lockBufferRepresentationWithPixelFormat:FFGLPixelFormatBGRA8888]) { // This won't be needed once FFGLImage can convert buffers->textures
         NSUInteger bpr = [image bufferBytesPerRow];
         NSUInteger w = [image bufferPixelsWide];
         NSUInteger h = [image bufferPixelsHigh];

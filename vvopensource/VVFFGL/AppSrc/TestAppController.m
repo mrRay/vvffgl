@@ -33,6 +33,7 @@
     if ([[[FFGLPluginManager sharedManager] effectPlugins] count] == 0) {
         NSLog(@"No effect plugins loaded. Copy some to your \"~/Library/Graphics/Free Frame Plug-Ins\" folder.");
     }
+    [_paramsView bind:@"renderer" toObject:_renderChainRenderersController withKeyPath:@"selection.self" options:nil];
 }
 
 - (void)dealloc

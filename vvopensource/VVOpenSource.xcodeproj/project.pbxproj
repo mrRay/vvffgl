@@ -198,6 +198,7 @@
 		96BF10B1100E95330079A2E6 /* VVOSC.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF10AD100E95330079A2E6 /* VVOSC.h */; };
 		96C2F2141017815F004E19B0 /* OSCConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 96C2F2131017815F004E19B0 /* OSCConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BD617C96107DE03100125336 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BD617C95107DE03100125336 /* QuartzCore.framework */; };
+		BD7410801080F81A00BF8285 /* ParametersView.m in Sources */ = {isa = PBXBuildFile; fileRef = BD74107F1080F81A00BF8285 /* ParametersView.m */; };
 		BD8E3C681030DBDB00152772 /* FFGLCPURenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = BD8E3C661030DBDB00152772 /* FFGLCPURenderer.h */; };
 		BD8E3C691030DBDB00152772 /* FFGLCPURenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = BD8E3C671030DBDB00152772 /* FFGLCPURenderer.m */; };
 		BD8E3C6C1030DC1800152772 /* FFGLGPURenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = BD8E3C6A1030DC1800152772 /* FFGLGPURenderer.h */; };
@@ -502,6 +503,8 @@
 		96BF10C9100E98930079A2E6 /* assembleMacSDK.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = assembleMacSDK.sh; path = scripts/assembleMacSDK.sh; sourceTree = "<group>"; };
 		96C2F2131017815F004E19B0 /* OSCConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OSCConstants.h; path = VVOSC/FrameworkSrc/OSCConstants.h; sourceTree = "<group>"; };
 		BD617C95107DE03100125336 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		BD74107E1080F81900BF8285 /* ParametersView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ParametersView.h; path = VVFFGL/AppSrc/ParametersView.h; sourceTree = "<group>"; };
+		BD74107F1080F81A00BF8285 /* ParametersView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ParametersView.m; path = VVFFGL/AppSrc/ParametersView.m; sourceTree = "<group>"; };
 		BD8E3C661030DBDB00152772 /* FFGLCPURenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLCPURenderer.h; path = VVFFGL/FrameworkSrc/FFGLCPURenderer.h; sourceTree = "<group>"; };
 		BD8E3C671030DBDB00152772 /* FFGLCPURenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLCPURenderer.m; path = VVFFGL/FrameworkSrc/FFGLCPURenderer.m; sourceTree = "<group>"; };
 		BD8E3C6A1030DC1800152772 /* FFGLGPURenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLGPURenderer.h; path = VVFFGL/FrameworkSrc/FFGLGPURenderer.h; sourceTree = "<group>"; };
@@ -686,6 +689,8 @@
 				9606B15E1017621200CC50B7 /* FFGLTestApp-Info.plist */,
 				9606B18D101763C900CC50B7 /* MainMenu.xib */,
 				9606B18E101763C900CC50B7 /* main.m */,
+				BD74107E1080F81900BF8285 /* ParametersView.h */,
+				BD74107F1080F81A00BF8285 /* ParametersView.m */,
 				1B07E19610785E3B005479A1 /* TestAppController.h */,
 				1B07E19710785E3B005479A1 /* TestAppController.m */,
 				BD90FA821078EA6D009A6273 /* RenderView.h */,
@@ -1319,6 +1324,7 @@
 				1B07E19A10785E3B005479A1 /* TestAppController.m in Sources */,
 				BD90FA841078EA6D009A6273 /* RenderView.m in Sources */,
 				BD90FABF1078FEB5009A6273 /* RenderChain.m in Sources */,
+				BD7410801080F81A00BF8285 /* ParametersView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

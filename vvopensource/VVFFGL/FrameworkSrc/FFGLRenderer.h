@@ -35,7 +35,7 @@
 - (void)setValue:(id)value forParameterKey:(NSString *)key;
 /*
  - (id)parameters
-    Returns an object interested parties can bind to to get/set parameter values. Bind to anObject.parameters.key.value.
+    Returns an object interested parties can bind to to get/set parameter values. Bind to anObject.parameters.aKey
  */
 - (id)parameters;
 

@@ -40,8 +40,26 @@
 @synthesize pixelFormat = _pixelFormat;
 @synthesize openGLContext = _context;
 @synthesize bounds = _bounds;
-@synthesize source = _source;
 @synthesize output = _output;
+
+- (FFGLRenderer *)source
+{
+    [_lock lock];
+    FFGLRenderer *s = _source;
+    [_lock unlock];
+    return s;
+}
+
+- (void)setSource:(FFGLRenderer *)source
+{
+    [self willChange:NSKeyValueChangeReplacement valuesAtIndexes:[NSIndexSet indexSetWithIndex:0] forKey:@"completeChain"];
+    [_lock lock];
+    [source retain];
+    [_source release];
+    _source = source;
+    [_lock unlock];
+    [self didChange:NSKeyValueChangeReplacement valuesAtIndexes:[NSIndexSet indexSetWithIndex:0] forKey:@"completeChain"];
+}
 
 - (NSArray *)effects
 {
@@ -53,24 +71,51 @@
 
 - (void)insertObject:(FFGLRenderer *)renderer inEffectsAtIndex:(NSUInteger)index
 {
+    [self willChange:NSKeyValueChangeInsertion valuesAtIndexes:[NSIndexSet indexSetWithIndex:index + 1] forKey:@"completeChain"];
     [_lock lock];
     [_effects insertObject:renderer atIndex:index];
     [_lock unlock];
+    [self didChange:NSKeyValueChangeInsertion valuesAtIndexes:[NSIndexSet indexSetWithIndex:index + 1] forKey:@"completeChain"];
 }
 
 - (void)removeObjectFromEffectsAtIndex:(NSUInteger)index
 {
+    [self willChange:NSKeyValueChangeRemoval valuesAtIndexes:[NSIndexSet indexSetWithIndex:index + 1] forKey:@"completeChain"];
     [_lock lock];
     [_effects removeObjectAtIndex:index];
     [_lock unlock];
+    [self didChange:NSKeyValueChangeRemoval valuesAtIndexes:[NSIndexSet indexSetWithIndex:index + 1] forKey:@"completeChain"];
 }
 
+- (NSArray *)completeChain
+{
+    [_lock lock];
+    NSArray *result = [[NSArray arrayWithObject:(_source != nil ? (id)_source : (id)[NSNull null])] arrayByAddingObjectsFromArray:_effects];
+    [_lock unlock];
+    return result;
+}
+
+- (void)insertObject:(FFGLRenderer *)renderer inCompleteChainAtIndex:(NSUInteger)index {
+    if (index == 0) {
+        [self setSource:renderer];
+    } else {
+        [self insertObject:renderer inEffectsAtIndex:index - 1];
+    }
+}
+
+- (void)removeObjectFromCompleteChainAtIndex:(NSUInteger)index {
+    if (index == 0) {
+        [self setSource:nil];
+    } else {
+        [self removeObjectFromEffectsAtIndex:index - 1];
+    }
+}
 
 - (void)renderAtTime:(NSTimeInterval)time
 {
+    [self willChangeValueForKey:@"output"];
     [_lock lock];
     if (_source) {
-        [self willChangeValueForKey:@"output"];
         BOOL result;
         result = [_source renderAtTime:time];
         if (result == NO) {
@@ -94,15 +139,15 @@
             }
             result = [effect renderAtTime:time];
             if (result == NO) {
-                NSLog(@"Render failed");
+//                NSLog(@"Render failed");
             }
             image = [effect outputImage];
         }
         [image retain];
         [_output release];
         _output = image;
-        [self didChangeValueForKey:@"output"];
     }
     [_lock unlock];
+    [self didChangeValueForKey:@"output"];
 }
 @end

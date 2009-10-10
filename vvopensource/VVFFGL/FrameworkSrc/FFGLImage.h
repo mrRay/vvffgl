@@ -7,6 +7,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import <pthread.h>
 
 typedef void (*FFGLImageTextureReleaseCallback)(GLuint name, void *context);
 typedef void (*FFGLImageBufferReleaseCallback)(void *baseAddress, void *context);
@@ -19,6 +20,7 @@ typedef void (*FFGLImageBufferReleaseCallback)(void *baseAddress, void *context)
     BOOL                            _hasTextureRect;
     NSUInteger                      _imageWidth;
     NSUInteger                      _imageHeight;
+    pthread_mutex_t                 _conversionLock;
     void                            *_texture2DInfo;
     FFGLImageTextureReleaseCallback _texture2DReleaseCallback;
     void                            *_texture2DReleaseContext;
