@@ -23,9 +23,25 @@ static void FFGLCPURendererBufferRelease(void *baseAddress, void* context) {
         NSUInteger numBuffers = [plugin _maximumInputFrameCount];
         if (numBuffers > 0) {
             _buffers = malloc(sizeof(void *) * numBuffers);
+            if (_buffers == NULL) {
+                [self release];
+                return nil;
+            }
         }
         _fcStruct.inputFrameCount = numBuffers;
         _fcStruct.inputFrames = _buffers;
+#if __BIG_ENDIAN__
+        if ([format isEqualToString:FFGLPixelFormatRGB565]) { _bpp = 2; }
+        else if ([format isEqualToString:FFGLPixelFormatRGB888]) { _bpp = 3; }
+        else if ([format isEqualToString:FFGLPixelFormatARGB8888]) { _bpp = 4; }
+#else
+        if ([format isEqualToString:FFGLPixelFormatBGR565]) { _bpp = 2; }
+        else if ([format isEqualToString:FFGLPixelFormatBGR888]) { _bpp = 3; }
+        else if ([format isEqualToString:FFGLPixelFormatBGRA8888]) { _bpp = 4; }
+#endif
+        else { // This should never happen, as it is checked in FFGLRenderer at init.
+            [NSException raise:@"FFGLRendererException" format:@"Unexpected pixel format."];
+        }
     }
     return self;
 }
@@ -52,24 +68,12 @@ static void FFGLCPURendererBufferRelease(void *baseAddress, void* context) {
 
 - (BOOL)_implementationRender
 {
+    // We could cache the values of [self plugin], [self bounds], [self _instance] and [self pixelFormat]
+    // at init, as they are constant for our lifetime.
     FFGLPlugin *plugin = [self plugin];
     NSRect bounds = [self bounds];
-    NSString *pFormat = [self pixelFormat];
-    NSUInteger bpp;
     BOOL result;
-#if __BIG_ENDIAN__
-    if ([pFormat isEqualToString:FFGLPixelFormatRGB565]) { bpp = 2; }
-    else if ([pFormat isEqualToString:FFGLPixelFormatRGB888]) { bpp = 3; }
-    else if ([pFormat isEqualToString:FFGLPixelFormatARGB8888]) { bpp = 4; }
-#else
-    if ([pFormat isEqualToString:FFGLPixelFormatBGR565]) { bpp = 2; }
-    else if ([pFormat isEqualToString:FFGLPixelFormatBGR888]) { bpp = 3; }
-    else if ([pFormat isEqualToString:FFGLPixelFormatBGRA8888]) { bpp = 4; }
-#endif
-    else { // This should never happen, as it is checked in FFGLRenderer at init.
-        [NSException raise:@"FFGLRendererException" format:@"Unexpected pixel format in FFGLRenderer"];
-     }
-    _fcStruct.outputFrame = valloc(bounds.size.width * bpp * bounds.size.height);
+    _fcStruct.outputFrame = valloc(bounds.size.width * _bpp * bounds.size.height);
     if (_fcStruct.outputFrame == NULL) {
         return NO;
     }
@@ -77,17 +81,17 @@ static void FFGLCPURendererBufferRelease(void *baseAddress, void* context) {
         result = [plugin _processFrameCopy:&_fcStruct forInstance:[self _instance]];
     } else {
         if (_fcStruct.inputFrameCount > 0) { // ie we are not a source
-            memcpy(_fcStruct.outputFrame, _buffers[0], bounds.size.width * bpp * bounds.size.height);
+            memcpy(_fcStruct.outputFrame, _buffers[0], bounds.size.width * _bpp * bounds.size.height);
         }
         result = [plugin _processFrameInPlace:_fcStruct.outputFrame forInstance:[self _instance]];
     }
     FFGLImage *output;
     if (result) {
         output = [[[FFGLImage alloc] initWithBuffer:_fcStruct.outputFrame
-                                        pixelFormat:pFormat
+                                        pixelFormat:[self pixelFormat]
                                          pixelsWide:bounds.size.width
                                          pixelsHigh:bounds.size.height
-                                        bytesPerRow:bounds.size.width * bpp
+                                        bytesPerRow:bounds.size.width * _bpp
                                     releaseCallback:FFGLCPURendererBufferRelease
                                      releaseContext:NULL] autorelease];
     } else {

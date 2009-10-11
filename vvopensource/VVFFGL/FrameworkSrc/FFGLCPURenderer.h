@@ -14,6 +14,7 @@
     void **_buffers;
     FFGLProcessFrameCopyStruct _fcStruct;
     BOOL _frameCopies;
+    NSUInteger _bpp;
 }
 
 @end
