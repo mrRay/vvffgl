@@ -29,6 +29,7 @@ enum {
 extern NSString * const FFGLPluginAttributeNameKey;
 extern NSString * const FFGLPluginAttributeVersionKey;
 extern NSString * const FFGLPluginAttributeDescriptionKey;
+extern NSString * const FFGLPluginAttributeIdentifierKey;
 extern NSString * const FFGLPluginAttributeAuthorKey;
 extern NSString * const FFGLPluginAttributePathKey;
 
@@ -57,7 +58,6 @@ typedef struct FFGLPluginData FFGLPluginData; // Private
 - (FFGLPluginType)type;
 - (FFGLPluginMode)mode;
 - (NSArray *)supportedBufferPixelFormats;
-- (NSString *)identifier; // Maybe move this into the attributes dict?
 - (NSDictionary *)attributes;
 - (NSArray *)parameterKeys;
 - (NSDictionary *)attributesForParameterWithKey:(NSString *)key;

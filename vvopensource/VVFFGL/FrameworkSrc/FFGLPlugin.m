@@ -36,7 +36,6 @@ struct FFGLPluginData {
     NSArray *bufferPixelFormats;
     NSDictionary *parameters;
     NSDictionary *attributes;
-    NSString *identifier;
 };
 
 @interface NSString (FFGLPluginExtensions)
@@ -53,6 +52,7 @@ NSString * const FFGLPixelFormatBGR565 = @"FFGLPixelFormatBGR565";
 NSString * const FFGLPluginAttributeNameKey = @"FFGLPluginAttributeNameKey";
 NSString * const FFGLPluginAttributeVersionKey = @"FFGLPluginAttributeVersionKey";
 NSString * const FFGLPluginAttributeDescriptionKey = @"FFGLPluginAttributeDescriptionKey";
+NSString * const FFGLPluginAttributeIdentifierKey = @"FFGLPluginAttributeIdentifierKey";
 NSString * const FFGLPluginAttributeAuthorKey = @"FFGLPluginAttributeAuthorKey";
 NSString * const FFGLPluginAttributePathKey = @"FFGLPluginAttributePathKey";
 
@@ -124,7 +124,6 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         _pluginData->bufferPixelFormats = nil;
         _pluginData->parameters = nil;
         _pluginData->attributes = nil;
-        _pluginData->identifier = nil;
         
         // Load the plugin bundle.
         NSURL *url = [NSURL fileURLWithPath:path isDirectory:NO];
@@ -182,9 +181,14 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
             to respective methods.
          */
         
-        // Set our identifier and type from the PluginInfoStruct.
-        _pluginData->identifier = [[NSString stringWithFFPluginDubiousBytes:info->PluginUniqueID nominalLength:4] retain];
+        // Set type from the PluginInfoStruct.
         _pluginData->type = info->PluginType;
+        
+        _pluginData->attributes = [[NSMutableDictionary alloc] initWithCapacity:6];
+        // Get our identifier to store in the attributes dictionary.
+        NSString *identifier = [NSString stringWithFFPluginDubiousBytes:info->PluginUniqueID nominalLength:4];
+        if (identifier != nil)
+            [(NSMutableDictionary *)_pluginData->attributes setObject:identifier forKey:FFGLPluginAttributeIdentifierKey];
         
         // Get extended info, and fill out our attributes dictionary.
         NSString *name;
@@ -192,31 +196,30 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
             name = [NSString stringWithFFPluginDubiousBytes:info->PluginName nominalLength:16];
             name = [name stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         } else {
-            name = [self identifier];
+            name = identifier;
         }
+        if (name != nil)
+            [(NSMutableDictionary *)_pluginData->attributes setObject:name forKey:FFGLPluginAttributeNameKey];
+        
+        [(NSMutableDictionary *)_pluginData->attributes setObject:[[path copy] autorelease] forKey:FFGLPluginAttributePathKey];
 
         result = _pluginData->main(FF_GETEXTENDEDINFO, 0, 0);
         PluginExtendedInfoStruct *extendedInfo = (PluginExtendedInfoStruct *)result.svalue;
         if (extendedInfo != NULL) {
             NSNumber *version = [NSNumber numberWithFloat:extendedInfo->PluginMajorVersion + (extendedInfo->PluginMinorVersion * 0.001)];
+            [(NSMutableDictionary *)_pluginData->attributes setObject:version forKey:FFGLPluginAttributeVersionKey];
             
             NSString *description;
-            if (extendedInfo->Description)
+            if (extendedInfo->Description) {
                 description = [NSString stringWithCString:extendedInfo->Description encoding:NSASCIIStringEncoding];
-            else
-                description = @"";
-            
+                [(NSMutableDictionary *)_pluginData->attributes setObject:description forKey:FFGLPluginAttributeDescriptionKey];
+            }            
+    
             NSString *author;
-            if (extendedInfo->About)
+            if (extendedInfo->About) {
                 author = [NSString stringWithCString:extendedInfo->About encoding:NSASCIIStringEncoding];
-            else
-                author = @"";
-            
-            _pluginData->attributes = [[NSDictionary alloc] initWithObjectsAndKeys:name, FFGLPluginAttributeNameKey, version, FFGLPluginAttributeVersionKey,
-                                       description, FFGLPluginAttributeDescriptionKey, author, FFGLPluginAttributeAuthorKey,
-                                       [[path copy] autorelease], FFGLPluginAttributePathKey, nil];
-        } else {
-            _pluginData->attributes = [[NSDictionary alloc] initWithObjectsAndKeys:name, FFGLPluginAttributeNameKey, path, FFGLPluginAttributePathKey, nil];
+                [(NSMutableDictionary *)_pluginData->attributes setObject:author forKey:FFGLPluginAttributeAuthorKey];
+            }
         }
         
         // Determine our mode.
@@ -365,7 +368,6 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         [_pluginData->bufferPixelFormats release];
         [_pluginData->parameters release];
         [_pluginData->attributes release];
-        [_pluginData->identifier release];
         free(_pluginData);
     }
     [super dealloc];
@@ -421,11 +423,6 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 - (NSArray *)supportedBufferPixelFormats
 {
     return _pluginData->bufferPixelFormats;
-}
-
-- (NSString *)identifier
-{
-    return _pluginData->identifier;
 }
 
 - (NSDictionary *)attributes
