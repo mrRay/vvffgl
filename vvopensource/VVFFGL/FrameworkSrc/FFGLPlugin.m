@@ -39,6 +39,10 @@ struct FFGLPluginData {
     NSString *identifier;
 };
 
+@interface NSString (FFGLPluginExtensions)
++ (NSString *)stringWithFFPluginDubiousBytes:(const void *)bytes nominalLength:(NSUInteger)len;
+@end
+
 NSString * const FFGLPixelFormatARGB8888 = @"FFGLPixelFormatARGB8888";
 NSString * const FFGLPixelFormatBGRA8888 = @"FFGLPixelFormatBGRA8888";
 NSString * const FFGLPixelFormatRGB888 = @"FFGLPixelFormatRGB888";
@@ -70,6 +74,7 @@ NSString * const FFGLParameterTypeImage = @"FFGLParameterTypeImage";
 
 static NSMutableDictionary *_FFGLPluginInstances = nil;
 static pthread_mutex_t  _FFGLPluginInstancesLock;
+
 @implementation FFGLPlugin
 
 + (void)initialise
@@ -142,9 +147,20 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
             [self release];
             return nil;
         }
-
-        // Get basic plugin info, and check we are a type (source or effect) we know about.
+        
         plugMainUnion result;
+
+        // Initialise the plugin. According to the FF spec we only need to do this before calling instantiate,
+        // but some plugins require it before other calls, so it should be our first call.
+        result = _pluginData->main(FF_INITIALISE, 0, 0);
+        if (result.ivalue != FF_SUCCESS) {
+            pthread_mutex_unlock(&_FFGLPluginInstancesLock);
+            [self release];
+            return nil;
+        }
+        _pluginData->initted = YES;
+        
+        // Get basic plugin info, and check we are a type (source or effect) we know about.
         result = _pluginData->main(FF_GETINFO, 0, 0);
         if (result.svalue == NULL) {
             pthread_mutex_unlock(&_FFGLPluginInstancesLock);
@@ -167,15 +183,17 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
          */
         
         // Set our identifier and type from the PluginInfoStruct.
-        _pluginData->identifier = [[NSString alloc] initWithBytes:info->PluginUniqueID length:4 encoding:NSASCIIStringEncoding];
+        _pluginData->identifier = [[NSString stringWithFFPluginDubiousBytes:info->PluginUniqueID nominalLength:4] retain];
         _pluginData->type = info->PluginType;
         
         // Get extended info, and fill out our attributes dictionary.
         NSString *name;
-        if(info->PluginName)
-            name = [[[NSString alloc] initWithBytes:info->PluginName length:16 encoding:NSASCIIStringEncoding] autorelease];
-        else
+        if(info->PluginName) {
+            name = [NSString stringWithFFPluginDubiousBytes:info->PluginName nominalLength:16];
+            name = [name stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        } else {
             name = [self identifier];
+        }
 
         result = _pluginData->main(FF_GETEXTENDEDINFO, 0, 0);
         PluginExtendedInfoStruct *extendedInfo = (PluginExtendedInfoStruct *)result.svalue;
@@ -313,8 +331,8 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
             if (recognized == YES) {
                 result = _pluginData->main(FF_GETPARAMETERNAME, i, 0);
                 if (result.svalue != NULL) {
-                    [pAttributes setValue:[[[NSString alloc] initWithBytes:result.svalue length:16 encoding:NSASCIIStringEncoding] autorelease]
-                                  forKey:FFGLParameterAttributeNameKey];
+                    [pAttributes setValue:[NSString stringWithFFPluginDubiousBytes:result.svalue nominalLength:16]
+                                   forKey:FFGLParameterAttributeNameKey];
                 } else {
                     [pAttributes setValue:@"Untitled Parameter" forKey:FFGLParameterAttributeNameKey];
                 }
@@ -324,14 +342,6 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
             }
         }
         
-        // Finally initialise the plugin.
-        result = _pluginData->main(FF_INITIALISE, 0, 0);
-        if (result.ivalue != FF_SUCCESS) {
-            pthread_mutex_unlock(&_FFGLPluginInstancesLock);
-            [self release];
-            return nil;
-        }
-        _pluginData->initted = YES;
         [_FFGLPluginInstances setObject:self forKey:path];
         pthread_mutex_unlock(&_FFGLPluginInstancesLock);
     }
@@ -551,4 +561,24 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
     plugMainUnion result = _pluginData->main(FF_PROCESSFRAME, (DWORD)frameInfo, instance);
     return result.ivalue == FF_SUCCESS ? YES : NO;
 }
+@end
+
+@implementation NSString (FFGLPluginExtensions)
+
+/*
+ Lots of FF plugins return null-terminated strings when the spec requires strings of a specific length.
+ Use this method to get strings from the plugin in situations where the spec requires them to be a
+ specific length.
+ */
++ (NSString *)stringWithFFPluginDubiousBytes:(const void *)bytes nominalLength:(NSUInteger)len {
+    NSUInteger i;
+    NSUInteger safe;
+    for (i = safe = 0; i < len; i++) {
+        if (((char *)bytes)[i] == 0)
+            break;
+        safe++;
+    }
+    return [[[NSString alloc] initWithBytes:bytes length:safe encoding:NSASCIIStringEncoding] autorelease];
+}
+
 @end
