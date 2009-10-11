@@ -115,32 +115,30 @@
 {
     [self willChangeValueForKey:@"output"];
     [_lock lock];
-    if (_source) {
-        BOOL result;
-        result = [_source renderAtTime:time];
-        FFGLImage *image = [_source outputImage];
-        for (FFGLRenderer *effect in _effects) {
-            if ((result == NO) || (image == nil)) {
-                //                NSLog(@"Render failed");
-                [_output release];
-                _output = nil;
-                [_lock unlock];
-                return;
-            }            
-            NSArray *parameters = [[effect plugin] parameterKeys];
-            for (NSString *key in parameters) {
-                if ([[[[effect plugin] attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
-                    [effect setValue:image forParameterKey:key];
-                    break;
-                }
+    BOOL result;
+    result = [_source renderAtTime:time];
+    FFGLImage *image = [_source outputImage];
+    for (FFGLRenderer *effect in _effects) {
+        if ((result == NO) || (image == nil)) {
+//            NSLog(@"Render failed");
+            [_output release];
+            _output = nil;
+            [_lock unlock];
+            return;
+        }            
+        NSArray *parameters = [[effect plugin] parameterKeys];
+        for (NSString *key in parameters) {
+            if ([[[[effect plugin] attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
+                [effect setValue:image forParameterKey:key];
+                break;
             }
-            result = [effect renderAtTime:time];
-            image = [effect outputImage];            
         }
-        [image retain];
-        [_output release];
-        _output = image;
+        result = [effect renderAtTime:time];
+        image = [effect outputImage];            
     }
+    [image retain];
+    [_output release];
+    _output = image;
     [_lock unlock];
     [self didChangeValueForKey:@"output"];
 }

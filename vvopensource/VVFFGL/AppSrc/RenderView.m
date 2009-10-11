@@ -89,6 +89,7 @@
         NSUInteger bpr = [image bufferBytesPerRow];
         NSUInteger w = [image bufferPixelsWide];
         NSUInteger h = [image bufferPixelsHigh];
+        
         NSData *data = [NSData dataWithBytesNoCopy:[image bufferBaseAddress] length:h * bpr freeWhenDone:NO];
         CIImage *ci = [CIImage imageWithBitmapData:data
                                        bytesPerRow:bpr
@@ -100,6 +101,9 @@
         [_ciContext drawImage:ci atPoint:at fromRect:[ci extent]];
     } else if (image != nil) {
         NSLog(@"lockBufferRepresentationWithPixelFormat failed");
+    } else {
+        glClearColor(0.0, 0.0, 0.0, 0.0);
+        glClear(GL_COLOR_BUFFER_BIT);
     }
     [context flushBuffer];
 }
