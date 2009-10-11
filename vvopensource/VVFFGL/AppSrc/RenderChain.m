@@ -118,18 +118,15 @@
     if (_source) {
         BOOL result;
         result = [_source renderAtTime:time];
-        if (result == NO) {
-//            NSLog(@"Render failed");
-        }
         FFGLImage *image = [_source outputImage];
-        if (image == nil) {
-//            NSLog(@"No output from source.");
-            [_output release];
-            _output = nil;
-            [_lock unlock];
-            return;
-        }
         for (FFGLRenderer *effect in _effects) {
+            if ((result == NO) || (image == nil)) {
+                //                NSLog(@"Render failed");
+                [_output release];
+                _output = nil;
+                [_lock unlock];
+                return;
+            }            
             NSArray *parameters = [[effect plugin] parameterKeys];
             for (NSString *key in parameters) {
                 if ([[[[effect plugin] attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
@@ -138,10 +135,7 @@
                 }
             }
             result = [effect renderAtTime:time];
-            if (result == NO) {
-//                NSLog(@"Render failed");
-            }
-            image = [effect outputImage];
+            image = [effect outputImage];            
         }
         [image retain];
         [_output release];
