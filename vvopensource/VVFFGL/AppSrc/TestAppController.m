@@ -96,7 +96,7 @@
     NSArray *sourceArray = (sender == _sourcesTableView ? [[FFGLPluginManager sharedManager] sourcePlugins] : [[FFGLPluginManager sharedManager] effectPlugins]);
     if ((selectedRow >= 0) && (selectedRow < [sourceArray count])) {
         FFGLPlugin *plugin = [sourceArray objectAtIndex:selectedRow];
-        NSLog(@"Adding renderer for %@ plugin: %@", [plugin mode] == FFGLPluginModeCPU ? @"CPU" : @"GPU", (NSString *)[[plugin attributes] objectForKey:FFGLPluginAttributeNameKey]);
+        NSLog(@"Adding renderer for %@ plugin: \"%@\"", [plugin mode] == FFGLPluginModeCPU ? @"CPU" : @"GPU", (NSString *)[[plugin attributes] objectForKey:FFGLPluginAttributeNameKey]);
         FFGLRenderer *renderer = nil;
         if ([plugin mode] == FFGLPluginModeCPU) {
             if ([[plugin supportedBufferPixelFormats] containsObject:kFFPixelFormat]) {
