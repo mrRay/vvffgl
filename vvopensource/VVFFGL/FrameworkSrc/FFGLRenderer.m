@@ -227,7 +227,10 @@
 
 - (id)valueForUndefinedKey:(NSString *)key
 {
-    return [_renderer valueForParameterKey:key];
+    if ([[[_renderer plugin] parameterKeys] containsObject:key])
+        return [_renderer valueForParameterKey:key];
+    else
+        return [super valueForUndefinedKey:key];
 }
 
 /*
@@ -243,7 +246,10 @@
 */
 - (void)setValue:(id)value forUndefinedKey:(NSString *)key
 {
-    [_renderer _performSetValue:value forParameterKey:key];
+    if ([[[_renderer plugin] parameterKeys] containsObject:key])
+        [_renderer _performSetValue:value forParameterKey:key];
+    else
+        [super setValue:value forUndefinedKey:key];
 }
 /*
 - (void)setValue:(id)value forKeyPath:(NSString *)keyPath
