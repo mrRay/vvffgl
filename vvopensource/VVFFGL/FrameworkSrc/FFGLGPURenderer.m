@@ -45,6 +45,49 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, void *context) {
             _frameStruct.inputTextures = NULL;
         }
         // TODO: do we need an FBO to reuse for rendering into our output texture?
+		
+		CGLLockContext(cgl_ctx);
+		
+		glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &_previousFBO);
+		glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &_previousReadFBO);
+		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &_previousDrawFBO);
+		
+
+		// our texture attachment
+		glGenTextures(1, &_rendererFBOTexture);	
+		glBindTexture(GL_TEXTURE_2D, _rendererFBOTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, bounds.size.width, bounds.size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+		// our FBO
+		glGenFramebuffersEXT(1, &_rendererFBO);
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rendererFBO);
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, _rendererFBOTexture, 0);
+
+		GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+		if(status != GL_FRAMEBUFFER_COMPLETE_EXT)
+		{	
+			// return FBO state
+			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
+			glBindFramebufferEXT(GL_READ_FRAMEBUFFER_BINDING_EXT, _previousReadFBO);
+			glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_BINDING_EXT, _previousDrawFBO);
+			
+			// cleanup GL resources
+			glDeleteFramebuffersEXT(1, &_rendererFBO);
+			glDeleteTextures(1, &_rendererFBOTexture);
+			
+			CGLUnlockContext(cgl_ctx);
+			NSLog(@"Cannot create FBO for FFGLGPURenderer");
+			
+			[self release]
+			return nil;
+		}	
+		
+		// return FBO state
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
+		glBindFramebufferEXT(GL_READ_FRAMEBUFFER_BINDING_EXT, _previousReadFBO);
+		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_BINDING_EXT, _previousDrawFBO);
+				
+		CGLUnlockContext(cgl_ctx);
     }
     return self;
 }
