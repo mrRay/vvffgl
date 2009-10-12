@@ -207,6 +207,7 @@
 		BD90FA841078EA6D009A6273 /* RenderView.m in Sources */ = {isa = PBXBuildFile; fileRef = BD90FA831078EA6D009A6273 /* RenderView.m */; };
 		BD90FABF1078FEB5009A6273 /* RenderChain.m in Sources */ = {isa = PBXBuildFile; fileRef = BD90FABE1078FEB5009A6273 /* RenderChain.m */; };
 		BD9132F8107D2D600095AA79 /* FFGLInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9132F7107D2D600095AA79 /* FFGLInternal.h */; };
+		BD923A0010837AC60036739C /* FFGLRenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = BD93426C101A56F600C4B805 /* FFGLRenderer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BD9F6A0C10191358004D8CD9 /* FreeFrame.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6A0A10191358004D8CD9 /* FreeFrame.h */; };
 		BD9F6A88101921FD004D8CD9 /* FFGL.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6A87101921FD004D8CD9 /* FFGL.h */; };
 		BD9F6C8E101945AE004D8CD9 /* FFGLPlugin.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6C8A101945AE004D8CD9 /* FFGLPlugin.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -863,6 +864,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BD923A0010837AC60036739C /* FFGLRenderer.h in Headers */,
 				9606B185101763A200CC50B7 /* VVFFGL.h in Headers */,
 				BD9F6A0C10191358004D8CD9 /* FreeFrame.h in Headers */,
 				BD9F6A88101921FD004D8CD9 /* FFGL.h in Headers */,
@@ -1605,7 +1607,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INFOPLIST_FILE = "./VVFFGL/FrameworkSrc/VVFFGL-Info.plist";
-				INSTALL_PATH = "@executable_path/../Frameworks";
+				INSTALL_PATH = "@loader_path/../Frameworks";
 				PRODUCT_NAME = VVFFGL;
 			};
 			name = Debug;
@@ -1624,7 +1626,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INFOPLIST_FILE = "./VVFFGL/FrameworkSrc/VVFFGL-Info.plist";
-				INSTALL_PATH = "@executable_path/../Frameworks";
+				INSTALL_PATH = "@loader_path/../Frameworks";
 				PRODUCT_NAME = VVFFGL;
 				ZERO_LINK = NO;
 			};
