@@ -328,6 +328,9 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
                     }
                     break;
                 default:
+                    /*
+                     We ignore parameters we don't recognize. Instead we could bail on init, or assume them to be number parameters.
+                     */
                     recognized = NO;
                     break;
             }

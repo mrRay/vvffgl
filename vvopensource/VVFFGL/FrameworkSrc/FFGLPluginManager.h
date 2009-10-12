@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 /*
+ // TODO: this is not KVO compliant yet
  Maybe TODO - comment any ideas on (f)utility, plus any more...
     - watch directories for changes and load/unload plugins to match - no need to restart app to add new plugins.
     - notifications
