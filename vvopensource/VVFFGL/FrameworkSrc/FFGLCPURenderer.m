@@ -88,12 +88,13 @@ static void FFGLCPURendererBufferRelease(void *baseAddress, void* context) {
     FFGLImage *output;
     if (result) {
         output = [[[FFGLImage alloc] initWithBuffer:_fcStruct.outputFrame
+                                         CGLContext:NULL // TODO:
                                         pixelFormat:[self pixelFormat]
                                          pixelsWide:bounds.size.width
                                          pixelsHigh:bounds.size.height
                                         bytesPerRow:bounds.size.width * _bpp
                                     releaseCallback:FFGLCPURendererBufferRelease
-                                     releaseContext:NULL] autorelease];
+                                        releaseInfo:NULL] autorelease];
     } else {
         free(_fcStruct.outputFrame);
         output = nil;

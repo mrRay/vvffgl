@@ -7,9 +7,10 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import <OpenGL/OpenGL.h>
 #import <pthread.h>
 
-typedef void (*FFGLImageTextureReleaseCallback)(GLuint name, void *context);
+typedef void (*FFGLImageTextureReleaseCallback)(GLuint name, CGLContextObj cgl_ctx, void *context);
 typedef void (*FFGLImageBufferReleaseCallback)(void *baseAddress, void *context);
 
 @interface FFGLImage : NSObject {
@@ -20,6 +21,7 @@ typedef void (*FFGLImageBufferReleaseCallback)(void *baseAddress, void *context)
     BOOL                            _hasTextureRect;
     NSUInteger                      _imageWidth;
     NSUInteger                      _imageHeight;
+    CGLContextObj                   _context;
     pthread_mutex_t                 _conversionLock;
     void                            *_texture2DInfo;
     FFGLImageTextureReleaseCallback _texture2DReleaseCallback;
@@ -45,7 +47,12 @@ typedef void (*FFGLImageBufferReleaseCallback)(void *baseAddress, void *context)
 /*
  
  Locking
-    We're going to have to lock when we convert textures<->pixel-buffers, so we don't perform the conversions twice
+    We're going to have to lock when we convert textures<->pixel-buffers, so we don't perform the conversions twice/leak.
+ 
+    unlockXXRepresentation currently does nothing. Releasing textures/buffers on unlock would require either
+        - that we stipulate one lock, one unlock call (which is difficult for clients and us because you don't know what other objects hold
+            references to the image and may have locked it too).
+    or  - that lock/unlock performs something akin to retain-counting, and that we stipulate that calls be matched (each lock has an unlock).
  */
 
 /*
@@ -55,20 +62,20 @@ typedef void (*FFGLImageBufferReleaseCallback)(void *baseAddress, void *context)
  Are there any reasonable demands we can make of the texture that would let us drop the texturePixelsWide/High arguments?
  We probably need a CGLContext in here too, yea?
  */
-- (id)initWithTexture2D:(GLuint)texture imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseContext:(void *)context;
+- (id)initWithTexture2D:(GLuint)texture CGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo;
 
 /*
  Do we need texture pixel size as well as image size, or are there no restrictings on GL_TEXTURE_RECTANGLE_EXT dimensions?
  */
-- (id)initWithTextureRect:(GLuint)texture pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseContext:(void *)context;
+- (id)initWithTextureRect:(GLuint)texture CGLContext:(CGLContextObj)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo;
 
 /*
- - (id)initWithBuffer:(void *)buffer pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseContext:(void *)context
+ - (id)initWithBuffer:(void *)buffer pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo
     Creates a new FFGLImage with the provided buffer. The buffer should remain valid until the function at callback is called.
     Note that due to limitations in FreeFrame plugins, if there are padding pixels in the buffer (ie if rowBytes != ((the number of bytes per pixel for format) * width)),
     the buffer will be copied at init.
  */
-- (id)initWithBuffer:(void *)buffer pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseContext:(void *)context;
+- (id)initWithBuffer:(void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo;
 
 - (NSUInteger)imagePixelsWide;
 - (NSUInteger)imagePixelsHigh;

@@ -78,6 +78,7 @@
                 [self release];
                 return nil;
             }
+            NSLog(@"Renderer initted");
         }
     }	
     return self;
@@ -94,6 +95,7 @@
 }
 
 - (void)releaseResources {
+    NSLog(@"releaseResources");
     if(_pluginContext != nil) {
         CGLReleaseContext(_pluginContext);
     }

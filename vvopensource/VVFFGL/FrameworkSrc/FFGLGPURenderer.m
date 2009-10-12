@@ -10,7 +10,7 @@
 #import "FFGLImage.h"
 #import <OpenGL/CGLMacro.h>
 
-static void FFGLGPURendererTextureReleaseCallback(GLuint name, void *context) {
+static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl_ctx, void *context) {
     // TODO: destroy the texture we create for our output image
 	//	glDeleteTextures(1, &name);
 }
@@ -104,15 +104,13 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, void *context) {
 
 - (void)nonGCCleanup
 {
-    // TODO: if we add an FBO in init, delete it here.
+    CGLContextObj cgl_ctx = _context;
+    CGLLockContext(cgl_ctx);
+    
+    glDeleteFramebuffersEXT(1, _rendererFBO);
+    
     CGLReleaseContext(_context);
     if (_frameStruct.inputTextures != NULL) {
-        NSUInteger i;
-        for (i = 0; i < _frameStruct.inputTextureCount; i++) {
-            if (_frameStruct.inputTextures[i] != NULL) {
-                free(_frameStruct.inputTextures[i]);
-            }
-        }
         free(_frameStruct.inputTextures);
     }    
 }
@@ -208,12 +206,13 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, void *context) {
     CGLUnlockContext(cgl_ctx);
     
     FFGLImage *output = [[[FFGLImage alloc] initWithTexture2D:_rendererFBOTexture
+                                                   CGLContext:_context
 											  imagePixelsWide:self.bounds.size.width
 											  imagePixelsHigh:self.bounds.size.height
 											texturePixelsWide:self.bounds.size.width
 											texturePixelsHigh:self.bounds.size.height
 											  releaseCallback:FFGLGPURendererTextureReleaseCallback
-											   releaseContext:NULL] autorelease];
+                                                  releaseInfo:NULL] autorelease];
     [self setOutputImage:output];
      
     return result;

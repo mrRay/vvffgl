@@ -29,7 +29,7 @@ static void FFGLImageBufferRelease(void *baseAddress, void* context) {
 
 @implementation FFGLImage
 
-- (id)initWithTexture2D:(GLuint)texture imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseContext:(void *)context
+- (id)initWithTexture2D:(GLuint)texture CGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo
 {
     if (self = [super init]) {
         _texture2DInfo = malloc(sizeof(FFGLTextureInfo));
@@ -37,6 +37,7 @@ static void FFGLImageBufferRelease(void *baseAddress, void* context) {
             [self release];
             return nil;
         }
+        _context = CGLRetainContext(context);
         _source = FFGLImageSourceTexture2D;
         ((FFGLTextureInfo *)_texture2DInfo)->texture = texture;
         ((FFGLTextureInfo *)_texture2DInfo)->width = _imageWidth = imageWidth;
@@ -44,27 +45,29 @@ static void FFGLImageBufferRelease(void *baseAddress, void* context) {
         ((FFGLTextureInfo *)_texture2DInfo)->hardwareWidth = textureWidth;
         ((FFGLTextureInfo *)_texture2DInfo)->hardwareHeight = textureHeight;
         _texture2DReleaseCallback = callback;
-        _texture2DReleaseContext = context;
+        _texture2DReleaseContext = userInfo;
         _hasTexture2D = YES;
     }
     return self;
 }
 
-- (id)initWithTextureRect:(GLuint)texture pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseContext:(void *)context {
+- (id)initWithTextureRect:(GLuint)texture CGLContext:(CGLContextObj)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo {
     if (self = [super init]) {
+        _context = CGLRetainContext(context);
         _source = FFGLImageSourceTextureRect;
         _textureRect = texture;
         _textureRectWidth = _imageWidth = width;
         _textureRectHeight = _imageHeight = height;
         _textureRectReleaseCallback = callback;
-        _textureRectReleaseContext = context;
+        _textureRectReleaseContext = userInfo;
         _hasTextureRect = YES;
     }
     return self;
 }
 
-- (id)initWithBuffer:(void *)buffer pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseContext:(void *)context {
+- (id)initWithBuffer:(void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo {
     if (self = [super init]) {
+        _context = CGLRetainContext(context);
         _source = FFGLImageSourceBuffer;
         _hasBuffer = YES;
         _bufferPixelFormat = [format retain];
@@ -99,7 +102,7 @@ static void FFGLImageBufferRelease(void *baseAddress, void* context) {
         } else {
             _buffer = buffer;
             _bufferReleaseCallback = callback;
-            _bufferReleaseContext = context;
+            _bufferReleaseContext = userInfo;
         }
     }
     return self;
@@ -107,15 +110,16 @@ static void FFGLImageBufferRelease(void *baseAddress, void* context) {
 
 - (void)releaseResources {
     if (_hasTexture2D == YES && _texture2DInfo != NULL) {
-        _texture2DReleaseCallback(((FFGLTextureInfo *)_texture2DInfo)->texture, _texture2DReleaseContext);
+        _texture2DReleaseCallback(((FFGLTextureInfo *)_texture2DInfo)->texture, _context, _texture2DReleaseContext);
         free(_texture2DInfo);
     }
     if (_hasTextureRect == YES) {
-        _textureRectReleaseCallback(_textureRect, _textureRectReleaseContext);
+        _textureRectReleaseCallback(_textureRect, _context, _textureRectReleaseContext);
     }
     if (_hasBuffer == YES) {
         _bufferReleaseCallback(_buffer, _bufferReleaseContext);
     }
+    CGLReleaseContext(_context);
 }
 
 - (void)dealloc {
