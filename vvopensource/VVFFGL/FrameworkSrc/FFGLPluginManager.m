@@ -155,11 +155,7 @@ static FFGLPluginManager *_sharedPluginManager = nil;
 
 - (NSArray *)plugins
 {
-    NSArray *combined;
-    @synchronized(self) {
-        combined = [_sources arrayByAddingObjectsFromArray:_effects];        
-    }
-    return combined;
+    return [[self sourcePlugins] arrayByAddingObjectsFromArray:[self effectPlugins]];        
 }
 
 - (NSArray *)sourcePlugins
