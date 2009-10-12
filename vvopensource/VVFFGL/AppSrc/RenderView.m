@@ -82,10 +82,34 @@
         _needsReshape = NO;
     }
     FFGLImage *image = [_chain output];
-    if ([image lockTexture2DRepresentation]) {
-        
+    if ([image lockTexture2DRepresentation])
+	{
         // draw it
-    } else if ([image lockBufferRepresentationWithPixelFormat:FFGLPixelFormatBGRA8888]) { // This won't be needed once FFGLImage can convert buffers->textures
+		glColor4f(1.0, 1.0, 1.0, 1.0);
+		
+		NSLog(@"texture: %u,  width: %u, height %u", [image texture2DName], [image texture2DPixelsWide], [image texture2DPixelsHigh]);
+		
+		glActiveTexture(GL_TEXTURE0);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, [image texture2DName]);
+	
+		glDisable(GL_BLEND);
+	//	glEnable(GL_BLEND);
+	//	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+		
+		glBegin(GL_QUADS);
+		glTexCoord2f(0, 0);
+		glVertex2f(0, 0);
+		glTexCoord2f(0, 1);
+		glVertex2f(0, [image texture2DPixelsHigh]);
+		glTexCoord2f(1, 1);
+		glVertex2f([image texture2DPixelsWide], [image texture2DPixelsHigh]);
+		glTexCoord2f(1, 0);
+		glVertex2f([image texture2DPixelsWide], 0);
+		glEnd();		
+		
+
+	} else if ([image lockBufferRepresentationWithPixelFormat:FFGLPixelFormatBGRA8888]) { // This won't be needed once FFGLImage can convert buffers->textures
         NSUInteger bpr = [image bufferBytesPerRow];
         NSUInteger w = [image bufferPixelsWide];
         NSUInteger h = [image bufferPixelsHigh];

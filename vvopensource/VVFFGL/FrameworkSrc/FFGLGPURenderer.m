@@ -12,7 +12,7 @@
 
 static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl_ctx, void *context) {
     // TODO: destroy the texture we create for our output image
-	//	glDeleteTextures(1, &name);
+	glDeleteTextures(1, &name);
 }
 
 @implementation FFGLGPURenderer
@@ -29,6 +29,9 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
         
         // this rightnow is totally dependant on how we end up exposing the instantiate functions for the plugin, 
         // but we will need something like this somewhere. Feel free to fiddle :)
+		
+		NSLog(@"called initWithPlugin");
+		
 		
 		// retain GL context
 		_context = cgl_ctx;
@@ -61,10 +64,13 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 		
 		// our temporary texture attachment
 		GLuint _rendererFBOTexture;
+		glEnable(GL_TEXTURE_2D);
 		glGenTextures(1, &_rendererFBOTexture);	
 		glBindTexture(GL_TEXTURE_2D, _rendererFBOTexture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, bounds.size.width, bounds.size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
+		
+		NSLog(@"GL Error so far : %u", glGetError());
+		
 		// our FBO
 		glGenFramebuffersEXT(1, &_rendererFBO);
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rendererFBO);
@@ -83,12 +89,14 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 			glDeleteTextures(1, &_rendererFBOTexture);
 			
 			CGLUnlockContext(cgl_ctx);
-			NSLog(@"Cannot create FBO for FFGLGPURenderer");
+			NSLog(@"Cannot create FBO for FFGLGPURenderer: %u", status);
 			
 			[self release];
 			return nil;
 		}	
 		
+		_frameStruct.hostFBO = _rendererFBO;
+
 		
 		// return FBO state
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
@@ -99,6 +107,8 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 		glDeleteFramebuffersEXT(1, &_rendererFBO);
 		
 		CGLUnlockContext(cgl_ctx);
+		
+		
     }
     return self;
 }
@@ -141,7 +151,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
     CGLLockContext(cgl_ctx);
     
     // TODO: need to set output, bind FBO so we render in output's texture, register FBO in _frameStruct, then do this:
-//    _frameStruct.hostFBO = whatever; // or if we reuse the same FBO, do this once in init, and not here.
+	// _frameStruct.hostFBO = whatever; // or if we reuse the same FBO, do this once in init, and not here.
 	
 	// - vade: we will be using our _renderFBO texture associated with our FFGLGPURenderer
     
@@ -174,7 +184,8 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	// set up viewport/projection matrices and coordinate system for FBO target.
 	GLsizei	width = self.bounds.size.width,	height = self.bounds.size.height;
 	
-	glViewport(0, 0,  width, height);
+
+	glViewport(self.bounds.origin.x, self.bounds.origin.y, self.bounds.size.width, self.bounds.size.height);
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -184,6 +195,9 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
+		
+	glClearColor(0.0, 1.0, 0.0, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	// render our plugin to our FBO
 	BOOL result = [[self plugin] _processFrameGL:&_frameStruct forInstance:[self _instance]];
