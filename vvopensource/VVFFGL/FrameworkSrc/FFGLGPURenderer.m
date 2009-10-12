@@ -78,7 +78,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, void *context) {
 			CGLUnlockContext(cgl_ctx);
 			NSLog(@"Cannot create FBO for FFGLGPURenderer");
 			
-			[self release]
+			[self release];
 			return nil;
 		}	
 		
