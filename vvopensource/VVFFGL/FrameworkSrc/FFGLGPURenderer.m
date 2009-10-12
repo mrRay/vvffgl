@@ -22,8 +22,9 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
     return nil;
 }
 
-- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)cgl_ctx bounds:(NSRect)bounds;
+- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)cgl_ctx forBounds:(NSRect)bounds
 {
+    NSLog(@"Init");
     if (self = [super initWithPlugin:plugin context:cgl_ctx forBounds:bounds]) {
         
         // this rightnow is totally dependant on how we end up exposing the instantiate functions for the plugin, 
@@ -107,7 +108,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
     CGLContextObj cgl_ctx = _context;
     CGLLockContext(cgl_ctx);
     
-    glDeleteFramebuffersEXT(1, _rendererFBO);
+    glDeleteFramebuffersEXT(1, &_rendererFBO);
     
     CGLReleaseContext(_context);
     if (_frameStruct.inputTextures != NULL) {
