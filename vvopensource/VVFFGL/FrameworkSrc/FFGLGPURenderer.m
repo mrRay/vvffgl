@@ -58,7 +58,8 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, void *context) {
 		glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &_previousReadFBO);
 		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &_previousDrawFBO);
 		
-		// our texture attachment
+		// our temporary texture attachment
+		GLuint _rendererFBOTexture;
 		glGenTextures(1, &_rendererFBOTexture);	
 		glBindTexture(GL_TEXTURE_2D, _rendererFBOTexture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, bounds.size.width, bounds.size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -87,11 +88,15 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, void *context) {
 			return nil;
 		}	
 		
+		
 		// return FBO state
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
 		glBindFramebufferEXT(GL_READ_FRAMEBUFFER_BINDING_EXT, _previousReadFBO);
 		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_BINDING_EXT, _previousDrawFBO);
-				
+
+		// delete our temporary texture 
+		glDeleteFramebuffersEXT(1, &_rendererFBO);
+		
 		CGLUnlockContext(cgl_ctx);
     }
     return self;
@@ -153,8 +158,19 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, void *context) {
 	// save our current GL state - 
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	
+	
+	// create a new texture for this frame
+	GLuint _rendererFBOTexture;
+	glGenTextures(1, &_rendererFBOTexture);	
+	glBindTexture(GL_TEXTURE_2D, _rendererFBOTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, self.bounds.size.width, self.bounds.size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	
+	
 	// bind our FBO
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rendererFBO);
+	
+	// attach our new texture
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, _rendererFBOTexture, 0);
 	
 	// set up viewport/projection matrices and coordinate system for FBO target.
 	GLsizei	width = self.bounds.size.width,	height = self.bounds.size.height;

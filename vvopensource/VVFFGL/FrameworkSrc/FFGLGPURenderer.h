@@ -20,6 +20,6 @@
 
 
     GLuint _rendererFBO;		// this FBO is responsible for providing the GL_TEXTURE_2D texture that FFGL requires.
-    GLuint _rendererFBOTexture;	// COLOR_ATTACHMENT_0 for our above FBO
+//   GLuint _rendererFBOTexture;	// COLOR_ATTACHMENT_0 for our above FBO
 }
 @end
