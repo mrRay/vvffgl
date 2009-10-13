@@ -119,8 +119,10 @@
     BOOL result;
     result = [_source renderAtTime:time];
     FFGLImage *image = [_source outputImage];
-    for (FFGLRenderer *effect in _effects) {
-        if ((result == NO) || (image == nil)) {
+    for (FFGLRenderer *effect in _effects) 
+	{
+        if ((result == NO) || (image == nil))
+		{
 //            NSLog(@"Render failed");
             [_output release];
             _output = nil;
@@ -128,8 +130,10 @@
             return;
         }            
         NSArray *parameters = [[effect plugin] parameterKeys];
-        for (NSString *key in parameters) {
-            if ([[[[effect plugin] attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
+        for (NSString *key in parameters) 
+		{
+            if ([[[[effect plugin] attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage])
+			{
                 [effect setValue:image forParameterKey:key];
                 break;
             }
