@@ -64,7 +64,7 @@ typedef struct FFGLProcessGLStruct {
 - (FFGLPluginInstance)_instance;
 
 /* Subclasses must implement these methods */
-- (void)_implementationSetImage:(FFGLImage *)image forInputAtIndex:(NSUInteger)index;
+- (BOOL)_implementationSetImage:(FFGLImage *)image forInputAtIndex:(NSUInteger)index;
 - (BOOL)_implementationRender;
 
 /* Subclasses should emit output after render using this */

@@ -136,10 +136,13 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
     [super finalize];
 }
 
-- (void)_implementationSetImage:(FFGLImage *)image forInputAtIndex:(NSUInteger)index
+- (BOOL)_implementationSetImage:(FFGLImage *)image forInputAtIndex:(NSUInteger)index
 {
     if ([image lockTexture2DRepresentation]) {
         _frameStruct.inputTextures[index] = [image _texture2DInfo];
+        return YES;
+    } else {
+        return NO;
     }
 }
 

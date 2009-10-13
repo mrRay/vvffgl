@@ -19,6 +19,7 @@
     NSRect              _bounds;
     NSString            *_pixelFormat;
     NSMutableDictionary *_imageInputs;
+    BOOL                *_imageInputValidity;
     FFGLImage           *_output;
     id                  _params;
     pthread_mutex_t     _lock;

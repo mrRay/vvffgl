@@ -62,6 +62,16 @@
                 [self release];
                 return nil;
             }
+            NSUInteger maxInputs = [plugin _maximumInputFrameCount];
+            _imageInputValidity = malloc(sizeof(BOOL) * maxInputs);
+            if (_imageInputValidity == NULL) {
+                [self release];
+                return nil;
+            }
+            NSUInteger i;
+            for (i = 0; i < maxInputs; i++) {
+                _imageInputValidity[i] = NO;
+            }
             _instance = [plugin _newInstanceWithBounds:bounds pixelFormat:format];
             if (_instance == 0) {
                 [self release];
@@ -96,12 +106,12 @@
 
 - (void)releaseResources {
     NSLog(@"releaseResources");
-    if(_pluginContext != nil) {
+    if(_pluginContext != nil)
         CGLReleaseContext(_pluginContext);
-    }
-    if (_instance != 0) {
+    if (_instance != 0)
         [[self plugin] _disposeInstance:_instance];
-    }
+    if (_imageInputValidity != NULL)
+        free(_imageInputValidity);
     pthread_mutex_destroy(&_lock);
 }
 
@@ -169,9 +179,13 @@
 - (void)_performSetValue:(id)value forParameterKey:(NSString *)key
 {
     NSDictionary *attributes = [_plugin attributesForParameterWithKey:key];
+    // TODO: rethink the logic here slightly. We need to check key is a valid key early on
+    // because otherwise we'll do nothing for invalid image inputs (should raise an exception).
     pthread_mutex_lock(&_lock);
     if ([[attributes objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
-        [self _implementationSetImage:value forInputAtIndex:[[attributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue]];
+        // check our subclass can use the image
+        NSUInteger index = [[attributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
+        _imageInputValidity[index] = [self _implementationSetImage:value forInputAtIndex:index];
         [_imageInputs setObject:value forKey:key];
     } else {
         [_plugin _setValue:value forNonImageParameterKey:key ofInstance:_instance];
@@ -203,10 +217,28 @@
 - (BOOL)renderAtTime:(NSTimeInterval)time
 {
     pthread_mutex_lock(&_lock);
-    if ([_plugin _supportsSetTime]) {
-        [_plugin _setTime:time ofInstance:_instance];
+    BOOL ready = YES;
+    NSUInteger i;
+    /*
+     Plugins let us examine inputs to see if they will be used. We should probably use that
+     rather than requiring that they are all set as we do just now.
+     */
+    for (i = 0; i < [_plugin _maximumInputFrameCount]; i++) {
+        if (_imageInputValidity[i] == NO) {
+            ready = NO;
+            break;
+        }
     }
-    BOOL success = [self _implementationRender];
+    BOOL success;
+    if (ready) {
+        if ([_plugin _supportsSetTime]) {
+            [_plugin _setTime:time ofInstance:_instance];
+        }
+        success = [self _implementationRender];        
+    } else {
+        NSLog(@"Inputs not set."); // TODO: remove this NSLog
+        success = NO;
+    }
     pthread_mutex_unlock(&_lock);
     return success;
 }

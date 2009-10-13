@@ -53,17 +53,22 @@ static void FFGLCPURendererBufferRelease(void *baseAddress, void* context) {
     [super dealloc];
 }
 
-- (void)_implementationSetImage:(id)image forInputAtIndex:(NSUInteger)index
+- (BOOL)_implementationSetImage:(id)image forInputAtIndex:(NSUInteger)index
 {
     if ([image lockBufferRepresentationWithPixelFormat:[self pixelFormat]]) {
         if (([image bufferPixelsHigh] != [self bounds].size.height) || ([image bufferPixelsWide] != [self bounds].size.width)
             || ([image bufferPixelFormat] != [self pixelFormat])) {
             [image unlockBufferRepresentation];
+            // Not sure what we do here - for now raise exception, could just return NO.
+            // But that failure is only used within FFGLRenderer, not transmitted to client.
             [NSException raise:@"FFGLRendererException" format:@"Input image dimensions or format do not match renderer."];
-            return;
+            return NO;
         }
         _buffers[index] = [image bufferBaseAddress];
-    }    
+        return YES;
+    } else {
+        return NO;
+    }
 }
 
 - (BOOL)_implementationRender
