@@ -8,6 +8,7 @@
 
 #import "RenderChain.h"
 
+#import <OpenGL/CGLMacro.h>
 
 @implementation RenderChain
 - (id)init {

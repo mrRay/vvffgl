@@ -49,9 +49,10 @@
 
 - (void)drawRect:(NSRect)dirtyRect
 {
-    NSOpenGLContext *context = [self openGLContext];
-    [context makeCurrentContext];
-    if(_needsReshape)
+	CGLContextObj cgl_ctx = [[self openGLContext] CGLContextObj];
+	CGLLockContext(cgl_ctx);
+    
+	if(_needsReshape)
     {
         NSRect		frame = [self frame];
         NSRect		bounds = [self bounds];
@@ -70,12 +71,14 @@
         } else {
             glViewport(0, 0,  frame.size.width ,frame.size.height);
         }
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         glOrtho(minX, maxX, maxY, minY, -1.0, 1.0);
-            
+       
+		glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+		
+		
         glClearColor(0.0, 0.0, 0.0, 0.0);
             
         glClear(GL_COLOR_BUFFER_BIT);
@@ -87,7 +90,7 @@
         // draw it
 		glColor4f(1.0, 1.0, 1.0, 1.0);
 		
-		NSLog(@"texture: %u,  width: %u, height %u", [image texture2DName], [image texture2DPixelsWide], [image texture2DPixelsHigh]);
+		NSLog(@"Attempting to draw texture: %u,  width: %u, height %u", [image texture2DName], [image texture2DPixelsWide], [image texture2DPixelsHigh]);
 		
 		glActiveTexture(GL_TEXTURE0);
 		glEnable(GL_TEXTURE_2D);
@@ -98,18 +101,19 @@
 	//	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		
 		glBegin(GL_QUADS);
-		glTexCoord2f(0, 0);
-		glVertex2f(0, 0);
-		glTexCoord2f(0, 1);
-		glVertex2f(0, [image texture2DPixelsHigh]);
-		glTexCoord2f(1, 1);
-		glVertex2f([image texture2DPixelsWide], [image texture2DPixelsHigh]);
-		glTexCoord2f(1, 0);
-		glVertex2f([image texture2DPixelsWide], 0);
+		glTexCoord2i(0, 0);
+		glVertex2i(0, 0);
+		glTexCoord2i(0, 1);
+		glVertex2i(0, [image texture2DPixelsHigh]);
+		glTexCoord2i(1, 1);
+		glVertex2i([image texture2DPixelsWide], [image texture2DPixelsHigh]);
+		glTexCoord2i(1, 0);
+		glVertex2i([image texture2DPixelsWide], 0);
 		glEnd();		
 		
 
-	} else if ([image lockBufferRepresentationWithPixelFormat:FFGLPixelFormatBGRA8888]) { // This won't be needed once FFGLImage can convert buffers->textures
+	} 
+	else if ([image lockBufferRepresentationWithPixelFormat:FFGLPixelFormatBGRA8888]) { // This won't be needed once FFGLImage can convert buffers->textures
         NSUInteger bpr = [image bufferBytesPerRow];
         NSUInteger w = [image bufferPixelsWide];
         NSUInteger h = [image bufferPixelsHigh];
@@ -129,7 +133,9 @@
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT);
     }
-    [context flushBuffer];
+ 
+	CGLFlushDrawable(cgl_ctx);	
+	CGLUnlockContext(cgl_ctx);
 }
 
 @end

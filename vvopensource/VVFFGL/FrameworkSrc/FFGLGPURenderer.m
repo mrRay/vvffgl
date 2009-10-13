@@ -8,11 +8,14 @@
 #import "FFGLGPURenderer.h"
 #import "FFGLInternal.h"
 #import "FFGLImage.h"
+
 #import <OpenGL/CGLMacro.h>
 
 static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl_ctx, void *context) {
     // TODO: destroy the texture we create for our output image
+	CGLLockContext(cgl_ctx);
 	glDeleteTextures(1, &name);
+	CGLUnlockContext(cgl_ctx);
 }
 
 @implementation FFGLGPURenderer
@@ -29,9 +32,6 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
         
         // this rightnow is totally dependant on how we end up exposing the instantiate functions for the plugin, 
         // but we will need something like this somewhere. Feel free to fiddle :)
-		
-		NSLog(@"called initWithPlugin");
-		
 		
 		// retain GL context
 		_context = cgl_ctx;
@@ -68,9 +68,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 		glGenTextures(1, &_rendererFBOTexture);	
 		glBindTexture(GL_TEXTURE_2D, _rendererFBOTexture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, bounds.size.width, bounds.size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-		
-		NSLog(@"GL Error so far : %u", glGetError());
-		
+				
 		// our FBO
 		glGenFramebuffersEXT(1, &_rendererFBO);
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rendererFBO);
@@ -81,8 +79,8 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 		{	
 			// return FBO state
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
-			glBindFramebufferEXT(GL_READ_FRAMEBUFFER_BINDING_EXT, _previousReadFBO);
-			glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_BINDING_EXT, _previousDrawFBO);
+			glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, _previousReadFBO);
+			glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);
 			
 			// cleanup GL resources
 			glDeleteFramebuffersEXT(1, &_rendererFBO);
@@ -94,18 +92,17 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 			[self release];
 			return nil;
 		}	
-		
+	
 		_frameStruct.hostFBO = _rendererFBO;
 
-		
 		// return FBO state
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
-		glBindFramebufferEXT(GL_READ_FRAMEBUFFER_BINDING_EXT, _previousReadFBO);
-		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_BINDING_EXT, _previousDrawFBO);
-
-		// delete our temporary texture 
-		glDeleteFramebuffersEXT(1, &_rendererFBO);
+		glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, _previousReadFBO);
+		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);
 		
+		// delete our temporary texture 
+		glDeleteTextures(1, &_rendererFBOTexture);
+	
 		CGLUnlockContext(cgl_ctx);
 		
 		
@@ -173,8 +170,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	glGenTextures(1, &_rendererFBOTexture);	
 	glBindTexture(GL_TEXTURE_2D, _rendererFBOTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, self.bounds.size.width, self.bounds.size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	
-	
+		
 	// bind our FBO
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rendererFBO);
 	
@@ -184,7 +180,6 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	// set up viewport/projection matrices and coordinate system for FBO target.
 	GLsizei	width = self.bounds.size.width,	height = self.bounds.size.height;
 	
-
 	glViewport(self.bounds.origin.x, self.bounds.origin.y, self.bounds.size.width, self.bounds.size.height);
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -196,11 +191,13 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	glPushMatrix();
 	glLoadIdentity();
 		
-	glClearColor(0.0, 1.0, 0.0, 1.0);
+	glClearColor(1.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	// render our plugin to our FBO
-	BOOL result = [[self plugin] _processFrameGL:&_frameStruct forInstance:[self _instance]];
+	//BOOL result = [[self plugin] _processFrameGL:&_frameStruct forInstance:[self _instance]];
+	
+	BOOL result = YES;
 	
 	// Restore OpenGL states 
 	glMatrixMode(GL_MODELVIEW);
@@ -210,13 +207,14 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	
 	// restore states // assume this is balanced with above 
 	glPopAttrib();
-	
+	glFlushRenderAPPLE();
+
 	// return FBO state
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
-	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_BINDING_EXT, _previousReadFBO);
-	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_BINDING_EXT, _previousDrawFBO);
-
-	glFlushRenderAPPLE();
+	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, _previousReadFBO);
+	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);
+	
+	
 	
     CGLUnlockContext(cgl_ctx);
     
