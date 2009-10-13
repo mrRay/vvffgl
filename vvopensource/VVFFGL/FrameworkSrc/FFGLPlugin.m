@@ -558,7 +558,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 
 - (BOOL)_processFrameGL:(FFGLProcessGLStruct *)frameInfo forInstance:(FFGLPluginInstance)instance
 {
-    plugMainUnion result = _pluginData->main(FF_PROCESSFRAME, (DWORD)frameInfo, instance);
+    plugMainUnion result = _pluginData->main(FF_PROCESSOPENGL, (DWORD)frameInfo, instance);
     return result.ivalue == FF_SUCCESS ? YES : NO;
 }
 @end
