@@ -12,9 +12,7 @@
 #import <OpenGL/CGLMacro.h>
 
 static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl_ctx, void *context) {
-    // TODO: destroy the texture we create for our output image
 	CGLLockContext(cgl_ctx);
-	NSLog(@"deleting %u", name);
 	glDeleteTextures(1, &name);
 	CGLUnlockContext(cgl_ctx);
 }
@@ -150,9 +148,6 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 {
     CGLContextObj cgl_ctx = _context;
     CGLLockContext(cgl_ctx);
-    
-	NSLog(@"GPURenderer context: %p", cgl_ctx);
-
 	
     // TODO: need to set output, bind FBO so we render in output's texture, register FBO in _frameStruct, then do this:
 	// _frameStruct.hostFBO = whatever; // or if we reuse the same FBO, do this once in init, and not here.
@@ -183,17 +178,17 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, self.bounds.size.width, self.bounds.size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
-	NSLog(@"new texture: %u", _rendererFBOTexture);
-
 	// bind our FBO
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rendererFBO);
 	
 	// attach our new texture
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, _rendererFBOTexture, 0);
 	
-	// set up viewport/projection matrices and coordinate system for FBO target.
-	GLsizei	width = self.bounds.size.width,	height = self.bounds.size.height;
+	// this was our fix. Disable texturing and now FFGL renders. 
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 	
+	// set up viewport/projection matrices and coordinate system for FBO target.
 	glViewport(self.bounds.origin.x, self.bounds.origin.y, self.bounds.size.width, self.bounds.size.height);
 	
 	GLint matrixMode;
@@ -207,13 +202,18 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	glPushMatrix();
 	glLoadIdentity();
 	
-	glOrtho(0.0, width,  0.0,  height, -1, 1);		
-
+	glDisable(GL_BLEND);
+	
+	// dont fucking change the ortho view, AT FUCKING ALL. Duh.
+	//glOrtho(0.0, self.bounds.size.width,  0.0,  self.bounds.size.height, -1, 1);		
+	//glOrtho(0.0, 1.0, 0.0, 1.0, 1, -1);
+	//glOrtho(self.bounds.origin.x, self.bounds.size.width,  self.bounds.origin.y,  self.bounds.size.height, -1, 1);		
+	
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
 		
-	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	
 	// render our plugin to our FBO

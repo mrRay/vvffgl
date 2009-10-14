@@ -53,8 +53,6 @@
 {
 	CGLContextObj cgl_ctx = [[self openGLContext] CGLContextObj];
 	CGLLockContext(cgl_ctx);
-    
-	NSLog(@"Render View context: %p", cgl_ctx);
 	
 	glViewport(0, 0,  self.frame.size.width ,self.frame.size.height);
 	
@@ -117,9 +115,7 @@
 	{
         // draw it
 		glColor4f(1.0, 1.0, 1.0, 1.0);
-		
-		NSLog(@"Attempting to draw texture: %u,  width: %u, height %u", [image texture2DName], [image texture2DPixelsWide], [image texture2DPixelsHigh]);
-		
+			
 		glActiveTexture(GL_TEXTURE0);
 		glEnable(GL_TEXTURE_2D);
 	
@@ -144,10 +140,9 @@
 		glTexCoord2f(1.0, 0.0);
 		glVertex2f([image texture2DPixelsWide], 0.0);
 		glEnd();		
-		
 	} 
 
-/*	else if ([image lockBufferRepresentationWithPixelFormat:FFGLPixelFormatBGRA8888]) { // This won't be needed once FFGLImage can convert buffers->textures
+	else if ([image lockBufferRepresentationWithPixelFormat:FFGLPixelFormatBGRA8888]) { // This won't be needed once FFGLImage can convert buffers->textures
         NSUInteger bpr = [image bufferBytesPerRow];
         NSUInteger w = [image bufferPixelsWide];
         NSUInteger h = [image bufferPixelsHigh];
@@ -158,7 +153,7 @@
                                               size:CGSizeMake(w, h)
                                             format:kCIFormatARGB8 // wrong way around but fuck it
                                         colorSpace:_cspace];
-//        CIImage *ci = [CIImage imageWithColor:[CIColor colorWithRed:0.0 green:0.0 blue:1.0]];
+        //CIImage *ci = [CIImage imageWithColor:[CIColor colorWithRed:0.0 green:0.0 blue:1.0]];
         CGPoint at = CGPointMake(([self bounds].size.width / 2) - (w / 2), ([self bounds].size.height / 2) - ( h / 2));
         [_ciContext drawImage:ci atPoint:at fromRect:[ci extent]];
     } else if (image != nil) {
@@ -167,7 +162,7 @@
      //   glClearColor(0.0, 0.0, 0.0, 0.0);
      //   glClear(GL_COLOR_BUFFER_BIT);
     }
- */
+ 
 	
 	CGLFlushDrawable(cgl_ctx);	
 	CGLUnlockContext(cgl_ctx);
