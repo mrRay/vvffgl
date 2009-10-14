@@ -169,12 +169,12 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
     
 	// state vars
 	GLint _previousFBO;	
-	GLint _previousRenderBuffer;
+//	GLint _previousRenderBuffer;	// probably dont need this each frame, only during init? hrm.
 	GLint _previousReadFBO;	
 	GLint _previousDrawFBO;
 	
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &_previousFBO);
-	glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &_previousRenderBuffer);
+//	glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &_previousRenderBuffer);
 	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &_previousReadFBO);
 	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &_previousDrawFBO);
 	
@@ -216,9 +216,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	
-	glDisable(GL_BLEND);
-	
+		
 	// dont fucking change the ortho view, AT FUCKING ALL. Duh.
 	//glOrtho(0.0, self.bounds.size.width,  0.0,  self.bounds.size.height, -1, 1);		
 	//glOrtho(0.0, 1.0, 0.0, 1.0, 1, -1);
@@ -252,7 +250,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 
 	// return FBO state
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
-	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _previousRenderBuffer);
+//	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _previousRenderBuffer);
 	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, _previousReadFBO);
 	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);
 	
