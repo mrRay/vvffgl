@@ -54,10 +54,12 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 		
 		// state vars
 		GLint _previousFBO;		
+		GLint _previousRenderBuffer;
 		GLint _previousReadFBO;	
 		GLint _previousDrawFBO;
 		
 		glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &_previousFBO);
+		glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &_previousRenderBuffer);
 		glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &_previousReadFBO);
 		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &_previousDrawFBO);
 		
@@ -71,9 +73,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 		// our depth buffer (NO MSAA)
 		glGenRenderbuffersEXT(1, &_rendererDepthBuffer);
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _rendererDepthBuffer);
-		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, bounds.size.width, bounds.size.height);
-		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
-		
+		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, bounds.size.width, bounds.size.height);		
 		
 		// our FBO
 		glGenFramebuffersEXT(1, &_rendererFBO);
@@ -88,6 +88,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 		{	
 			// return FBO state
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
+			glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _previousRenderBuffer);
 			glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, _previousReadFBO);
 			glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);
 			
@@ -106,6 +107,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 
 		// return FBO state
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _previousRenderBuffer);
 		glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, _previousReadFBO);
 		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);
 		
@@ -166,11 +168,13 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	// - vade: we will be using our _renderFBO texture associated with our FFGLGPURenderer
     
 	// state vars
-	GLint _previousFBO;		
+	GLint _previousFBO;	
+	GLint _previousRenderBuffer;
 	GLint _previousReadFBO;	
 	GLint _previousDrawFBO;
 	
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &_previousFBO);
+	glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &_previousRenderBuffer);
 	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &_previousReadFBO);
 	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &_previousDrawFBO);
 	
@@ -225,7 +229,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	glLoadIdentity();
 		
 	glClearColor(0.0, 0.0, 0.0, 0.0);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	// render our plugin to our FBO
 	BOOL result = [[self plugin] _processFrameGL:&_frameStruct forInstance:[self _instance]];
@@ -248,6 +252,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 
 	// return FBO state
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
+	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _previousRenderBuffer);
 	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, _previousReadFBO);
 	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);
 	
