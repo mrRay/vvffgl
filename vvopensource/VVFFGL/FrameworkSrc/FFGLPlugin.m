@@ -495,6 +495,8 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 
 - (void)_disposeInstance:(FFGLPluginInstance)instance
 {
+    // Plugins indicate success or failure in return, but as it's not clear what
+    // failure means, let's ignore it.
     DWORD result;
     if (_pluginData->mode == FFGLPluginModeGPU)
         result = _pluginData->main(FF_DEINSTANTIATE, 0, instance).ivalue ;
@@ -502,7 +504,9 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         result = _pluginData->main(FF_DEINSTANTIATEGL, 0, instance).ivalue;
     else
         result = FF_FAIL;
-    // As it's not clear what failure means, let's ignore it.
+    NSLog(@"disposeInstance");
+    if (result == FF_FAIL)
+        NSLog(@"(failed)");
 }
 
 - (id)_valueForNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance
@@ -542,6 +546,11 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 - (void)_setTime:(NSTimeInterval)time ofInstance:(FFGLPluginInstance)instance
 {
     _pluginData->main(FF_SETTIME, (DWORD)&time, instance);
+}
+
+- (BOOL)_imageInputAtIndex:(NSUInteger)index willBeUsedByInstance:(FFGLPluginInstance)instance
+{
+    return _pluginData->main(FF_GETIPUTSTATUS, (DWORD)index, instance).ivalue;
 }
 
 - (BOOL)_processFrameCopy:(FFGLProcessFrameCopyStruct *)frameInfo forInstance:(FFGLPluginInstance)instance

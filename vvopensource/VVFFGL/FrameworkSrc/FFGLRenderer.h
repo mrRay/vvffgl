@@ -19,6 +19,7 @@
     NSRect              _bounds;
     NSString            *_pixelFormat;
     NSMutableDictionary *_imageInputs;
+    BOOL                _needsToCheckValidity;
     BOOL                *_imageInputValidity;
     FFGLImage           *_output;
     id                  _params;
@@ -32,6 +33,12 @@
 - (CGLContextObj)context;
 - (NSString *)pixelFormat;
 - (NSRect)bounds;
+/*
+ - (BOOL)willUseParameterKey:(NSString *)key
+    A plugin may ignore some of its image parameters under certain conditions. Use this method to discover if an input
+    will be used with the parameters in their current state.
+ */
+- (BOOL)willUseParameterKey:(NSString *)key;
 - (id)valueForParameterKey:(NSString *)key;
 - (void)setValue:(id)value forParameterKey:(NSString *)key;
 /*

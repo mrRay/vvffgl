@@ -53,6 +53,7 @@ typedef struct FFGLProcessGLStruct {
 - (id)_valueForNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance;
 - (void)_setValue:(id)value forNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance;
 - (void)_setTime:(NSTimeInterval)time ofInstance:(FFGLPluginInstance)instance;
+- (BOOL)_imageInputAtIndex:(NSUInteger)index willBeUsedByInstance:(FFGLPluginInstance)instance;
 - (BOOL)_processFrameCopy:(FFGLProcessFrameCopyStruct *)frameInfo forInstance:(FFGLPluginInstance)instance;
 - (BOOL)_processFrameInPlace:(void *)buffer forInstance:(FFGLPluginInstance)instance;
 - (BOOL)_processFrameGL:(FFGLProcessGLStruct *)frameInfo forInstance:(FFGLPluginInstance)instance;
