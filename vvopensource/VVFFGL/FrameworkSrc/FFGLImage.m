@@ -76,7 +76,7 @@ static GLuint swapTextureTargets(CGLContextObj cgl_ctx, GLuint textureName, GLsi
 	glEnable(fromTarget);
 	glBindTexture(fromTarget, textureName);
 	
-	if(textureTarget == GL_TEXTURE_RECTANGLE_ARB)
+	if(fromTarget == GL_TEXTURE_RECTANGLE_ARB)
 	{	
 		glBegin(GL_QUADS);
 		glTexCoord2f(0, 0);
@@ -89,7 +89,7 @@ static GLuint swapTextureTargets(CGLContextObj cgl_ctx, GLuint textureName, GLsi
 		glVertex2f(width, 0);
 		glEnd();		
 	}
-	else if(textureTarget == GL_TEXTURE_2D)
+	else if(fromTarget == GL_TEXTURE_2D)
 	{
 		glBegin(GL_QUADS);
 		glTexCoord2f(0, 0);
@@ -267,6 +267,8 @@ static GLuint swapTextureTargets(CGLContextObj cgl_ctx, GLuint textureName, GLsi
             // huh?
         }
         // TODO: generate it, return YES;
+		
+		
     }
     return NO;
 }
