@@ -186,8 +186,9 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	glGenTextures(1, &_rendererFBOTexture);	
 	glBindTexture(GL_TEXTURE_2D, _rendererFBOTexture);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	// 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	
@@ -201,7 +202,6 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	
 	// this was our fix. Disable texturing and now FFGL renders. 
 	glBindTexture(GL_TEXTURE_2D, 0);
-
 	
 	// set up viewport/projection matrices and coordinate system for FBO target.
 	glViewport(self.bounds.origin.x, self.bounds.origin.y, self.bounds.size.width, self.bounds.size.height);
