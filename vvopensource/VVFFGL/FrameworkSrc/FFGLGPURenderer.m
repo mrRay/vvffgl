@@ -186,7 +186,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	glGenTextures(1, &_rendererFBOTexture);	
 	glBindTexture(GL_TEXTURE_2D, _rendererFBOTexture);
 
-	// 
+	// texture filtering and wrapping modes. Do we actually want to fuck with this here? Hrm.
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -253,8 +253,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 //	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _previousRenderBuffer);
 	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, _previousReadFBO);
 	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);
-	
-	
+		
 	FFGLImage *output = [[[FFGLImage alloc] initWithTexture2D:_rendererFBOTexture
                                                    CGLContext:cgl_ctx
 											  imagePixelsWide:self.bounds.size.width

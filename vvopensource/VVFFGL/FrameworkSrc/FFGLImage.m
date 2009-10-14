@@ -22,6 +22,119 @@ static void FFGLImageBufferRelease(void *baseAddress, void* context) {
     free(baseAddress);
 }
 
+static GLuint swapTextureTargets(CGLContextObj cgl_ctx, GLuint textureName, GLsizei width, GLsizei height, GLenum fromTarget)
+{		
+	CGLLockContext(cgl_ctx);
+	
+	// cache FBO state
+	GLint previousFBO, previousReadFBO, previousDrawFBO;
+	
+	// the FBO attachment texture we are going to render to.
+	GLenum toTarget;
+	
+	// set up our destination target
+	if(fromTarget == GL_TEXTURE_RECTANGLE_ARB)
+		toTarget = GL_TEXTURE_2D;
+	else 
+		toTarget = GL_TEXTURE_RECTANGLE_ARB;
+
+	
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &previousFBO);
+	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &previousReadFBO);
+	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &previousDrawFBO);
+	
+	// new texture
+	GLuint newTex;
+	glGenTextures(1, &newTex);
+	glBindTexture(toTarget, newTex);
+	glTexImage2D(toTarget, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	
+	// make new FBO and attach.
+	GLuint fboID;
+	glGenFramebuffersEXT(1, &fboID);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboID);
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, toTarget, newTex, 0);
+	
+	// draw ofTexture into new texture;
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	
+	glViewport(0, 0, width, height);
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	
+	// weirdo ortho
+	glOrtho(0.0, width, height, 0.0, -1, 1);		
+	
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	
+	// draw the texture.
+	//texture->draw(0,0);
+	
+	glEnable(fromTarget);
+	glBindTexture(fromTarget, textureName);
+	
+	if(textureTarget == GL_TEXTURE_RECTANGLE_ARB)
+	{	
+		glBegin(GL_QUADS);
+		glTexCoord2f(0, 0);
+		glVertex2f(0, 0);
+		glTexCoord2f(0, height);
+		glVertex2f(0, height);
+		glTexCoord2f(width, height);
+		glVertex2f(width, height);
+		glTexCoord2f(width, 0);
+		glVertex2f(width, 0);
+		glEnd();		
+	}
+	else if(textureTarget == GL_TEXTURE_2D)
+	{
+		glBegin(GL_QUADS);
+		glTexCoord2f(0, 0);
+		glVertex2f(0, 0);
+		glTexCoord2f(0, 1);
+		glVertex2f(0, height);
+		glTexCoord2f(1, 1);
+		glVertex2f(width, height);
+		glTexCoord2f(1, 0);
+		glVertex2f(width, 0);
+		glEnd();		
+	}
+	else
+	{
+		// uh....
+	}
+	
+	glBindTexture(fromTarget, 0);
+	glDisable(fromTarget);
+	
+	// Restore OpenGL states 
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	
+	// restore states // assume this is balanced with above 
+	glPopAttrib();
+	
+	// pop back to old FBO
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previousFBO);	
+	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, previousReadFBO);
+	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, previousDrawFBO);
+	
+	glFlushRenderAPPLE();
+	
+	// delete our FBO so we dont leak.
+	glDeleteFramebuffersEXT(1, &fboID);
+	
+	CGLUnlockContext(cgl_ctx);
+	
+	return newTex;
+}
+
+
 @interface FFGLImage (Private)
 - (void)releaseResources;
 - (NSUInteger)bytesPerPixelForPixelFormat:(NSString *)format;
@@ -184,6 +297,8 @@ static void FFGLImageBufferRelease(void *baseAddress, void* context) {
     if (_hasTextureRect == YES) {
         return YES;
     } else {
+		
+		
         // TODO: generate it, return YES;
     }
     return NO;
