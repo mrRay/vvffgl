@@ -68,10 +68,20 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 		glBindTexture(GL_TEXTURE_2D, _rendererFBOTexture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, bounds.size.width, bounds.size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 				
+		// our depth buffer (NO MSAA)
+		glGenRenderbuffersEXT(1, &_rendererDepthBuffer);
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _rendererDepthBuffer);
+		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, bounds.size.width, bounds.size.height);
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
+		
+		
 		// our FBO
 		glGenFramebuffersEXT(1, &_rendererFBO);
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rendererFBO);
+
+		// set attachments
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, _rendererFBOTexture, 0);
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, _rendererDepthBuffer);
 
 		GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 		if(status != GL_FRAMEBUFFER_COMPLETE_EXT)
@@ -115,7 +125,8 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
     CGLLockContext(cgl_ctx);
     
     glDeleteFramebuffersEXT(1, &_rendererFBO);
-    
+    glDeleteRenderbuffersEXT(1, &_rendererDepthBuffer);
+	
     CGLReleaseContext(_context);
     if (_frameStruct.inputTextures != NULL) {
         free(_frameStruct.inputTextures);
