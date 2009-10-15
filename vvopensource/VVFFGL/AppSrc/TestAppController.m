@@ -14,7 +14,7 @@
 #define kFFPixelFormat FFGLPixelFormatBGRA8888
 #endif
 
-#define kRenderBounds NSMakeRect(0, 0, 512, 512)
+#define kRenderBounds NSMakeRect(0, 0, 640, 480)
 @implementation TestAppController
 
 - (void)awakeFromNib

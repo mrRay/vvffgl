@@ -36,6 +36,14 @@ typedef struct FFGLProcessGLStruct {
     GLuint              hostFBO;
 } FFGLProcessGLStruct;
 
+#pragma mark Utility Functions
+static inline NSUInteger FFGLPOTDimension(NSUInteger dimension)
+{
+    NSUInteger glSize = 1;
+    while (glSize<dimension) glSize*=2;    
+    return glSize;
+}
+
 @interface FFGLPlugin (Instances)
 /*
  Plugin properties
@@ -58,7 +66,6 @@ typedef struct FFGLProcessGLStruct {
 - (BOOL)_processFrameInPlace:(void *)buffer forInstance:(FFGLPluginInstance)instance;
 - (BOOL)_processFrameGL:(FFGLProcessGLStruct *)frameInfo forInstance:(FFGLPluginInstance)instance;
 @end
-
 
 @interface FFGLRenderer (Subclassing)
 /* This method is provided by FFGLRenderer for subclasses to use when calling FFGLPlugin's instance methods */
