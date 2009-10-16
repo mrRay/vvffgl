@@ -11,7 +11,7 @@
 #import <pthread.h>
 
 typedef void (*FFGLImageTextureReleaseCallback)(GLuint name, CGLContextObj cgl_ctx, void *context);
-typedef void (*FFGLImageBufferReleaseCallback)(void *baseAddress, void *context);
+typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *context);
 
 @interface FFGLImage : NSObject {
 @private
@@ -28,7 +28,7 @@ typedef void (*FFGLImageBufferReleaseCallback)(void *baseAddress, void *context)
     void                            *_textureRectInfo;
     FFGLImageTextureReleaseCallback _textureRectReleaseCallback;
     void                            *_textureRectReleaseContext;
-    void                            *_buffer;
+    const void                      *_buffer;
     NSString                        *_bufferPixelFormat;
     FFGLImageBufferReleaseCallback  _bufferReleaseCallback;
     void                            *_bufferReleaseContext;
@@ -58,7 +58,7 @@ typedef void (*FFGLImageBufferReleaseCallback)(void *baseAddress, void *context)
     Note that due to limitations in FreeFrame plugins, if there are padding pixels in the buffer (ie if rowBytes != ((the number of bytes per pixel for format) * width)),
     the buffer will be copied at init.
  */
-- (id)initWithBuffer:(void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo;
+- (id)initWithBuffer:(const void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo;
 
 - (NSUInteger)imagePixelsWide;
 - (NSUInteger)imagePixelsHigh;
@@ -98,7 +98,7 @@ typedef void (*FFGLImageBufferReleaseCallback)(void *baseAddress, void *context)
 /*
  Do not call the following until a call to lockBufferRepresentationWithPixelFormat: has returned
  */
-- (void *)bufferBaseAddress;
+- (const void *)bufferBaseAddress;
 - (NSUInteger)bufferPixelsWide;
 - (NSUInteger)bufferPixelsHigh;
 - (NSUInteger)bufferBytesPerRow;

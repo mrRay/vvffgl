@@ -12,9 +12,9 @@
 
 #pragma mark Private Callbacks
 
-static void FFGLImageBufferRelease(void *baseAddress, void* context) {
+static void FFGLImageBufferRelease(const void *baseAddress, void* context) {
     // for now, just free the buffer, could make them reusable
-    free(baseAddress);
+    free((void *)baseAddress);
 }
 
 static void FFGLImageTextureRelease(GLuint name, CGLContextObj cgl_ctx, void *context) {
@@ -170,6 +170,18 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, FFGLTextureInfo *fromTextu
 	CGLUnlockContext(cgl_ctx);
 }
 
+static void *createBufferFromTexture(CGLContextObj cgl_ctx, FFGLTextureInfo *sourceInfo)
+{
+    // TODO: !
+    return NULL;
+}
+
+
+static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buffer, NSUInteger pixelsWide, NSUInteger pixelsHigh) // plus pixelFormat, presumably
+{
+    // TODO: !
+    return NULL;
+}
 
 @interface FFGLImage (Private)
 - (void)releaseResources;
@@ -184,9 +196,13 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, FFGLTextureInfo *fromTextu
 - (id)initWithCGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight
            texture2DInfo:(FFGLTextureInfo *)texture2DInfo texture2DReleaseCallback:(FFGLImageTextureReleaseCallback)callback2D texture2DReleaseInfo:(void *)releaseInfo2D
          textureRectInfo:(FFGLTextureInfo *)textureRectInfo textureRectReleaseCallback:(FFGLImageTextureReleaseCallback)callbackRect textureRectReleaseInfo:(void *)releaseInfoRect
-                  buffer:(void *)buffer pixelFormat:(NSString *)pixelFormat bufferReleaseCallback:(FFGLImageBufferReleaseCallback)callbackBuffer bufferReleaseInfo:(void *)releaseInfoBuffer
+                  buffer:(const void *)buffer pixelFormat:(NSString *)pixelFormat bufferReleaseCallback:(FFGLImageBufferReleaseCallback)callbackBuffer bufferReleaseInfo:(void *)releaseInfoBuffer
 {
     if (self = [super init]) {
+        if (imageWidth == 0 || imageHeight == 0) {
+            [self release];
+            return nil;
+        }
         if (pthread_mutex_init(&_conversionLock, NULL) != 0) {
             [self release];
             return nil;
@@ -212,6 +228,10 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, FFGLTextureInfo *fromTextu
             _bufferReleaseCallback = callbackBuffer;
             _bufferReleaseContext = releaseInfoBuffer;
             _hasBuffer = YES;
+        }
+        if (!_hasBuffer && !_hasTexture2D  && !_hasTextureRect) {
+            [self release];
+            return nil;
         }
     }
     return self;
@@ -249,7 +269,7 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, FFGLTextureInfo *fromTextu
                              buffer:NULL pixelFormat:nil bufferReleaseCallback:NULL bufferReleaseInfo:NULL];
 }
 
-- (id)initWithBuffer:(void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo
+- (id)initWithBuffer:(const void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo
 {
     // Check the pixel-format is valid
     NSUInteger bpp = bytesPerPixelForPixelFormat(format);
@@ -340,8 +360,7 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, FFGLTextureInfo *fromTextu
             }
         } else if (_hasBuffer == YES) {
             // TODO: buffer -> texture conversion
-            // TODO: pthread_mutex_unlock(&_conversionLock);
-            // TODO: return YES;
+            // TODO: result = YES;
         }		
     }
     pthread_mutex_unlock(&_conversionLock);
@@ -431,7 +450,7 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, FFGLTextureInfo *fromTextu
     // Do nothing.
 }
 
-- (void *)bufferBaseAddress {
+- (const void *)bufferBaseAddress {
     return _buffer;
 }
 

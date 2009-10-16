@@ -10,9 +10,9 @@
 #import "FFGLImage.h"
 #import <QuartzCore/QuartzCore.h>
 
-static void FFGLCPURendererBufferRelease(void *baseAddress, void* context) {
+static void FFGLCPURendererBufferRelease(const void *baseAddress, void* context) {
     // for now, just free the buffer, could make them reusable, or use a CVPixelBufferPool
-    free(baseAddress);
+    free((void *)baseAddress);
 }
 
 @implementation FFGLCPURenderer
@@ -64,7 +64,7 @@ static void FFGLCPURendererBufferRelease(void *baseAddress, void* context) {
             [NSException raise:@"FFGLRendererException" format:@"Input image dimensions or format do not match renderer."];
             return NO;
         }
-        _buffers[index] = [image bufferBaseAddress];
+        _buffers[index] = (void *)[image bufferBaseAddress];
         return YES;
     } else {
         return NO;
