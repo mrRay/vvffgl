@@ -14,13 +14,13 @@
 
 extern NSString * const FFGLParameterAttributeIndexKey;
 
-typedef uint32_t FFGLPluginInstance;
+typedef uint32_t FFGLPluginInstance; // According to FF standard, do not modify.
 
 typedef struct FFGLProcessFrameCopyStruct {
     unsigned int        inputFrameCount;
     void**              inputFrames;
     void*               outputFrame;
-} FFGLProcessFrameCopyStruct;
+} FFGLProcessFrameCopyStruct; // According to FF standard, do not modify.
 
 typedef struct FFGLTextureInfo {
     unsigned int        width;
@@ -28,13 +28,13 @@ typedef struct FFGLTextureInfo {
     unsigned int        hardwareWidth;
     unsigned int        hardwareHeight;
     GLuint              texture;
-} FFGLTextureInfo;
+} FFGLTextureInfo; // According to FF standard, do not modify.
 
 typedef struct FFGLProcessGLStruct {
     unsigned int        inputTextureCount;
     FFGLTextureInfo**   inputTextures;
     GLuint              hostFBO;
-} FFGLProcessGLStruct;
+} FFGLProcessGLStruct; // According to FF standard, do not modify.
 
 #pragma mark Utility Functions
 static inline NSUInteger FFGLPOTDimension(NSUInteger dimension)

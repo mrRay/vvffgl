@@ -15,7 +15,6 @@ typedef void (*FFGLImageBufferReleaseCallback)(void *baseAddress, void *context)
 
 @interface FFGLImage : NSObject {
 @private
-    NSUInteger                      _source; // we maybe don't need to track this
     BOOL                            _hasBuffer;
     BOOL                            _hasTexture2D;
     BOOL                            _hasTextureRect;
@@ -26,9 +25,7 @@ typedef void (*FFGLImageBufferReleaseCallback)(void *baseAddress, void *context)
     void                            *_texture2DInfo;
     FFGLImageTextureReleaseCallback _texture2DReleaseCallback;
     void                            *_texture2DReleaseContext;
-    GLuint                          _textureRect;
-    NSUInteger                      _textureRectWidth;
-    NSUInteger                      _textureRectHeight;
+    void                            *_textureRectInfo;
     FFGLImageTextureReleaseCallback _textureRectReleaseCallback;
     void                            *_textureRectReleaseContext;
     void                            *_buffer;
@@ -36,37 +33,23 @@ typedef void (*FFGLImageBufferReleaseCallback)(void *baseAddress, void *context)
     FFGLImageBufferReleaseCallback  _bufferReleaseCallback;
     void                            *_bufferReleaseContext;
 }
-/*
- Resource use
- 
-    Currently we do nothing when an unlockBuffer../unlockTexture.. call is made, and keep the created buffer/texture around until dealloc.
-    That seem an OK thing to do?
- 
- */
 
 /*
  
  Locking
     We're going to have to lock when we convert textures<->pixel-buffers, so we don't perform the conversions twice/leak.
  
-    unlockXXRepresentation currently does nothing. Releasing textures/buffers on unlock would require either
+    unlockXXRepresentation currently does nothing. This means we keep all our resources around until dealloc. Releasing textures/buffers on unlock would require either
         - that we stipulate one lock, one unlock call (which is difficult for clients and us because you don't know what other objects hold
             references to the image and may have locked it too).
     or  - that lock/unlock performs something akin to retain-counting, and that we stipulate that calls be matched (each lock has an unlock).
  */
 
 /*
- Init would look something like this
- is this all the info we need?
- the callback and context allow apps to do what they like with the texture when we're finished with it - destroy it, reuse it or whatever
- Are there any reasonable demands we can make of the texture that would let us drop the texturePixelsWide/High arguments?
- We probably need a CGLContext in here too, yea?
+
  */
 - (id)initWithTexture2D:(GLuint)texture CGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo;
 
-/*
- Do we need texture pixel size as well as image size, or are there no restrictings on GL_TEXTURE_RECTANGLE_EXT dimensions?
- */
 - (id)initWithTextureRect:(GLuint)texture CGLContext:(CGLContextObj)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo;
 
 /*
@@ -86,12 +69,18 @@ typedef void (*FFGLImageBufferReleaseCallback)(void *baseAddress, void *context)
  */
 - (BOOL)lockTexture2DRepresentation;
 - (void)unlockTexture2DRepresentation;
+/*
+ Do not call the following until a call to lockTexture2DRepresentation has returned
+ */
 - (GLuint)texture2DName;
 - (NSUInteger)texture2DPixelsWide;
 - (NSUInteger)texture2DPixelsHigh;
 
 - (BOOL)lockTextureRectRepresentation;
 - (void)unlockTextureRectRepresentation;
+/*
+ Do not call the following until a call to lockTextureRectRepresentation has returned
+ */
 - (GLuint)textureRectName;
 - (NSUInteger)textureRectPixelsWide;
 - (NSUInteger)textureRectPixelsHigh;
@@ -106,6 +95,9 @@ typedef void (*FFGLImageBufferReleaseCallback)(void *baseAddress, void *context)
  */
 - (BOOL)lockBufferRepresentationWithPixelFormat:(NSString *)format;
 - (void)unlockBufferRepresentation;
+/*
+ Do not call the following until a call to lockBufferRepresentationWithPixelFormat: has returned
+ */
 - (void *)bufferBaseAddress;
 - (NSUInteger)bufferPixelsWide;
 - (NSUInteger)bufferPixelsHigh;
