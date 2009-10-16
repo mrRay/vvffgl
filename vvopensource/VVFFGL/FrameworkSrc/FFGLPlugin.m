@@ -66,10 +66,8 @@ NSString * const FFGLParameterAttributeIndexKey = @"FFGLParameterAttributeIndexK
 
 NSString * const FFGLParameterTypeBoolean = @"FFGLParameterTypeBoolean";
 NSString * const FFGLParameterTypeEvent = @"FFGLParameterTypeEvent";
-//NSString * const FFGLParameterTypePoint = @"FFGLParameterTypePoint";
 NSString * const FFGLParameterTypeNumber = @"FFGLParameterTypeNumber";
 NSString * const FFGLParameterTypeString = @"FFGLParameterTypeString";
-//NSString * const FFGLParameterTypeColor = @"FFGLParameterTypeColor";
 NSString * const FFGLParameterTypeImage = @"FFGLParameterTypeImage";
 
 static NSMutableDictionary *_FFGLPluginInstances = nil;

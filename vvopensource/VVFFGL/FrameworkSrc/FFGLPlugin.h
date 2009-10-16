@@ -35,17 +35,15 @@ extern NSString * const FFGLPluginAttributePathKey;
 
 extern NSString * const FFGLParameterAttributeTypeKey;
 extern NSString * const FFGLParameterAttributeNameKey;
-extern NSString * const FFGLParameterAttributeDefaultValueKey; // For Boolean, Point, Number, String & Color types.
-extern NSString * const FFGLParameterAttributeMinimumValueKey; // For Point & Number types.
-extern NSString * const FFGLParameterAttributeMaximumValueKey; // For Point & Number types.
+extern NSString * const FFGLParameterAttributeDefaultValueKey; // For Boolean, Number & String types.
+extern NSString * const FFGLParameterAttributeMinimumValueKey; // For Number types.
+extern NSString * const FFGLParameterAttributeMaximumValueKey; // For Number types.
 extern NSString * const FFGLParameterAttributeRequiredKey; // A NSNumber with a BOOL value.
 
 extern NSString * const FFGLParameterTypeBoolean; // A NSNumber with a BOOL value.
 extern NSString * const FFGLParameterTypeEvent; // A NSNumber with a BOOL value.
-//extern NSString * const FFGLParameterTypePoint; // This isn't supported by FF, which passes x & y as seperate parameters, but maybe we can synthesize it?
 extern NSString * const FFGLParameterTypeNumber; // A NSNumber between 0.0 and 1.0.
 extern NSString * const FFGLParameterTypeString; // A NSString.
-//extern NSString * const FFGLParameterTypeColor; // This isn't supported by FF, which passes r, g, b & a as seperate parameters, but maybe we can synthesize it?
 extern NSString * const FFGLParameterTypeImage; // A FFGLImage.
 
 typedef struct FFGLPluginData FFGLPluginData; // Private

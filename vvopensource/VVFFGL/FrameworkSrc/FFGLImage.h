@@ -35,14 +35,10 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *co
 }
 
 /*
- 
- Locking
-    We're going to have to lock when we convert textures<->pixel-buffers, so we don't perform the conversions twice/leak.
- 
     unlockXXRepresentation currently does nothing. This means we keep all our resources around until dealloc. Releasing textures/buffers on unlock would require either
         - that we stipulate one lock, one unlock call (which is difficult for clients and us because you don't know what other objects hold
             references to the image and may have locked it too).
-    or  - that lock/unlock performs something akin to retain-counting, and that we stipulate that calls be matched (each lock has an unlock).
+    or  - that lock/unlock perform something akin to retain-counting, and that we stipulate that calls be matched (each lock has an unlock).
  */
 
 /*
@@ -56,7 +52,7 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *co
  - (id)initWithBuffer:(void *)buffer pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo
     Creates a new FFGLImage with the provided buffer. The buffer should remain valid until the function at callback is called.
     Note that due to limitations in FreeFrame plugins, if there are padding pixels in the buffer (ie if rowBytes != ((the number of bytes per pixel for format) * width)),
-    the buffer will be copied at init.
+    the buffer will be copied at init. In this case the function provided in callback will be called immediately.
  */
 - (id)initWithBuffer:(const void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo;
 

@@ -43,29 +43,9 @@
 - (void)setValue:(id)value forParameterKey:(NSString *)key;
 /*
  - (id)parameters
-    Returns an object interested parties can bind to to get/set parameter values. Bind to anObject.parameters.aKey
+    Returns an object interested parties can bind to to get/set parameter values. Bind to aRenderer.parameters.aKey
  */
 - (id)parameters;
-
-/*
- 
- Output
- 
- Either
-    we have one outputImage method, and create a new image every renderAtTime:
-        Advantage - FFGLImage remains truly immutable, so if you're using output downstream, you can be sure it won't change.
- Or
-    we have a setRenderDestination: method, and reuse the same image until it is changed.
-        Advantage - If clients have simple linear pipelines and can only call this once, this avoids constant reallocation of resources.
- Or
-    some other solution I haven't thought of
- 
- Thoughts?
- 
- //- (void)setRenderDestination:(FFGLImage *)image;
- //- (FFGLImage *)renderDestination;
- 
- */
 - (FFGLImage *)outputImage;
 - (BOOL)renderAtTime:(NSTimeInterval)time;
 @end
