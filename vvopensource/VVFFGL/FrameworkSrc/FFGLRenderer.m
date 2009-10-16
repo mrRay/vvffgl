@@ -209,8 +209,13 @@
     if ([[attributes objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
         // check our subclass can use the image
         NSUInteger index = [[attributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
-        _imageInputValidity[index] = [self _implementationSetImage:value forInputAtIndex:index];
-        [_imageInputs setObject:value forKey:key];
+        if (value != nil) {
+            _imageInputValidity[index] = [self _implementationSetImage:value forInputAtIndex:index];
+            [_imageInputs setObject:value forKey:key];
+        } else {
+            _imageInputValidity[index] = NO;
+            [_imageInputs removeObjectForKey:key];
+        }
         _needsToCheckValidity = YES;
     } else {
         [_plugin _setValue:value forNonImageParameterKey:key ofInstance:_instance];

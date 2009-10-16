@@ -536,6 +536,9 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
     SetParameterStruct param;
     param.ParameterNumber = pindex;
     if ([[pattributes objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeString]) {
+        if (value == nil) {
+            value = @"";
+        }
         param.NewParameterValue = (DWORD)[(NSString *)value cStringUsingEncoding:NSASCIIStringEncoding];
     } else {
         *((float *)(unsigned)&param.NewParameterValue) = [(NSNumber *)value floatValue]; // ? Check this...
