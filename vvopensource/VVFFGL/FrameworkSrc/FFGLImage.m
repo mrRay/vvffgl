@@ -17,6 +17,15 @@ static void FFGLImageBufferRelease(const void *baseAddress, void* context) {
     free((void *)baseAddress);
 }
 
+// need this to make POT textures of the right size.
+static int nextPow2(int a)
+{
+	// from nehe.gamedev.net lesson 43
+	int rval=1;
+	while(rval<a) rval<<=1;
+	return rval;
+}
+
 static void FFGLImageTextureRelease(GLuint name, CGLContextObj cgl_ctx, void *context) {
     CGLLockContext(cgl_ctx);
     glDeleteTextures(1, &name);

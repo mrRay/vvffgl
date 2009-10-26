@@ -69,7 +69,7 @@
 	maxX = NSMaxX(bounds);
 	maxY = NSMaxY(bounds);
 	
-	glOrtho(minX, maxX, maxY, minY, -1.0, 1.0);
+	glOrtho(minX, maxX, minY, maxY, -1.0, 1.0);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
