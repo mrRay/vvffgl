@@ -75,7 +75,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 
 @implementation FFGLPlugin
 
-+ (void)initialise
++ (void)initialize
 {
     /*
      We keep track of all instances using a dictionary, returning an existing instance for a path passed in at init if one exists.
