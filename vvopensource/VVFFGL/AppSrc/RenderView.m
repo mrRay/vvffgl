@@ -143,6 +143,9 @@
 		glVertex2f([image textureRectPixelsWide], 0.0);
 		glEnd();
 		
+		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
+		glDisable(GL_TEXTURE_RECTANGLE_ARB);
+		
 		[image unlockTextureRectRepresentation];
 	} 
 	
