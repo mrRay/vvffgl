@@ -281,8 +281,8 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
     FFGLTextureInfo *info = malloc(sizeof(FFGLTextureInfo));
     if (info != NULL) {
         info->texture = texture;
-        info->hardwareWidth = _imageWidth = width;
-        info->hardwareHeight = _imageHeight = height;
+        info->hardwareWidth = width;
+        info->hardwareHeight = height;
         info->width = width;
         info->height = height;
     }
@@ -325,6 +325,24 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
                       texture2DInfo:NULL texture2DReleaseCallback:NULL texture2DReleaseInfo:NULL
                     textureRectInfo:NULL textureRectReleaseCallback:NULL textureRectReleaseInfo:NULL
                              buffer:buffer pixelFormat:format bufferReleaseCallback:callback bufferReleaseInfo:userInfo];
+}
+
+- (id)initWithCopiedTextureRect:(GLuint)texture CGLContext:(CGLContextObj)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height
+{
+    FFGLTextureInfo source;
+    source.texture = texture;
+    source.hardwareWidth = width;
+    source.hardwareHeight = height;
+    source.width = width;
+    source.height = height;
+    
+    FFGLTextureInfo *dest = malloc(sizeof(FFGLTextureInfo));
+    swapTextureTargets(context, source, &dest, GL_TEXTURE_RECTANGLE_ARB);
+    return [self initWithCGLContext:context imagePixelsWide:width imagePixelsHigh:height
+		      texture2DInfo:dest texture2DReleaseCallback:FFGLImageTextureRelease texture2DReleaseInfo:NULL
+		    textureRectInfo:NULL textureRectReleaseCallback:NULL textureRectReleaseInfo:NULL
+			     buffer:NULL pixelFormat:nil bufferReleaseCallback:NULL bufferReleaseInfo:NULL];
+    
 }
 
 - (void)releaseResources 

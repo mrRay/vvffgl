@@ -56,6 +56,13 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *co
  */
 - (id)initWithBuffer:(const void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo;
 
+
+/*
+ - (id)initWithCopiedTextureRect:(GLuint)texture CGLContext:(CGLContextObj)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height
+    Copies texture to a new texture.
+ */
+- (id)initWithCopiedTextureRect:(GLuint)texture CGLContext:(CGLContextObj)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height;
+
 - (NSUInteger)imagePixelsWide;
 - (NSUInteger)imagePixelsHigh;
 
