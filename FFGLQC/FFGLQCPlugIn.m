@@ -185,9 +185,11 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
     _plugin = plugin;
     if ([plugin type] == FFGLPluginTypeSource) {
         [self addInputPortWithType:QCPortTypeIndex forKey:@"inputWidth"
-                    withAttributes:[NSDictionary dictionaryWithObjectsAndKeys:@"Width", QCPortAttributeNameKey, nil]];
+                    withAttributes:[NSDictionary dictionaryWithObjectsAndKeys:@"Width", QCPortAttributeNameKey,
+									[NSNumber numberWithUnsignedInt:640], QCPortAttributeDefaultValueKey, nil]];
         [self addInputPortWithType:QCPortTypeIndex forKey:@"inputHeight"
-                    withAttributes:[NSDictionary dictionaryWithObjectsAndKeys:@"Height", QCPortAttributeNameKey, nil]];
+                    withAttributes:[NSDictionary dictionaryWithObjectsAndKeys:@"Height", QCPortAttributeNameKey, 
+									[NSNumber numberWithUnsignedInt:480], QCPortAttributeDefaultValueKey, nil]];
     }
     keys = [_plugin parameterKeys];
     for (key in keys) {
