@@ -117,7 +117,7 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, const FFGLTextureInfo *fro
 	glLoadIdentity();
 	
 	// weirdo ortho
-	glOrtho(0.0, width, height, 0.0, -1, 1);		
+	glOrtho(0.0, width, 0.0, height, -1, 1);		
 	
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
