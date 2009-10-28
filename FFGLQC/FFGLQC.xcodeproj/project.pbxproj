@@ -24,6 +24,7 @@
 /* Begin PBXBuildFile section */
 		16BA95420A7EB2EB001E4983 /* FFGLQCPlugIn.m in Sources */ = {isa = PBXBuildFile; fileRef = 16BA95410A7EB2EB001E4983 /* FFGLQCPlugIn.m */; };
 		16BA96310A7EB9AC001E4983 /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 16BA96300A7EB9AC001E4983 /* Quartz.framework */; };
+		1BF45BC11098D626004A40E9 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BF45B9B1098D561004A40E9 /* OpenGL.framework */; };
 		7238D5520DB6988600E9A42D /* Settings.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7238D5500DB6988600E9A42D /* Settings.xib */; };
 		8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */; };
 		BD92381A10834A2D0036739C /* VVFFGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BD92380F108349F10036739C /* VVFFGL.framework */; };
@@ -136,6 +137,7 @@
 		16BA95400A7EB2EB001E4983 /* FFGLQCPlugIn.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = FFGLQCPlugIn.h; sourceTree = "<group>"; };
 		16BA95410A7EB2EB001E4983 /* FFGLQCPlugIn.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = FFGLQCPlugIn.m; sourceTree = "<group>"; };
 		16BA96300A7EB9AC001E4983 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = /System/Library/Frameworks/Quartz.framework; sourceTree = "<absolute>"; };
+		1BF45B9B1098D561004A40E9 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		7238D5510DB6988600E9A42D /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/Settings.xib; sourceTree = "<group>"; };
 		8D5B49B6048680CD000E48DA /* FFGLQC.plugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FFGLQC.plugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -147,6 +149,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1BF45BC11098D626004A40E9 /* OpenGL.framework in Frameworks */,
 				BD92381A10834A2D0036739C /* VVFFGL.framework in Frameworks */,
 				8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */,
 				16BA96310A7EB9AC001E4983 /* Quartz.framework in Frameworks */,
@@ -174,6 +177,7 @@
 			children = (
 				16BA96300A7EB9AC001E4983 /* Quartz.framework */,
 				1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */,
+				1BF45B9B1098D561004A40E9 /* OpenGL.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

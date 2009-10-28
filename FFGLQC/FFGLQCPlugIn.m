@@ -7,7 +7,8 @@
 //
 
 /* It's highly recommended to use CGL macros instead of changing the current context for plug-ins that perform OpenGL rendering */
-#import <OpenGL/CGLMacro.h>
+
+//#import <OpenGL/CGLMacro.h>
 
 #import "FFGLQCPlugIn.h"
 
@@ -16,6 +17,8 @@
 
 static void QCTextureRelease(GLuint name, CGLContextObj cgl_ctx, void *context)
 {
+	[(id <QCPlugInInputImageSource>)context unbindTextureRepresentationFromCGLContext:cgl_ctx textureUnit:GL_TEXTURE0];
+
     [(id <QCPlugInInputImageSource>)context unlockTextureRepresentation];
 }
 
@@ -283,25 +286,34 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
 #endif
     
     CGLContextObj cgl_ctx = [context CGLContextObj];
+	CGLSetCurrentContext(cgl_ctx);
+	
     pthread_mutex_lock(&_lock);
     FFGLPlugin *plugin = self.plugin;
     NSArray *keys = [plugin parameterKeys];
     // If our input dimensions changed (for a source plugin) then we need to rebuild the renderer.
-    if ([plugin type] == FFGLPluginTypeSource) {
-        if ([self didValueForInputKeyChange:@"inputWidth"] || [self didValueForInputKeyChange:@"inputHeight"]) {
+    if ([plugin type] == FFGLPluginTypeSource)
+	{
+        if ([self didValueForInputKeyChange:@"inputWidth"] || [self didValueForInputKeyChange:@"inputHeight"])
+		{
             _dimensions.width = [[self valueForInputKey:@"inputWidth"] floatValue];
             _dimensions.height = [[self valueForInputKey:@"inputHeight"] floatValue];
              self.rendererNeedsRebuild = YES;
          }
-    } else {
+    } 
+	else 
+	{
         NSString *key;
         // If our first input image changed shape we need to rebuild the renderer because effect renderers base their dimensions on this
-        for (key in keys) {
+        for (key in keys)
+		{
             if ([self didValueForInputKeyChange:key]
-                && [[[plugin attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
+                && [[[plugin attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage])
+			{
                 id <QCPlugInInputImageSource> input = [self valueForInputKey:key];
                 NSRect inputBounds = [input imageBounds];
-                if (_dimensions.width != inputBounds.size.width || _dimensions.height != inputBounds.size.height) {
+                if (_dimensions.width != inputBounds.size.width || _dimensions.height != inputBounds.size.height) 
+				{
                     self.rendererNeedsRebuild = YES;
                     _dimensions.width = inputBounds.size.width;
                     _dimensions.height = inputBounds.size.height;
@@ -310,31 +322,43 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
             }
         }
     }
-    if (self.rendererNeedsRebuild) {
+    if (self.rendererNeedsRebuild)
+	{
         [_renderer release];
         NSRect bounds = NSMakeRect(0, 0, _dimensions.width, _dimensions.height);
-        if ([plugin mode] == FFGLPluginModeCPU) {
+        if ([plugin mode] == FFGLPluginModeCPU) 
+		{
             _renderer = [[FFGLRenderer alloc] initWithPlugin:self.plugin pixelFormat:ffPixelFormat forBounds:bounds];
-        } else {
+        } 
+		else
+		{
             _renderer = [[FFGLRenderer alloc] initWithPlugin:plugin context:[context CGLContextObj] forBounds:bounds];
         }
         self.rendererNeedsRebuild = NO;
     }
     
     NSString *key;
-    for (key in keys) {
+    for (key in keys)
+	{
         // set all image inputs every render, because we can't retain them between render passes (QC's limitation).
-        if ([[[plugin attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
+        if ([[[plugin attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage])
+		{
             id <QCPlugInInputImageSource> input = [self valueForInputKey:key];
             FFGLImage *image;
-            if ([plugin mode] == FFGLPluginModeGPU) {
+            if ([plugin mode] == FFGLPluginModeGPU)
+			{
+				// prep the QC images texture for being turned into a FFGL image.
                 [input lockTextureRepresentationWithColorSpace:_cspace forBounds:[input imageBounds]];
+				[input bindTextureRepresentationToCGLContext:cgl_ctx textureUnit:GL_TEXTURE0 normalizeCoordinates:NO];
+		
                 image = [[[FFGLImage alloc] initWithTextureRect:[input textureName]
                                                      CGLContext:cgl_ctx
                                                      pixelsWide:[input texturePixelsWide]
                                                      pixelsHigh:[input texturePixelsHigh]
                                                 releaseCallback:QCTextureRelease releaseInfo:input] autorelease];
-            } else {
+            }
+			else
+			{
                 [input lockBufferRepresentationWithPixelFormat:qcPixelFormat colorSpace:_cspace forBounds:[input imageBounds]];
                 image  = [[[FFGLImage alloc] initWithBuffer:[input bufferBaseAddress]
                                                  CGLContext:cgl_ctx
@@ -345,20 +369,27 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
                                             releaseCallback:QCBufferRelease
                                                 releaseInfo:input] autorelease];
             }
-            if (image == nil) {
+            if (image == nil)
+			{
                 NSLog(@"nil image??");
             }
+			
             [_renderer setValue:image forParameterKey:key];
-        } else if ([self didValueForInputKeyChange:key]) {
+        }
+		else if ([self didValueForInputKeyChange:key])
+		{
             // set other parameters (we can retain those)
             [_renderer setValue:[self valueForInputKey:key] forParameterKey:key];
         }
     }
     BOOL result;
-    if (result = [_renderer renderAtTime:time]) {
+    if (result = [_renderer renderAtTime:time])
+	{
         FFGLImage *output = [[_renderer outputImage] retain]; // released in outputImageProvider callback
+		
         id <QCPlugInOutputImageProvider> provider;
-        if ([output lockTextureRectRepresentation]) {
+        if ([output lockTextureRectRepresentation])
+		{
             provider = [context outputImageProviderFromTextureWithPixelFormat:qcPixelFormat 
                                                                    pixelsWide:[output textureRectPixelsWide]
                                                                    pixelsHigh:[output textureRectPixelsHigh]
@@ -370,15 +401,21 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
                                                              shouldColorMatch:YES];
             self.outputImage = provider;
             result = YES;
-        } else {
+        }
+		else
+		{
             result = NO;
         }
-    } else {
+    } 
+	else
+	{
         result = YES;
     }
-    for (key in keys) {
+    for (key in keys)
+	{
         // nil the renderer's image inputs so we unlock our QC image inputs
-        if ([[[plugin attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
+        if ([[[plugin attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage])
+		{
             [_renderer setValue:nil forParameterKey:key];
         }
     }

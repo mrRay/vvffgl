@@ -7,6 +7,7 @@
 //
 
 #import <Quartz/Quartz.h>
+#import <OpenGL/OpenGL.h>
 #import <VVFFGL/VVFFGL.h>
 
 @interface FFGLQCPlugIn : QCPlugIn
