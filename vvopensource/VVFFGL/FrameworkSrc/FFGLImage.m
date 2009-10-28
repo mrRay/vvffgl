@@ -153,14 +153,19 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, FFGLTextureInfo *fromTextu
 	}
 	else if(fromTarget == GL_TEXTURE_2D)
 	{
+		// since our image is NPOT but our texture is POT, we must 
+		// deduce proper texture coords in normalized space
+		GLfloat texWidth = (GLfloat) fromTexture->width / (GLfloat)fromTexture->hardwareWidth;
+		GLfloat texHeight = (GLfloat)fromTexture->height / (GLfloat)fromTexture->hardwareHeight;
+		
 		glBegin(GL_QUADS);
 		glTexCoord2f(0, 0);
 		glVertex2f(0, 0);
-		glTexCoord2f(0, 1);
+		glTexCoord2f(0, texHeight); 
 		glVertex2f(0, height);
-		glTexCoord2f(1, 1);
+		glTexCoord2f(texWidth, texHeight);
 		glVertex2f(width, height);
-		glTexCoord2f(1, 0);
+		glTexCoord2f(texWidth, 0);
 		glVertex2f(width, 0);
 		glEnd();		
 	}
