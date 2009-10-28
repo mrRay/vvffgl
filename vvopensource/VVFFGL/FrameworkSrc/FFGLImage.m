@@ -126,6 +126,9 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, const FFGLTextureInfo *fro
 	// draw the texture.
 	//texture->draw(0,0);
 	
+	glClearColor(0,0,0,0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	
 	glEnable(fromTarget);
 	glBindTexture(fromTarget, fromTexture->texture);
 	
