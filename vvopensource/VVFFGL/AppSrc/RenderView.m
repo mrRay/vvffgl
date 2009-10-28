@@ -111,36 +111,73 @@
 	// render everything?
     FFGLImage *image = [_chain output];
     
-	if ([image lockTexture2DRepresentation])
+	if ([image lockTextureRectRepresentation])
 	{
         // draw it
 		glColor4f(1.0, 1.0, 1.0, 1.0);
-			
+		
+		NSLog(@"rendering texture: %u, width: %u, height %u", [image textureRectName], [image texture2DPixelsWide], [image textureRectPixelsHigh]);
+		
 		glActiveTexture(GL_TEXTURE0);
-		glEnable(GL_TEXTURE_2D);
-	
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-		glBindTexture(GL_TEXTURE_2D, [image texture2DName]);
-
-	//	glDisable(GL_BLEND);
+		glEnable(GL_TEXTURE_RECTANGLE_ARB);
+		
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		
+		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, [image textureRectName]);
+		
+		//	glDisable(GL_BLEND);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		
 		glBegin(GL_QUADS);
 		glTexCoord2f(0.0, 0.0);
 		glVertex2f(0.0, 0.0);
-		glTexCoord2f(0.0, 1.0);
-		glVertex2f(0.0, [image texture2DPixelsHigh]);
-		glTexCoord2f(1.0, 1.0);
-		glVertex2f([image texture2DPixelsWide], [image texture2DPixelsHigh]);
-		glTexCoord2f(1.0, 0.0);
-		glVertex2f([image texture2DPixelsWide], 0.0);
-		glEnd();		
+		glTexCoord2f(0.0, [image textureRectPixelsHigh]);
+		glVertex2f(0.0, [image textureRectPixelsHigh]);
+		glTexCoord2f([image textureRectPixelsWide], [image textureRectPixelsHigh]);
+		glVertex2f([image textureRectPixelsWide], [image textureRectPixelsHigh]);
+		glTexCoord2f([image textureRectPixelsWide], 0.0);
+		glVertex2f([image textureRectPixelsWide], 0.0);
+		glEnd();
+		
+		[image unlockTextureRectRepresentation];
 	} 
+	
+	
+//	if ([image lockTexture2DRepresentation])
+//	{
+//        // draw it
+//		glColor4f(1.0, 1.0, 1.0, 1.0);
+//			
+//		glActiveTexture(GL_TEXTURE0);
+//		glEnable(GL_TEXTURE_2D);
+//	
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+//
+//		glBindTexture(GL_TEXTURE_2D, [image texture2DName]);
+//
+//	//	glDisable(GL_BLEND);
+//		glEnable(GL_BLEND);
+//		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+//		
+//		glBegin(GL_QUADS);
+//		glTexCoord2f(0.0, 0.0);
+//		glVertex2f(0.0, 0.0);
+//		glTexCoord2f(0.0, 1.0);
+//		glVertex2f(0.0, [image texture2DPixelsHigh]);
+//		glTexCoord2f(1.0, 1.0);
+//		glVertex2f([image texture2DPixelsWide], [image texture2DPixelsHigh]);
+//		glTexCoord2f(1.0, 0.0);
+//		glVertex2f([image texture2DPixelsWide], 0.0);
+//		glEnd();
+//		[image unlockTexture2DRepresentation];
+//	} 
 
 	else if ([image lockBufferRepresentationWithPixelFormat:FFGLPixelFormatBGRA8888]) { // This won't be needed once FFGLImage can convert buffers->textures
         NSUInteger bpr = [image bufferBytesPerRow];

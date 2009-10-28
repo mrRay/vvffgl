@@ -28,6 +28,7 @@ static int nextPow2(int a)
 
 static void FFGLImageTextureRelease(GLuint name, CGLContextObj cgl_ctx, void *context) {
     CGLLockContext(cgl_ctx);
+	NSLog(@"delete texture: %u", name);
     glDeleteTextures(1, &name);
     CGLUnlockContext(cgl_ctx);
 }
@@ -65,11 +66,14 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, FFGLTextureInfo *fromTextu
 	
     GLsizei width, height;
     // set up our destination target
-    if(fromTarget == GL_TEXTURE_RECTANGLE_ARB) {
+    if(fromTarget == GL_TEXTURE_RECTANGLE_ARB)
+	{
         toTarget = GL_TEXTURE_2D;
         width = toTexture->hardwareWidth = FFGLPOTDimension(fromTexture->width);
         height = toTexture->hardwareHeight = FFGLPOTDimension(fromTexture->height);
-    } else {
+    } 
+	else
+	{
         toTarget = GL_TEXTURE_RECTANGLE_ARB;
         width = toTexture->hardwareWidth = fromTexture->width;
         height = toTexture->hardwareHeight = fromTexture->height;
@@ -92,15 +96,26 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, FFGLTextureInfo *fromTextu
 	// new texture
 	GLuint newTex;
 	glGenTextures(1, &newTex);
-        toTexture->texture = newTex;
 	glBindTexture(toTarget, newTex);
 	glTexImage2D(toTarget, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	
+
+	NSLog(@"new texture: %u, original texture: %u", newTex, fromTexture->texture);
+	toTexture->texture = newTex;
+
 	// make new FBO and attach.
 	GLuint fboID;
 	glGenFramebuffersEXT(1, &fboID);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboID);
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, toTarget, newTex, 0);
+
+	// unbind texture
+	glBindTexture(toTarget, 0);
+
+	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+	if(status != GL_FRAMEBUFFER_COMPLETE_EXT)
+	{
+		NSLog(@"Error in FBO: %x", status);
+	}
 	
 	// draw ofTexture into new texture;
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -313,8 +328,10 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
                              buffer:buffer pixelFormat:format bufferReleaseCallback:callback bufferReleaseInfo:userInfo];
 }
 
-- (void)releaseResources {
-    if (_hasTexture2D == YES && _texture2DInfo != NULL) {
+- (void)releaseResources 
+{
+	NSLog(@"releasing resources");
+	if (_hasTexture2D == YES && _texture2DInfo != NULL) {
         _texture2DReleaseCallback(((FFGLTextureInfo *)_texture2DInfo)->texture, _context, _texture2DReleaseContext);
         free(_texture2DInfo);
     }
@@ -401,22 +418,33 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
 - (BOOL)lockTextureRectRepresentation {
     BOOL result = NO;
     pthread_mutex_lock(&_conversionLock);
-    if (_hasTextureRect == YES) {
+	
+    if (_hasTextureRect == YES) 
+	{
         result = YES;
-    } else if (_hasTexture2D) {
+    } 
+	else if (_hasTexture2D)
+	{
         _textureRectInfo = malloc(sizeof(FFGLTextureInfo));
         swapTextureTargets(_context, (FFGLTextureInfo *)_texture2DInfo, (FFGLTextureInfo *)_textureRectInfo, GL_TEXTURE_2D);
-        if (((FFGLTextureInfo *)_textureRectInfo)->texture == 0) {
+		
+        if (((FFGLTextureInfo *)_textureRectInfo)->texture == 0)
+		{
             free(_textureRectInfo);
-        } else {
+        }
+		else
+		{
             _textureRectReleaseCallback = FFGLImageTextureRelease;
             _textureRectReleaseContext = NULL;
             _hasTextureRect = YES;
             result = YES;
         }
-    } else if (_hasBuffer) {
+    } 
+	else if (_hasBuffer) 
+	{
         // TODO: generate it, return YES;
     }
+	
     pthread_mutex_unlock(&_conversionLock);
     return result;
 }

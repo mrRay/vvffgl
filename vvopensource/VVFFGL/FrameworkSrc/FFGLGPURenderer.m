@@ -256,6 +256,8 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, _previousReadFBO);
 	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);
 		
+	
+	NSLog(@"new FFGL image with texture: %u", _rendererFBOTexture);
 	FFGLImage *output = [[[FFGLImage alloc] initWithTexture2D:_rendererFBOTexture
                                                        CGLContext:cgl_ctx
                                                   imagePixelsWide:self.bounds.size.width
