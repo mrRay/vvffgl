@@ -12,10 +12,10 @@
 #import <OpenGL/CGLMacro.h>
 
 static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl_ctx, void *context) {
-    NSLog(@"delete texture %u in renderer callback (created)", name);
-	CGLLockContext(cgl_ctx);
-	glDeleteTextures(1, &name);
-	CGLUnlockContext(cgl_ctx);
+//    NSLog(@"delete texture %u in renderer callback (created)", name);
+    CGLLockContext(cgl_ctx);
+    glDeleteTextures(1, &name);
+    CGLUnlockContext(cgl_ctx);
 }
 
 @implementation FFGLGPURenderer
@@ -27,7 +27,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 
 - (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)cgl_ctx forBounds:(NSRect)bounds
 {
-    NSLog(@"Init");
+//    NSLog(@"Init");
     if (self = [super initWithPlugin:plugin context:cgl_ctx forBounds:bounds]) {
         
         // this rightnow is totally dependant on how we end up exposing the instantiate functions for the plugin, 
@@ -258,7 +258,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);
 		
 	
-	NSLog(@"new FFGL image with texture: %u", _rendererFBOTexture);
+//	NSLog(@"new FFGL image with texture: %u", _rendererFBOTexture);
 	FFGLImage *output = [[[FFGLImage alloc] initWithTexture2D:_rendererFBOTexture
                                                        CGLContext:cgl_ctx
                                                   imagePixelsWide:self.bounds.size.width

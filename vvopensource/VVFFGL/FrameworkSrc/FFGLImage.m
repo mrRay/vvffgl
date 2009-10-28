@@ -19,7 +19,7 @@ static void FFGLImageBufferRelease(const void *baseAddress, void* context) {
 
 static void FFGLImageTextureRelease(GLuint name, CGLContextObj cgl_ctx, void *context) {
     CGLLockContext(cgl_ctx);
-	NSLog(@"delete texture %u in FFGLImage callback (converted)", name);
+//	NSLog(@"delete texture %u in FFGLImage callback (converted)", name);
     glDeleteTextures(1, &name);
     CGLUnlockContext(cgl_ctx);
 }
@@ -63,8 +63,8 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, const FFGLTextureInfo *fro
         width = toTexture->hardwareWidth = FFGLPOTDimension(fromTexture->width);
         height = toTexture->hardwareHeight = FFGLPOTDimension(fromTexture->height);
     } 
-	else
-	{
+    else
+    {
         toTarget = GL_TEXTURE_RECTANGLE_ARB;
         width = toTexture->hardwareWidth = fromTexture->width;
         height = toTexture->hardwareHeight = fromTexture->height;
@@ -90,7 +90,7 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, const FFGLTextureInfo *fro
 	glBindTexture(toTarget, newTex);
 	glTexImage2D(toTarget, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
-	NSLog(@"new texture: %u, original texture: %u", newTex, fromTexture->texture);
+//	NSLog(@"new texture: %u, original texture: %u", newTex, fromTexture->texture);
 	toTexture->texture = newTex;
 
 	// make new FBO and attach.

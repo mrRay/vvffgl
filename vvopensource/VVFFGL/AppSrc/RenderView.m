@@ -116,7 +116,7 @@
         // draw it
 		glColor4f(1.0, 1.0, 1.0, 1.0);
 		
-		NSLog(@"rendering texture: %u, width: %u, height %u", [image textureRectName], [image texture2DPixelsWide], [image textureRectPixelsHigh]);
+//		NSLog(@"rendering texture: %u, width: %u, height %u", [image textureRectName], [image texture2DPixelsWide], [image textureRectPixelsHigh]);
 		
 		glActiveTexture(GL_TEXTURE0);
 		glEnable(GL_TEXTURE_RECTANGLE_ARB);

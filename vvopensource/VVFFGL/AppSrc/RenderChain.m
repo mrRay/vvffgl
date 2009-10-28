@@ -116,7 +116,7 @@
 {
     [self willChangeValueForKey:@"output"];
     [_lock lock];
-    NSLog(@"--Render start--");
+//    NSLog(@"--Render start--");
     BOOL result;
     result = [_source renderAtTime:time];
     FFGLImage *image = [_source outputImage];
