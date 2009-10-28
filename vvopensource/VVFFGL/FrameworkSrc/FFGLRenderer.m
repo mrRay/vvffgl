@@ -259,7 +259,7 @@
             }
         }
         for (; i < max; i++) {
-            if ([_plugin _imageInputAtIndex:i willBeUsedByInstance:_instance] && (_imageInputValidity[i] == NO)) {
+            if ((_imageInputValidity[i] == NO) && [_plugin _imageInputAtIndex:i willBeUsedByInstance:_instance]) {
                 ready = NO;
                 break;
             }
