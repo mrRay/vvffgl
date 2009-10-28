@@ -12,6 +12,7 @@
 #import <OpenGL/CGLMacro.h>
 
 static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl_ctx, void *context) {
+    NSLog(@"delete texture %u in renderer callback (created)", name);
 	CGLLockContext(cgl_ctx);
 	glDeleteTextures(1, &name);
 	CGLUnlockContext(cgl_ctx);

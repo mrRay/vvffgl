@@ -40,7 +40,7 @@ typedef struct FFGLProcessGLStruct {
 static inline NSUInteger FFGLPOTDimension(NSUInteger dimension)
 {
     NSUInteger glSize = 1;
-    while (glSize<dimension) glSize*=2;    
+    while (glSize<dimension) glSize<<=2;    
     return glSize;
 }
 

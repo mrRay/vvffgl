@@ -17,18 +17,9 @@ static void FFGLImageBufferRelease(const void *baseAddress, void* context) {
     free((void *)baseAddress);
 }
 
-// need this to make POT textures of the right size.
-static int nextPow2(int a)
-{
-	// from nehe.gamedev.net lesson 43
-	int rval=1;
-	while(rval<a) rval<<=1;
-	return rval;
-}
-
 static void FFGLImageTextureRelease(GLuint name, CGLContextObj cgl_ctx, void *context) {
     CGLLockContext(cgl_ctx);
-	NSLog(@"delete texture: %u", name);
+	NSLog(@"delete texture %u in FFGLImage callback (converted)", name);
     glDeleteTextures(1, &name);
     CGLUnlockContext(cgl_ctx);
 }
@@ -54,7 +45,7 @@ static NSUInteger bytesPerPixelForPixelFormat(NSString *format) {
  On return toTexture will be filled out with details of a new texture.
  You are responsible for deleting this texture (using glDeleteTextures).
  */
-static void swapTextureTargets(CGLContextObj cgl_ctx, FFGLTextureInfo *fromTexture, FFGLTextureInfo *toTexture, GLenum fromTarget)
+static void swapTextureTargets(CGLContextObj cgl_ctx, const FFGLTextureInfo *fromTexture, FFGLTextureInfo *toTexture, GLenum fromTarget)
 {		
     CGLLockContext(cgl_ctx);
     
@@ -335,8 +326,7 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
 
 - (void)releaseResources 
 {
-	NSLog(@"releasing resources");
-	if (_hasTexture2D == YES && _texture2DInfo != NULL) {
+    if (_hasTexture2D == YES && _texture2DInfo != NULL) {
         _texture2DReleaseCallback(((FFGLTextureInfo *)_texture2DInfo)->texture, _context, _texture2DReleaseContext);
         free(_texture2DInfo);
     }
@@ -425,28 +415,28 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
     pthread_mutex_lock(&_conversionLock);
 	
     if (_hasTextureRect == YES) 
-	{
+    {
         result = YES;
     } 
-	else if (_hasTexture2D)
-	{
+    else if (_hasTexture2D)
+    {
         _textureRectInfo = malloc(sizeof(FFGLTextureInfo));
         swapTextureTargets(_context, (FFGLTextureInfo *)_texture2DInfo, (FFGLTextureInfo *)_textureRectInfo, GL_TEXTURE_2D);
 		
         if (((FFGLTextureInfo *)_textureRectInfo)->texture == 0)
-		{
+	{
             free(_textureRectInfo);
         }
-		else
-		{
+	else
+	{
             _textureRectReleaseCallback = FFGLImageTextureRelease;
             _textureRectReleaseContext = NULL;
             _hasTextureRect = YES;
             result = YES;
         }
     } 
-	else if (_hasBuffer) 
-	{
+    else if (_hasBuffer) 
+    {
         // TODO: generate it, return YES;
     }
 	
