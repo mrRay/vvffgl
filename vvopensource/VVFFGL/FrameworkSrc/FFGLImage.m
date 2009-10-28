@@ -337,7 +337,7 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
     source.height = height;
     
     FFGLTextureInfo *dest = malloc(sizeof(FFGLTextureInfo));
-    swapTextureTargets(context, source, &dest, GL_TEXTURE_RECTANGLE_ARB);
+    swapTextureTargets(context, &source, dest, GL_TEXTURE_RECTANGLE_ARB);
     return [self initWithCGLContext:context imagePixelsWide:width imagePixelsHigh:height
 		      texture2DInfo:dest texture2DReleaseCallback:FFGLImageTextureRelease texture2DReleaseInfo:NULL
 		    textureRectInfo:NULL textureRectReleaseCallback:NULL textureRectReleaseInfo:NULL
