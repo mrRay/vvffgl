@@ -208,8 +208,7 @@
 		BD90FABF1078FEB5009A6273 /* RenderChain.m in Sources */ = {isa = PBXBuildFile; fileRef = BD90FABE1078FEB5009A6273 /* RenderChain.m */; };
 		BD9132F8107D2D600095AA79 /* FFGLInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9132F7107D2D600095AA79 /* FFGLInternal.h */; };
 		BD923A0010837AC60036739C /* FFGLRenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = BD93426C101A56F600C4B805 /* FFGLRenderer.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		BD9F6A0C10191358004D8CD9 /* FreeFrame.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6A0A10191358004D8CD9 /* FreeFrame.h */; };
-		BD9F6A88101921FD004D8CD9 /* FFGL.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6A87101921FD004D8CD9 /* FFGL.h */; };
+		BD9F49C11098D55F00E8A7C0 /* FFGLFreeFrame.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F49C01098D55F00E8A7C0 /* FFGLFreeFrame.h */; };
 		BD9F6C8E101945AE004D8CD9 /* FFGLPlugin.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6C8A101945AE004D8CD9 /* FFGLPlugin.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BD9F6C8F101945AE004D8CD9 /* FFGLPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = BD9F6C8B101945AE004D8CD9 /* FFGLPlugin.m */; };
 		BD9F6C90101945AE004D8CD9 /* FFGLPluginManager.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6C8C101945AE004D8CD9 /* FFGLPluginManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -517,8 +516,7 @@
 		BD9132F7107D2D600095AA79 /* FFGLInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLInternal.h; path = VVFFGL/FrameworkSrc/FFGLInternal.h; sourceTree = "<group>"; };
 		BD93426C101A56F600C4B805 /* FFGLRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLRenderer.h; path = VVFFGL/FrameworkSrc/FFGLRenderer.h; sourceTree = "<group>"; };
 		BD93426D101A56F600C4B805 /* FFGLRenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLRenderer.m; path = VVFFGL/FrameworkSrc/FFGLRenderer.m; sourceTree = "<group>"; };
-		BD9F6A0A10191358004D8CD9 /* FreeFrame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FreeFrame.h; path = VVFFGL/FrameworkSrc/FreeFrame.h; sourceTree = "<group>"; };
-		BD9F6A87101921FD004D8CD9 /* FFGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGL.h; path = VVFFGL/FrameworkSrc/FFGL.h; sourceTree = "<group>"; };
+		BD9F49C01098D55F00E8A7C0 /* FFGLFreeFrame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLFreeFrame.h; path = VVFFGL/FrameworkSrc/FFGLFreeFrame.h; sourceTree = "<group>"; };
 		BD9F6C8A101945AE004D8CD9 /* FFGLPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLPlugin.h; path = VVFFGL/FrameworkSrc/FFGLPlugin.h; sourceTree = "<group>"; };
 		BD9F6C8B101945AE004D8CD9 /* FFGLPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLPlugin.m; path = VVFFGL/FrameworkSrc/FFGLPlugin.m; sourceTree = "<group>"; };
 		BD9F6C8C101945AE004D8CD9 /* FFGLPluginManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLPluginManager.h; path = VVFFGL/FrameworkSrc/FFGLPluginManager.h; sourceTree = "<group>"; };
@@ -842,6 +840,7 @@
 		BD8E3C651030DB4A00152772 /* Private */ = {
 			isa = PBXGroup;
 			children = (
+				BD9F49C01098D55F00E8A7C0 /* FFGLFreeFrame.h */,
 				BD9132F7107D2D600095AA79 /* FFGLInternal.h */,
 				BD9F6C8B101945AE004D8CD9 /* FFGLPlugin.m */,
 				BD9F6C8D101945AE004D8CD9 /* FFGLPluginManager.m */,
@@ -851,8 +850,6 @@
 				BD8E3C6A1030DC1800152772 /* FFGLGPURenderer.h */,
 				BD8E3C6B1030DC1800152772 /* FFGLGPURenderer.m */,
 				BDAA2CCB107928A90053E947 /* FFGLImage.m */,
-				BD9F6A0A10191358004D8CD9 /* FreeFrame.h */,
-				BD9F6A87101921FD004D8CD9 /* FFGL.h */,
 			);
 			name = Private;
 			sourceTree = "<group>";
@@ -866,14 +863,13 @@
 			files = (
 				BD923A0010837AC60036739C /* FFGLRenderer.h in Headers */,
 				9606B185101763A200CC50B7 /* VVFFGL.h in Headers */,
-				BD9F6A0C10191358004D8CD9 /* FreeFrame.h in Headers */,
-				BD9F6A88101921FD004D8CD9 /* FFGL.h in Headers */,
 				BD9F6C8E101945AE004D8CD9 /* FFGLPlugin.h in Headers */,
 				BD9F6C90101945AE004D8CD9 /* FFGLPluginManager.h in Headers */,
 				BD8E3C681030DBDB00152772 /* FFGLCPURenderer.h in Headers */,
 				BD8E3C6C1030DC1800152772 /* FFGLGPURenderer.h in Headers */,
 				BDAA2CCC107928A90053E947 /* FFGLImage.h in Headers */,
 				BD9132F8107D2D600095AA79 /* FFGLInternal.h in Headers */,
+				BD9F49C11098D55F00E8A7C0 /* FFGLFreeFrame.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1596,6 +1592,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COPY_PHASE_STRIP = NO;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -1616,6 +1613,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -1636,6 +1634,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
@@ -1660,6 +1659,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;

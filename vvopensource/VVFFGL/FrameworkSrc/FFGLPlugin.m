@@ -7,8 +7,7 @@
 
 #import "FFGLPlugin.h"
 #import "FFGLInternal.h"
-#import "FreeFrame.h"
-#import "FFGL.h"
+#import "FFGLFreeFrame.h"
 
 #import <pthread.h>
 
@@ -145,12 +144,12 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
             return nil;
         }
         
-        plugMainUnion result;
+        FFMixed result;
 
         // Initialise the plugin. According to the FF spec we only need to do this before calling instantiate,
         // but some plugins require it before other calls, so it should be our first call.
-        result = _pluginData->main(FF_INITIALISE, 0, 0);
-        if (result.ivalue != FF_SUCCESS) {
+        result = _pluginData->main(FF_INITIALISE, (FFMixed)0U, 0);
+        if (result.UIntValue != FF_SUCCESS) {
             pthread_mutex_unlock(&_FFGLPluginInstancesLock);
             [self release];
             return nil;
@@ -158,14 +157,14 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         _pluginData->initted = YES;
         
         // Get basic plugin info, and check we are a type (source or effect) we know about.
-        result = _pluginData->main(FF_GETINFO, 0, 0);
-        if (result.svalue == NULL) {
+        result = _pluginData->main(FF_GETINFO, (FFMixed)0U, 0);
+        FFPluginInfoStruct *info = (FFPluginInfoStruct *)result.PointerValue;
+	if (info == NULL) {
             pthread_mutex_unlock(&_FFGLPluginInstancesLock);
             [self release];
             return nil;
         }
-        PluginInfoStruct *info = (PluginInfoStruct *)result.svalue;
-        if ((info->PluginType != FF_SOURCE) && (info->PluginType != FF_EFFECT)) {
+        if ((info->PluginType != FF_PLUGIN_SOURCE) && (info->PluginType != FF_PLUGIN_EFFECT)) {
             // Bail if this is some future other type of plugin.
             pthread_mutex_unlock(&_FFGLPluginInstancesLock);
             [self release];
@@ -201,8 +200,8 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         
         [(NSMutableDictionary *)_pluginData->attributes setObject:[[path copy] autorelease] forKey:FFGLPluginAttributePathKey];
 
-        result = _pluginData->main(FF_GETEXTENDEDINFO, 0, 0);
-        PluginExtendedInfoStruct *extendedInfo = (PluginExtendedInfoStruct *)result.svalue;
+        result = _pluginData->main(FF_GETEXTENDEDINFO, (FFMixed)0U, 0);
+        FFPluginExtendedInfoStruct *extendedInfo = (FFPluginExtendedInfoStruct *)result.PointerValue;
         if (extendedInfo != NULL) {
             NSNumber *version = [NSNumber numberWithFloat:extendedInfo->PluginMajorVersion + (extendedInfo->PluginMinorVersion * 0.001)];
             [(NSMutableDictionary *)_pluginData->attributes setObject:version forKey:FFGLPluginAttributeVersionKey];
@@ -221,38 +220,38 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         }
         
         // Determine our mode.
-        result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_PROCESSOPENGL, 0);
-        if (result.ivalue == FF_SUPPORTED) {
+        result = _pluginData->main(FF_GETPLUGINCAPS, (FFMixed)FF_CAP_PROCESSOPENGL, 0);
+        if (result.UIntValue == FF_SUPPORTED) {
             _pluginData->mode = FFGLPluginModeGPU;
             // We don't support any pixel formats.
             _pluginData->bufferPixelFormats = [[NSArray alloc] init];
         } else {
             _pluginData->mode = FFGLPluginModeCPU;
             // Fill out our preferred mode
-            _pluginData->preferredBufferMode = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_COPYORINPLACE, 0).ivalue;
+            _pluginData->preferredBufferMode = _pluginData->main(FF_GETPLUGINCAPS, (FFMixed)FF_CAP_COPYORINPLACE, 0).UIntValue;
             /*
              Get information about the pixel formats we support. FF plugins only support native-endian pixel formats. We could
              support both and handle conversion, however that doesn't seem a priority.
              */
             _pluginData->bufferPixelFormats = [[NSMutableArray alloc] initWithCapacity:3];
-            result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_16BITVIDEO, 0);
-            if (result.ivalue == FF_SUPPORTED) {
+            result = _pluginData->main(FF_GETPLUGINCAPS, (FFMixed)FF_CAP_16BITVIDEO, 0);
+            if (result.UIntValue == FF_SUPPORTED) {
 #if __BIG_ENDIAN__
                 [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPixelFormatRGB565];
 #else
                 [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPixelFormatBGR565];
 #endif
             }
-            result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_24BITVIDEO, 0);
-            if (result.ivalue == FF_SUPPORTED) {
+            result = _pluginData->main(FF_GETPLUGINCAPS, (FFMixed)FF_CAP_24BITVIDEO, 0);
+            if (result.UIntValue == FF_SUPPORTED) {
 #if __BIG_ENDIAN__
                 [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPixelFormatRGB888];
 #else
                 [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPixelFormatBGR888];
 #endif
             }
-            result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_32BITVIDEO, 0);
-            if (result.ivalue == FF_SUPPORTED) {
+            result = _pluginData->main(FF_GETPLUGINCAPS, (FFMixed)FF_CAP_32BITVIDEO, 0);
+            if (result.UIntValue == FF_SUPPORTED) {
 #if __BIG_ENDIAN__
                 [(NSMutableArray *)_pluginData->bufferPixelFormats addObject:FFGLPixelFormatARGB8888];
 #else
@@ -262,19 +261,19 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         }
         
         // See if we support setTime
-        _pluginData->supportsSetTime = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_SETTIME, 0).ivalue;
+        _pluginData->supportsSetTime = _pluginData->main(FF_GETPLUGINCAPS, (FFMixed)FF_CAP_SETTIME, 0).UIntValue;
         
         // Discover our parameters, which include the plugin's parameters plus video inputs.
         _pluginData->parameters = [[NSMutableDictionary alloc] initWithCapacity:4];
-        NSUInteger i = 0;
+        uint32_t i = 0;
         NSDictionary *pAttributes;
         NSString *pName;
         BOOL recognized;
         // Image inputs as parameters
-        result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_MINIMUMINPUTFRAMES, 0);
-        _pluginData->minFrames = result.ivalue;
-        result = _pluginData->main(FF_GETPLUGINCAPS, FF_CAP_MAXIMUMINPUTFRAMES, 0);
-        _pluginData->maxFrames = result.ivalue;
+        result = _pluginData->main(FF_GETPLUGINCAPS, (FFMixed)FF_CAP_MINIMUMINPUTFRAMES, 0);
+        _pluginData->minFrames = result.UIntValue;
+        result = _pluginData->main(FF_GETPLUGINCAPS, (FFMixed)FF_CAP_MAXIMUMINPUTFRAMES, 0);
+        _pluginData->maxFrames = result.UIntValue;
         for (i = 0; i < _pluginData->minFrames; i++) {
             pName = [NSString stringWithFormat:@"Input Image #%u", i];
             pAttributes = [NSDictionary dictionaryWithObjectsAndKeys:FFGLParameterTypeImage, FFGLParameterAttributeTypeKey,
@@ -290,16 +289,17 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
             [(NSMutableDictionary *)_pluginData->parameters setObject:pAttributes forKey:pName];
         }        
         // Non-image parameters
-        DWORD paramCount = _pluginData->main(FF_GETNUMPARAMETERS, 0, 0).ivalue;
+	
+        uint32_t paramCount = _pluginData->main(FF_GETNUMPARAMETERS, (FFMixed)0U, 0).UIntValue;
         for (i = 0; i < paramCount; i++) {
             pAttributes = [NSMutableDictionary dictionaryWithCapacity:4];
-            result = _pluginData->main(FF_GETPARAMETERTYPE, i, 0);
+            result = _pluginData->main(FF_GETPARAMETERTYPE, (FFMixed)i, 0);
             recognized = YES;
-            switch (result.ivalue) {
+            switch (result.UIntValue) {
                 case FF_TYPE_BOOLEAN:
                     [pAttributes setValue:FFGLParameterTypeBoolean forKey:FFGLParameterAttributeTypeKey];
-                    result = _pluginData->main(FF_GETPARAMETERDEFAULT, i, 0);
-                    [pAttributes setValue:[NSNumber numberWithBool:(result.ivalue ? YES : NO)] forKey:FFGLParameterAttributeDefaultValueKey];
+                    result = _pluginData->main(FF_GETPARAMETERDEFAULT, (FFMixed)i, 0);
+                    [pAttributes setValue:[NSNumber numberWithBool:(result.UIntValue ? YES : NO)] forKey:FFGLParameterAttributeDefaultValueKey];
                     break;
                 case FF_TYPE_EVENT:
                     [pAttributes setValue:FFGLParameterTypeEvent forKey:FFGLParameterAttributeTypeKey];
@@ -314,14 +314,15 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
                     [pAttributes setValue:FFGLParameterTypeNumber forKey:FFGLParameterAttributeTypeKey];
                     [pAttributes setValue:[NSNumber numberWithFloat:0.0] forKey:FFGLParameterAttributeMinimumValueKey];
                     [pAttributes setValue:[NSNumber numberWithFloat:1.0] forKey:FFGLParameterAttributeMaximumValueKey];
-                    result = _pluginData->main(FF_GETPARAMETERDEFAULT, i, 0);
-                    [pAttributes setValue:[NSNumber numberWithFloat:result.fvalue] forKey:FFGLParameterAttributeDefaultValueKey];
+                    result = _pluginData->main(FF_GETPARAMETERDEFAULT, (FFMixed)i, 0);
+//                    [pAttributes setValue:[NSNumber numberWithFloat:(float)result.UIntValue] forKey:FFGLParameterAttributeDefaultValueKey];
+		    [pAttributes setValue:[NSNumber numberWithFloat:*((float *)&result.UIntValue)] forKey:FFGLParameterAttributeDefaultValueKey];
                     break;
                 case FF_TYPE_TEXT:
                     [pAttributes setValue:FFGLParameterTypeString forKey:FFGLParameterAttributeTypeKey];
-                    result = _pluginData->main(FF_GETPARAMETERDEFAULT, i, 0);
-                    if (result.svalue != NULL) {
-                        [pAttributes setValue:[NSString stringWithCString:result.svalue encoding:NSASCIIStringEncoding]
+                    result = _pluginData->main(FF_GETPARAMETERDEFAULT, (FFMixed)i, 0);
+                    if (result.PointerValue != NULL) {
+                        [pAttributes setValue:[NSString stringWithCString:result.PointerValue encoding:NSASCIIStringEncoding]
                                       forKey:FFGLParameterAttributeDefaultValueKey];
                     }
                     break;
@@ -333,9 +334,9 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
                     break;
             }
             if (recognized == YES) {
-                result = _pluginData->main(FF_GETPARAMETERNAME, i, 0);
-                if (result.svalue != NULL) {
-                    [pAttributes setValue:[NSString stringWithFFPluginDubiousBytes:result.svalue nominalLength:16]
+                result = _pluginData->main(FF_GETPARAMETERNAME, (FFMixed)i, 0);
+                if (result.PointerValue != NULL) {
+                    [pAttributes setValue:[NSString stringWithFFPluginDubiousBytes:result.PointerValue nominalLength:16]
                                    forKey:FFGLParameterAttributeNameKey];
                 } else {
                     [pAttributes setValue:@"Untitled Parameter" forKey:FFGLParameterAttributeNameKey];
@@ -362,7 +363,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         }
         pthread_mutex_unlock(&_FFGLPluginInstancesLock); 
         if (_pluginData->initted == YES) {
-            _pluginData->main(FF_DEINITIALISE, 0, 0);
+            _pluginData->main(FF_DEINITIALISE, (FFMixed)0U, 0);
         }
         if (_pluginData->bundle != NULL)
             CFRelease(_pluginData->bundle);
@@ -384,7 +385,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         }
         pthread_mutex_unlock(&_FFGLPluginInstancesLock); 
         if (_pluginData->initted == YES) {
-            _pluginData->main(FF_DEINITIALISE, 0, 0);
+            _pluginData->main(FF_DEINITIALISE, (FFMixed)0U, 0);
         }
         if (_pluginData->bundle != NULL)
             CFRelease(_pluginData->bundle);
@@ -469,9 +470,9 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 {
     if (_pluginData->mode == FFGLPluginModeGPU) {
         FFGLViewportStruct viewport = {bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height};
-        return _pluginData->main(FF_INSTANTIATEGL, (DWORD)&viewport, 0).ivalue;
+        return _pluginData->main(FF_INSTANTIATEGL, (FFMixed)(void *)&viewport, 0).PointerValue;
     } else if (_pluginData->mode == FFGLPluginModeCPU) {
-        VideoInfoStruct videoInfo;
+        FFVideoInfoStruct videoInfo;
         if ([format isEqualToString:FFGLPixelFormatBGRA8888] || [format isEqualToString:FFGLPixelFormatARGB8888])
             videoInfo.BitDepth = FF_CAP_32BITVIDEO;
         else if ([format isEqualToString:FFGLPixelFormatBGR888] || [format isEqualToString:FFGLPixelFormatRGB888])
@@ -485,7 +486,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         videoInfo.Orientation = FF_ORIENTATION_TL; // I think ;) If it's upside down then FF_ORIENTATION_BL.
         videoInfo.FrameHeight = bounds.size.height;
         videoInfo.FrameWidth = bounds.size.width;
-        return _pluginData->main(FF_INSTANTIATE, (DWORD)&videoInfo, 0).ivalue;
+        return _pluginData->main(FF_INSTANTIATE, (FFMixed)(void *)&videoInfo, 0).PointerValue;
     } else {
         return 0; // Yikes
     }
@@ -495,11 +496,11 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 {
     // Plugins indicate success or failure in return, but as it's not clear what
     // failure means, let's ignore it.
-    DWORD result;
+    uint32_t result;
     if (_pluginData->mode == FFGLPluginModeGPU)
-        result = _pluginData->main(FF_DEINSTANTIATE, 0, instance).ivalue ;
+        result = _pluginData->main(FF_DEINSTANTIATE, (FFMixed)0U, instance).UIntValue;
     else if (_pluginData->mode == FFGLPluginModeCPU)
-        result = _pluginData->main(FF_DEINSTANTIATEGL, 0, instance).ivalue;
+        result = _pluginData->main(FF_DEINSTANTIATEGL, (FFMixed)0U, instance).UIntValue;
     else
         result = FF_FAIL;
     NSLog(@"disposeInstance");
@@ -514,12 +515,12 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         [NSException raise:@"FFGLPluginException" format:@"No such key: %@", key];
         return nil;        
     }
-    NSUInteger pindex = [[pattributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
-    plugMainUnion result = _pluginData->main(FF_GETPARAMETER, pindex, instance);
+    uint32_t pindex = [[pattributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
+    FFMixed result = _pluginData->main(FF_GETPARAMETER, (FFMixed)pindex, instance);
     if ([[pattributes objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeString]) {
-        return [NSString stringWithCString:result.svalue encoding:NSASCIIStringEncoding];
+        return [NSString stringWithCString:result.PointerValue encoding:NSASCIIStringEncoding];
     } else {
-        return [NSNumber numberWithFloat:result.fvalue];
+        return [NSNumber numberWithFloat:*((float *)&result.UIntValue)];
     }
 }
 
@@ -531,45 +532,47 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         return;        
     }
     NSUInteger pindex = [[pattributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
-    SetParameterStruct param;
+    FFSetParameterStruct param;
     param.ParameterNumber = pindex;
     if ([[pattributes objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeString]) {
         if (value == nil) {
             value = @"";
         }
-        param.NewParameterValue = (DWORD)[(NSString *)value cStringUsingEncoding:NSASCIIStringEncoding];
+        param.NewParameterValue = (FFMixed)(void *)[(NSString *)value cStringUsingEncoding:NSASCIIStringEncoding];
     } else {
-        *((float *)(unsigned)&param.NewParameterValue) = [(NSNumber *)value floatValue]; // ? Check this...
+//        *((float *)(unsigned)&param.NewParameterValue) = [(NSNumber *)value floatValue]; // ? Check this...
+	float f = [(NSNumber *)value floatValue];
+	param.NewParameterValue = (FFMixed)(uint32_t)*((uint32_t *)&f);
     }
-    _pluginData->main(FF_SETPARAMETER, (DWORD)&param, instance);
+    _pluginData->main(FF_SETPARAMETER, (FFMixed)(void *)&param, instance);
 }
 
 - (void)_setTime:(NSTimeInterval)time ofInstance:(FFGLPluginInstance)instance
 {
-    _pluginData->main(FF_SETTIME, (DWORD)&time, instance);
+    _pluginData->main(FF_SETTIME, (FFMixed)(void *)&time, instance);
 }
 
-- (BOOL)_imageInputAtIndex:(NSUInteger)index willBeUsedByInstance:(FFGLPluginInstance)instance
+- (BOOL)_imageInputAtIndex:(uint32_t)index willBeUsedByInstance:(FFGLPluginInstance)instance
 {
-    return _pluginData->main(FF_GETIPUTSTATUS, (DWORD)index, instance).ivalue;
+    return _pluginData->main(FF_GETINPUTSTATUS, (FFMixed)index, instance).UIntValue;
 }
 
 - (BOOL)_processFrameCopy:(FFGLProcessFrameCopyStruct *)frameInfo forInstance:(FFGLPluginInstance)instance
 {
-    plugMainUnion result = _pluginData->main(FF_PROCESSFRAMECOPY, (DWORD)frameInfo, instance);
-    return result.ivalue == FF_SUCCESS ? YES : NO;
+    FFMixed result = _pluginData->main(FF_PROCESSFRAMECOPY, (FFMixed)(void *)frameInfo, instance);
+    return result.UIntValue == FF_SUCCESS ? YES : NO;
 }
 
 - (BOOL)_processFrameInPlace:(void *)buffer forInstance:(FFGLPluginInstance)instance
 {
-    plugMainUnion result = _pluginData->main(FF_PROCESSFRAME, (DWORD)buffer, instance);
-    return result.ivalue == FF_SUCCESS ? YES : NO;
+    FFMixed result = _pluginData->main(FF_PROCESSFRAME, (FFMixed)buffer, instance);
+    return result.UIntValue == FF_SUCCESS ? YES : NO;
 }
 
 - (BOOL)_processFrameGL:(FFGLProcessGLStruct *)frameInfo forInstance:(FFGLPluginInstance)instance
 {
-    plugMainUnion result = _pluginData->main(FF_PROCESSOPENGL, (DWORD)frameInfo, instance);
-    return result.ivalue == FF_SUCCESS ? YES : NO;
+    FFMixed result = _pluginData->main(FF_PROCESSOPENGL, (FFMixed)(void *)frameInfo, instance);
+    return result.UIntValue == FF_SUCCESS ? YES : NO;
 }
 @end
 

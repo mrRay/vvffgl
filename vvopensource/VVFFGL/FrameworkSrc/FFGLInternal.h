@@ -14,7 +14,7 @@
 
 extern NSString * const FFGLParameterAttributeIndexKey;
 
-typedef uint32_t FFGLPluginInstance; // According to FF standard, do not modify.
+typedef void *FFGLPluginInstance; // According to FF standard, do not modify.
 
 typedef struct FFGLProcessFrameCopyStruct {
     unsigned int        inputFrameCount;
@@ -61,7 +61,7 @@ static inline NSUInteger FFGLPOTDimension(NSUInteger dimension)
 - (id)_valueForNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance;
 - (void)_setValue:(id)value forNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance;
 - (void)_setTime:(NSTimeInterval)time ofInstance:(FFGLPluginInstance)instance;
-- (BOOL)_imageInputAtIndex:(NSUInteger)index willBeUsedByInstance:(FFGLPluginInstance)instance;
+- (BOOL)_imageInputAtIndex:(uint32_t)index willBeUsedByInstance:(FFGLPluginInstance)instance;
 - (BOOL)_processFrameCopy:(FFGLProcessFrameCopyStruct *)frameInfo forInstance:(FFGLPluginInstance)instance;
 - (BOOL)_processFrameInPlace:(void *)buffer forInstance:(FFGLPluginInstance)instance;
 - (BOOL)_processFrameGL:(FFGLProcessGLStruct *)frameInfo forInstance:(FFGLPluginInstance)instance;

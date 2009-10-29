@@ -13,6 +13,12 @@
 typedef void (*FFGLImageTextureReleaseCallback)(GLuint name, CGLContextObj cgl_ctx, void *context);
 typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *context);
 
+/*
+TODO: we leak textures if inited with 0 for arguments at init - certainly in initWithCopiedTextureRect 
+ 
+ 
+ */
+
 @interface FFGLImage : NSObject {
 @private
     BOOL                            _hasBuffer;
