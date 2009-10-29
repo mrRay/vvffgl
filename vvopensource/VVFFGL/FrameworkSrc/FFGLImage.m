@@ -10,6 +10,8 @@
 #import "FFGLPlugin.h"
 #import "FFGLInternal.h"
 
+#import <OpenGL/CGLMacro.h>
+
 #pragma mark Private Callbacks
 
 static void FFGLImageBufferRelease(const void *baseAddress, void* context) {
@@ -19,7 +21,7 @@ static void FFGLImageBufferRelease(const void *baseAddress, void* context) {
 
 static void FFGLImageTextureRelease(GLuint name, CGLContextObj cgl_ctx, void *context) {
     CGLLockContext(cgl_ctx);
-//	NSLog(@"delete texture %u in FFGLImage callback (converted)", name);
+	NSLog(@"delete texture %u in FFGLImage callback (converted)", name);
     glDeleteTextures(1, &name);
     CGLUnlockContext(cgl_ctx);
 }
@@ -71,26 +73,32 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, const FFGLTextureInfo *fro
     }
     toTexture->width = fromTexture->width;
     toTexture->height = fromTexture->height;
-    /*
+    
+	/*
      
-     Anton -
+	Anton -
      
-     I'm guessing the width/height stuff below will need some changing to deal with POT textures
+	I'm guessing the width/height stuff below will need some changing to deal with POT textures
      
-     */
+	*/
 	
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &previousFBO);
 	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &previousReadFBO);
 	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &previousDrawFBO);
 	
+	// save as much state;
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
     
 	// new texture
 	GLuint newTex;
 	glGenTextures(1, &newTex);
+	
+	glEnable(toTarget);
+	
 	glBindTexture(toTarget, newTex);
 	glTexImage2D(toTarget, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
-//	NSLog(@"new texture: %u, original texture: %u", newTex, fromTexture->texture);
+	NSLog(@"new texture: %u, original texture: %u", newTex, fromTexture->texture);
 	toTexture->texture = newTex;
 
 	// make new FBO and attach.
@@ -101,6 +109,7 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, const FFGLTextureInfo *fro
 
 	// unbind texture
 	glBindTexture(toTarget, 0);
+	glDisable(toTarget);
 
 	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 	if(status != GL_FRAMEBUFFER_COMPLETE_EXT)
@@ -110,71 +119,67 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, const FFGLTextureInfo *fro
 	    glDeleteTextures(1, &newTex);
 	    toTexture->texture = 0;
 	}
+	
+	glViewport(0, 0, width, height);
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	
+	// weirdo ortho
+	glOrtho(0.0, width, 0.0, height, -1, 1);		
+	
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	
+	// draw the texture.
+	//texture->draw(0,0);
+	
+	glClearColor(0,0,0,0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	
+	glEnable(fromTarget);
+	glBindTexture(fromTarget, fromTexture->texture);
+	
+	if(fromTarget == GL_TEXTURE_RECTANGLE_ARB)
+	{	
+		glBegin(GL_QUADS);
+		glTexCoord2f(0, 0);
+		glVertex2f(0, 0);
+		glTexCoord2f(0, height);
+		glVertex2f(0, height);
+		glTexCoord2f(width, height);
+		glVertex2f(width, height);
+		glTexCoord2f(width, 0);
+		glVertex2f(width, 0);
+		glEnd();		
+	}
+	else if(fromTarget == GL_TEXTURE_2D)
+	{
+		// since our image is NPOT but our texture is POT, we must 
+		// deduce proper texture coords in normalized space
+		GLfloat texWidth = (GLfloat) fromTexture->width / (GLfloat)fromTexture->hardwareWidth;
+		GLfloat texHeight = (GLfloat)fromTexture->height / (GLfloat)fromTexture->hardwareHeight;
+		
+		glBegin(GL_QUADS);
+		glTexCoord2f(0, 0);
+		glVertex2f(0, 0);
+		glTexCoord2f(0, texHeight); 
+		glVertex2f(0, height);
+		glTexCoord2f(texWidth, texHeight);
+		glVertex2f(width, height);
+		glTexCoord2f(texWidth, 0);
+		glVertex2f(width, 0);
+		glEnd();		
+	}
 	else
 	{
-	    // draw ofTexture into new texture;
-	    glPushAttrib(GL_ALL_ATTRIB_BITS);
+		// uh....
+	}
 	    
-	    glViewport(0, 0, width, height);
-	    glMatrixMode(GL_PROJECTION);
-	    glPushMatrix();
-	    glLoadIdentity();
-	    
-	    // weirdo ortho
-	    glOrtho(0.0, width, 0.0, height, -1, 1);		
-	    
-	    glMatrixMode(GL_MODELVIEW);
-	    glPushMatrix();
-	    glLoadIdentity();
-	    
-	    // draw the texture.
-	    //texture->draw(0,0);
-	    
-	    glClearColor(0,0,0,0);
-	    glClear(GL_COLOR_BUFFER_BIT);
-	    
-	    glEnable(fromTarget);
-	    glBindTexture(fromTarget, fromTexture->texture);
-	    
-	    if(fromTarget == GL_TEXTURE_RECTANGLE_ARB)
-	    {	
-		    glBegin(GL_QUADS);
-		    glTexCoord2f(0, 0);
-		    glVertex2f(0, 0);
-		    glTexCoord2f(0, height);
-		    glVertex2f(0, height);
-		    glTexCoord2f(width, height);
-		    glVertex2f(width, height);
-		    glTexCoord2f(width, 0);
-		    glVertex2f(width, 0);
-		    glEnd();		
-	    }
-	    else if(fromTarget == GL_TEXTURE_2D)
-	    {
-		    // since our image is NPOT but our texture is POT, we must 
-		    // deduce proper texture coords in normalized space
-		    GLfloat texWidth = (GLfloat) fromTexture->width / (GLfloat)fromTexture->hardwareWidth;
-		    GLfloat texHeight = (GLfloat)fromTexture->height / (GLfloat)fromTexture->hardwareHeight;
-		    
-		    glBegin(GL_QUADS);
-		    glTexCoord2f(0, 0);
-		    glVertex2f(0, 0);
-		    glTexCoord2f(0, texHeight); 
-		    glVertex2f(0, height);
-		    glTexCoord2f(texWidth, texHeight);
-		    glVertex2f(width, height);
-		    glTexCoord2f(texWidth, 0);
-		    glVertex2f(width, 0);
-		    glEnd();		
-	    }
-	    else
-	    {
-		    // uh....
-	    }
-	    
-	    glBindTexture(fromTarget, 0);
-	    glDisable(fromTarget);
-	}	
+	glBindTexture(fromTarget, 0);
+	glDisable(fromTarget);
+	
 	// Restore OpenGL states 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();

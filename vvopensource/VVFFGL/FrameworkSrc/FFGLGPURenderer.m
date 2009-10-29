@@ -12,7 +12,7 @@
 #import <OpenGL/CGLMacro.h>
 
 static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl_ctx, void *context) {
-//    NSLog(@"delete texture %u in renderer callback (created)", name);
+    NSLog(@"delete texture %u in renderer callback (created)", name);
     CGLLockContext(cgl_ctx);
     glDeleteTextures(1, &name);
     CGLUnlockContext(cgl_ctx);
@@ -160,6 +160,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
     }
 }
 
+// we may want to optionally ask the FFGLGPURenderer to let us output rect textures and save a conversion stage.
 - (BOOL)_implementationRender
 {
     CGLContextObj cgl_ctx = _context;
@@ -184,9 +185,14 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	
 	// create a new texture for this frame
 	GLuint _rendererFBOTexture;
+	
+	glEnable(GL_TEXTURE_2D);
+	
 	glGenTextures(1, &_rendererFBOTexture);	
 	glBindTexture(GL_TEXTURE_2D, _rendererFBOTexture);
 
+	NSLog(@"new implementationRender texture: %u", _rendererFBOTexture);
+	
 	// texture filtering and wrapping modes. Do we actually want to fuck with this here? Hrm.
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

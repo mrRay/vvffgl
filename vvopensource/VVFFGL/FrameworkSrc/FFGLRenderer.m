@@ -11,6 +11,8 @@
 #import "FFGLCPURenderer.h"
 #import "FFGLInternal.h"
 
+#import <OpenGL/CGLMacro.h>
+
 @interface FFGLRendererParametersBindable : NSObject
 {
     FFGLRenderer *_renderer;
