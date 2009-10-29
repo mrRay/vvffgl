@@ -132,7 +132,7 @@
     [super dealloc];
 }
 
-- (NSUInteger)_instance
+- (FFGLPluginInstance)_instance
 {
     return _instance;
 }
