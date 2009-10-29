@@ -106,71 +106,75 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, const FFGLTextureInfo *fro
 	if(status != GL_FRAMEBUFFER_COMPLETE_EXT)
 	{
 		NSLog(@"Error in FBO: %x", status);
-	}
-	
-	// draw ofTexture into new texture;
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-	
-	glViewport(0, 0, width, height);
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	
-	// weirdo ortho
-	glOrtho(0.0, width, 0.0, height, -1, 1);		
-	
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	
-	// draw the texture.
-	//texture->draw(0,0);
-	
-	glClearColor(0,0,0,0);
-	glClear(GL_COLOR_BUFFER_BIT);
-	
-	glEnable(fromTarget);
-	glBindTexture(fromTarget, fromTexture->texture);
-	
-	if(fromTarget == GL_TEXTURE_RECTANGLE_ARB)
-	{	
-		glBegin(GL_QUADS);
-		glTexCoord2f(0, 0);
-		glVertex2f(0, 0);
-		glTexCoord2f(0, height);
-		glVertex2f(0, height);
-		glTexCoord2f(width, height);
-		glVertex2f(width, height);
-		glTexCoord2f(width, 0);
-		glVertex2f(width, 0);
-		glEnd();		
-	}
-	else if(fromTarget == GL_TEXTURE_2D)
-	{
-		// since our image is NPOT but our texture is POT, we must 
-		// deduce proper texture coords in normalized space
-		GLfloat texWidth = (GLfloat) fromTexture->width / (GLfloat)fromTexture->hardwareWidth;
-		GLfloat texHeight = (GLfloat)fromTexture->height / (GLfloat)fromTexture->hardwareHeight;
-		
-		glBegin(GL_QUADS);
-		glTexCoord2f(0, 0);
-		glVertex2f(0, 0);
-		glTexCoord2f(0, texHeight); 
-		glVertex2f(0, height);
-		glTexCoord2f(texWidth, texHeight);
-		glVertex2f(width, height);
-		glTexCoord2f(texWidth, 0);
-		glVertex2f(width, 0);
-		glEnd();		
+	    // Anton, I added this and the following else so we cleanly abort. Look right?
+	    glDeleteTextures(1, &newTex);
+	    toTexture->texture = 0;
 	}
 	else
 	{
-		// uh....
-	}
-	
-	glBindTexture(fromTarget, 0);
-	glDisable(fromTarget);
-	
+	    // draw ofTexture into new texture;
+	    glPushAttrib(GL_ALL_ATTRIB_BITS);
+	    
+	    glViewport(0, 0, width, height);
+	    glMatrixMode(GL_PROJECTION);
+	    glPushMatrix();
+	    glLoadIdentity();
+	    
+	    // weirdo ortho
+	    glOrtho(0.0, width, 0.0, height, -1, 1);		
+	    
+	    glMatrixMode(GL_MODELVIEW);
+	    glPushMatrix();
+	    glLoadIdentity();
+	    
+	    // draw the texture.
+	    //texture->draw(0,0);
+	    
+	    glClearColor(0,0,0,0);
+	    glClear(GL_COLOR_BUFFER_BIT);
+	    
+	    glEnable(fromTarget);
+	    glBindTexture(fromTarget, fromTexture->texture);
+	    
+	    if(fromTarget == GL_TEXTURE_RECTANGLE_ARB)
+	    {	
+		    glBegin(GL_QUADS);
+		    glTexCoord2f(0, 0);
+		    glVertex2f(0, 0);
+		    glTexCoord2f(0, height);
+		    glVertex2f(0, height);
+		    glTexCoord2f(width, height);
+		    glVertex2f(width, height);
+		    glTexCoord2f(width, 0);
+		    glVertex2f(width, 0);
+		    glEnd();		
+	    }
+	    else if(fromTarget == GL_TEXTURE_2D)
+	    {
+		    // since our image is NPOT but our texture is POT, we must 
+		    // deduce proper texture coords in normalized space
+		    GLfloat texWidth = (GLfloat) fromTexture->width / (GLfloat)fromTexture->hardwareWidth;
+		    GLfloat texHeight = (GLfloat)fromTexture->height / (GLfloat)fromTexture->hardwareHeight;
+		    
+		    glBegin(GL_QUADS);
+		    glTexCoord2f(0, 0);
+		    glVertex2f(0, 0);
+		    glTexCoord2f(0, texHeight); 
+		    glVertex2f(0, height);
+		    glTexCoord2f(texWidth, texHeight);
+		    glVertex2f(width, height);
+		    glTexCoord2f(texWidth, 0);
+		    glVertex2f(width, 0);
+		    glEnd();		
+	    }
+	    else
+	    {
+		    // uh....
+	    }
+	    
+	    glBindTexture(fromTarget, 0);
+	    glDisable(fromTarget);
+	}	
 	// Restore OpenGL states 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
@@ -338,6 +342,10 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
     
     FFGLTextureInfo *dest = malloc(sizeof(FFGLTextureInfo));
     swapTextureTargets(context, &source, dest, GL_TEXTURE_RECTANGLE_ARB);
+    if (dest->texture == 0) {
+	free(dest);
+	dest = NULL; // We couldn't make the new texture. This causes the following init to fail (returns nil)
+    }
     return [self initWithCGLContext:context imagePixelsWide:width imagePixelsHigh:height
 		      texture2DInfo:dest texture2DReleaseCallback:FFGLImageTextureRelease texture2DReleaseInfo:NULL
 		    textureRectInfo:NULL textureRectReleaseCallback:NULL textureRectReleaseInfo:NULL
