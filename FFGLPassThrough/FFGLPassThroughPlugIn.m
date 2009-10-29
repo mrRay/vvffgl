@@ -143,18 +143,21 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
     #else
 		NSString *qcPixelFormat = QCPlugInPixelFormatBGRA8;
     #endif
-		[output lockTextureRectRepresentation];
-		self.outputImage = [context outputImageProviderFromTextureWithPixelFormat:qcPixelFormat
-									       pixelsWide:[output textureRectPixelsWide]
-									       pixelsHigh:[output textureRectPixelsHigh]
-										     name:[output textureRectName]
-										  flipped:NO
-									  releaseCallback:FFImageUnlockTexture
-									   releaseContext:output
-									       colorSpace:_cspace
-									 shouldColorMatch:YES];
-	    } else {
-		NSLog(@"failed to lock texture");
+		if ([output lockTextureRectRepresentation])
+		{     
+		    self.outputImage = [context outputImageProviderFromTextureWithPixelFormat:qcPixelFormat
+										   pixelsWide:[output textureRectPixelsWide]
+										   pixelsHigh:[output textureRectPixelsHigh]
+											 name:[output textureRectName]
+										      flipped:NO
+									      releaseCallback:FFImageUnlockTexture
+									       releaseContext:output
+										   colorSpace:_cspace
+									     shouldColorMatch:YES];		    
+		} else {
+		    NSLog(@"FFGLImage creation or locking failed");
+		}
+
 	    }
 	    
 	}
