@@ -24,6 +24,7 @@
 /* Begin PBXBuildFile section */
 		16BA95420A7EB2EB001E4983 /* FFGLPassThroughPlugIn.m in Sources */ = {isa = PBXBuildFile; fileRef = 16BA95410A7EB2EB001E4983 /* FFGLPassThroughPlugIn.m */; };
 		16BA96310A7EB9AC001E4983 /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 16BA96300A7EB9AC001E4983 /* Quartz.framework */; };
+		1B9C07B61099FBDE00DC66D9 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B9C07B21099FBD500DC66D9 /* OpenGL.framework */; };
 		8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */; };
 		BD94DB151099BD2E0008F720 /* VVFFGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BD94DB0A1099BD080008F720 /* VVFFGL.framework */; };
 		BD94DB5F1099C0CD0008F720 /* VVFFGL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = BD94DB0A1099BD080008F720 /* VVFFGL.framework */; };
@@ -135,6 +136,7 @@
 		16BA95400A7EB2EB001E4983 /* FFGLPassThroughPlugIn.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = FFGLPassThroughPlugIn.h; sourceTree = "<group>"; };
 		16BA95410A7EB2EB001E4983 /* FFGLPassThroughPlugIn.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = FFGLPassThroughPlugIn.m; sourceTree = "<group>"; };
 		16BA96300A7EB9AC001E4983 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = /System/Library/Frameworks/Quartz.framework; sourceTree = "<absolute>"; };
+		1B9C07B21099FBD500DC66D9 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		8D5B49B6048680CD000E48DA /* FFGLPassThrough.plugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FFGLPassThrough.plugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BD94DAF01099BD080008F720 /* VVOpenSource.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = VVOpenSource.xcodeproj; path = ../vvopensource/VVOpenSource.xcodeproj; sourceTree = SOURCE_ROOT; };
@@ -145,6 +147,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1B9C07B61099FBDE00DC66D9 /* OpenGL.framework in Frameworks */,
 				BD94DB151099BD2E0008F720 /* VVFFGL.framework in Frameworks */,
 				8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */,
 				16BA96310A7EB9AC001E4983 /* Quartz.framework in Frameworks */,
@@ -172,6 +175,7 @@
 			children = (
 				16BA96300A7EB9AC001E4983 /* Quartz.framework */,
 				1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */,
+				1B9C07B21099FBD500DC66D9 /* OpenGL.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

@@ -7,7 +7,7 @@
 //
 
 /* It's highly recommended to use CGL macros instead of changing the current context for plug-ins that perform OpenGL rendering */
-#import <OpenGL/CGLMacro.h>
+//#import <OpenGL/CGLMacro.h>
 #import <VVFFGL/VVFFGL.h>
 #import "FFGLPassThroughPlugIn.h"
 
@@ -127,39 +127,45 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
 	*/
 	CGLContextObj cgl_ctx = [context CGLContextObj];
 
-	if ([self didValueForInputKeyChange:@"inputImage"]) {
+	CGLSetCurrentContext(cgl_ctx);
+	
+	if ([self didValueForInputKeyChange:@"inputImage"])
+	{
 	    id <QCPlugInInputImageSource> input = self.inputImage;
 	    if ([input lockTextureRepresentationWithColorSpace:_cspace forBounds:[input imageBounds]])
 	    {
-		[input bindTextureRepresentationToCGLContext:cgl_ctx textureUnit:GL_TEXTURE0 normalizeCoordinates:NO];
-		FFGLImage *output = [[FFGLImage alloc] initWithCopiedTextureRect:[input textureName]
-								      CGLContext:cgl_ctx
-								      pixelsWide:[input texturePixelsWide]
-								      pixelsHigh:[input texturePixelsHigh]];
-		[input unbindTextureRepresentationFromCGLContext:cgl_ctx textureUnit:GL_TEXTURE0];
-		[input unlockTextureRepresentation];
-    #if __BIG_ENDIAN__
-		NSString *qcPixelFormat = QCPlugInPixelFormatARGB8;
-    #else
-		NSString *qcPixelFormat = QCPlugInPixelFormatBGRA8;
-    #endif
-		if ([output lockTextureRectRepresentation])
-		{     
-		    self.outputImage = [context outputImageProviderFromTextureWithPixelFormat:qcPixelFormat
-										   pixelsWide:[output textureRectPixelsWide]
-										   pixelsHigh:[output textureRectPixelsHigh]
-											 name:[output textureRectName]
-										      flipped:NO
-									      releaseCallback:FFImageUnlockTexture
-									       releaseContext:output
-										   colorSpace:_cspace
-									     shouldColorMatch:YES];		    
-		} else {
-		    NSLog(@"FFGLImage creation or locking failed");
-		}
+			[input bindTextureRepresentationToCGLContext:cgl_ctx textureUnit:GL_TEXTURE0 normalizeCoordinates:NO];
+			FFGLImage *output = [[FFGLImage alloc] initWithCopiedTextureRect:[input textureName]
+										  CGLContext:cgl_ctx
+										  pixelsWide:[input texturePixelsWide]
+										  pixelsHigh:[input texturePixelsHigh]];
+			[input unbindTextureRepresentationFromCGLContext:cgl_ctx textureUnit:GL_TEXTURE0];
+			[input unlockTextureRepresentation];
+
+			#if __BIG_ENDIAN__
+				NSString *qcPixelFormat = QCPlugInPixelFormatARGB8;
+			#else
+				NSString *qcPixelFormat = QCPlugInPixelFormatBGRA8;
+			#endif
+
+			if ([output lockTextureRectRepresentation])
+			{     
+				self.outputImage = [context outputImageProviderFromTextureWithPixelFormat:qcPixelFormat
+											   pixelsWide:[output textureRectPixelsWide]
+											   pixelsHigh:[output textureRectPixelsHigh]
+												 name:[output textureRectName]
+												  flipped:NO
+											  releaseCallback:FFImageUnlockTexture
+											   releaseContext:output
+											   colorSpace:_cspace
+											 shouldColorMatch:YES];		    
+			} 
+			else 
+			{
+				NSLog(@"FFGLImage creation or locking failed");
+			}
 
 	    }
-	    
 	}
 	return YES;
 }
