@@ -26,8 +26,8 @@
 		16BA96310A7EB9AC001E4983 /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 16BA96300A7EB9AC001E4983 /* Quartz.framework */; };
 		1B9C07B61099FBDE00DC66D9 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B9C07B21099FBD500DC66D9 /* OpenGL.framework */; };
 		8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */; };
-		BD94DB151099BD2E0008F720 /* VVFFGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BD94DB0A1099BD080008F720 /* VVFFGL.framework */; };
-		BD94DB5F1099C0CD0008F720 /* VVFFGL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = BD94DB0A1099BD080008F720 /* VVFFGL.framework */; };
+		BD4A78B9109B93310018ABBD /* VVFFGL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = BD4A78AF109B92FB0018ABBD /* VVFFGL.framework */; };
+		BD4A78BA109B93360018ABBD /* VVFFGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BD4A78AF109B92FB0018ABBD /* VVFFGL.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,81 +38,25 @@
 			remoteGlobalIDString = 8D5B49AC048680CD000E48DA;
 			remoteInfo = FFGLPassThrough;
 		};
-		BD94DAFF1099BD080008F720 /* PBXContainerItemProxy */ = {
+		BD4A78AE109B92FB0018ABBD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = BD94DAF01099BD080008F720 /* VVOpenSource.xcodeproj */;
+			containerPortal = BD94DAF01099BD080008F720 /* VVFFGL.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 961EA8ED100E8565007E6C25;
-			remoteInfo = VVBasics;
-		};
-		BD94DB011099BD080008F720 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BD94DAF01099BD080008F720 /* VVOpenSource.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 961745F4100F86B400FB60E6;
-			remoteInfo = VVMIDI;
-		};
-		BD94DB031099BD080008F720 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BD94DAF01099BD080008F720 /* VVOpenSource.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 9656D900100F89BA0064EEA6;
-			remoteInfo = MIDITestApp;
-		};
-		BD94DB051099BD080008F720 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BD94DAF01099BD080008F720 /* VVOpenSource.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 9628D0C5100E89F700C3944E;
-			remoteInfo = VVOSC;
-		};
-		BD94DB071099BD080008F720 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BD94DAF01099BD080008F720 /* VVOpenSource.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 9628D179100E8B4D00C3944E;
-			remoteInfo = OSCTestApp;
-		};
-		BD94DB091099BD080008F720 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BD94DAF01099BD080008F720 /* VVOpenSource.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 9606B14D101761EF00CC50B7;
+			remoteGlobalIDString = 9606B14D101761EF00CC50B7 /* VVFFGL.framework */;
 			remoteInfo = VVFFGL;
 		};
-		BD94DB0B1099BD080008F720 /* PBXContainerItemProxy */ = {
+		BD4A78B0109B92FB0018ABBD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = BD94DAF01099BD080008F720 /* VVOpenSource.xcodeproj */;
+			containerPortal = BD94DAF01099BD080008F720 /* VVFFGL.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 9606B15C1017621200CC50B7;
+			remoteGlobalIDString = 9606B15C1017621200CC50B7 /* FFGLTestApp.app */;
 			remoteInfo = FFGLTestApp;
 		};
-		BD94DB0D1099BD080008F720 /* PBXContainerItemProxy */ = {
+		BD4A78B7109B930A0018ABBD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = BD94DAF01099BD080008F720 /* VVOpenSource.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 9628D0D9100E8A1600C3944E;
-			remoteInfo = "VVOSC-iPhone sim SDK";
-		};
-		BD94DB0F1099BD080008F720 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BD94DAF01099BD080008F720 /* VVOpenSource.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 9628D0E2100E8A1F00C3944E;
-			remoteInfo = "VVOSC-iPhone dev SDK";
-		};
-		BD94DB111099BD080008F720 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BD94DAF01099BD080008F720 /* VVOpenSource.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 9628D0EB100E8A2C00C3944E;
-			remoteInfo = "VVOSC-os x SDK";
-		};
-		BD94DB131099BD250008F720 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BD94DAF01099BD080008F720 /* VVOpenSource.xcodeproj */;
+			containerPortal = BD94DAF01099BD080008F720 /* VVFFGL.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 9606B14C101761EF00CC50B7;
+			remoteGlobalIDString = 9606B14C101761EF00CC50B7 /* VVFFGL */;
 			remoteInfo = VVFFGL;
 		};
 /* End PBXContainerItemProxy section */
@@ -124,7 +68,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				BD94DB5F1099C0CD0008F720 /* VVFFGL.framework in CopyFiles */,
+				BD4A78B9109B93310018ABBD /* VVFFGL.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -139,7 +83,7 @@
 		1B9C07B21099FBD500DC66D9 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		8D5B49B6048680CD000E48DA /* FFGLPassThrough.plugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FFGLPassThrough.plugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		BD94DAF01099BD080008F720 /* VVOpenSource.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = VVOpenSource.xcodeproj; path = ../vvopensource/VVOpenSource.xcodeproj; sourceTree = SOURCE_ROOT; };
+		BD94DAF01099BD080008F720 /* VVFFGL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = VVFFGL.xcodeproj; path = ../VVFFGL/VVFFGL.xcodeproj; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -147,8 +91,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BD4A78BA109B93360018ABBD /* VVFFGL.framework in Frameworks */,
 				1B9C07B61099FBDE00DC66D9 /* OpenGL.framework in Frameworks */,
-				BD94DB151099BD2E0008F720 /* VVFFGL.framework in Frameworks */,
 				8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */,
 				16BA96310A7EB9AC001E4983 /* Quartz.framework in Frameworks */,
 			);
@@ -160,7 +104,7 @@
 		089C166AFE841209C02AAC07 /* Quartz Composer Plug In */ = {
 			isa = PBXGroup;
 			children = (
-				BD94DAF01099BD080008F720 /* VVOpenSource.xcodeproj */,
+				BD94DAF01099BD080008F720 /* VVFFGL.xcodeproj */,
 				08FB77AFFE84173DC02AAC07 /* Classes */,
 				32C88E010371C26100C91783 /* Other Sources */,
 				089C167CFE841241C02AAC07 /* Resources */,
@@ -213,19 +157,11 @@
 			name = "Other Sources";
 			sourceTree = "<group>";
 		};
-		BD94DAF11099BD080008F720 /* Products */ = {
+		BD4A78AA109B92FB0018ABBD /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BD94DB001099BD080008F720 /* VVBasics.framework */,
-				BD94DB021099BD080008F720 /* VVMIDI.framework */,
-				BD94DB041099BD080008F720 /* MIDITestApp.app */,
-				BD94DB061099BD080008F720 /* VVOSC.framework */,
-				BD94DB081099BD080008F720 /* OSCTestApp.app */,
-				BD94DB0A1099BD080008F720 /* VVFFGL.framework */,
-				BD94DB0C1099BD080008F720 /* FFGLTestApp.app */,
-				BD94DB0E1099BD080008F720 /* libVVOSC.a */,
-				BD94DB101099BD080008F720 /* libVVOSC.a */,
-				BD94DB121099BD080008F720 /* libVVOSC.a */,
+				BD4A78AF109B92FB0018ABBD /* VVFFGL.framework */,
+				BD4A78B1109B92FB0018ABBD /* FFGLTestApp.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -244,7 +180,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				BD94DB141099BD250008F720 /* PBXTargetDependency */,
+				BD4A78B8109B930A0018ABBD /* PBXTargetDependency */,
 			);
 			name = FFGLPassThrough;
 			productInstallPath = "$(HOME)/Library/Bundles";
@@ -264,8 +200,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = BD94DAF11099BD080008F720 /* Products */;
-					ProjectRef = BD94DAF01099BD080008F720 /* VVOpenSource.xcodeproj */;
+					ProductGroup = BD4A78AA109B92FB0018ABBD /* Products */;
+					ProjectRef = BD94DAF01099BD080008F720 /* VVFFGL.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -277,74 +213,18 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		BD94DB001099BD080008F720 /* VVBasics.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = VVBasics.framework;
-			remoteRef = BD94DAFF1099BD080008F720 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		BD94DB021099BD080008F720 /* VVMIDI.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = VVMIDI.framework;
-			remoteRef = BD94DB011099BD080008F720 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		BD94DB041099BD080008F720 /* MIDITestApp.app */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = MIDITestApp.app;
-			remoteRef = BD94DB031099BD080008F720 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		BD94DB061099BD080008F720 /* VVOSC.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = VVOSC.framework;
-			remoteRef = BD94DB051099BD080008F720 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		BD94DB081099BD080008F720 /* OSCTestApp.app */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = OSCTestApp.app;
-			remoteRef = BD94DB071099BD080008F720 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		BD94DB0A1099BD080008F720 /* VVFFGL.framework */ = {
+		BD4A78AF109B92FB0018ABBD /* VVFFGL.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
 			path = VVFFGL.framework;
-			remoteRef = BD94DB091099BD080008F720 /* PBXContainerItemProxy */;
+			remoteRef = BD4A78AE109B92FB0018ABBD /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		BD94DB0C1099BD080008F720 /* FFGLTestApp.app */ = {
+		BD4A78B1109B92FB0018ABBD /* FFGLTestApp.app */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.application;
 			path = FFGLTestApp.app;
-			remoteRef = BD94DB0B1099BD080008F720 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		BD94DB0E1099BD080008F720 /* libVVOSC.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libVVOSC.a;
-			remoteRef = BD94DB0D1099BD080008F720 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		BD94DB101099BD080008F720 /* libVVOSC.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libVVOSC.a;
-			remoteRef = BD94DB0F1099BD080008F720 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		BD94DB121099BD080008F720 /* libVVOSC.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libVVOSC.a;
-			remoteRef = BD94DB111099BD080008F720 /* PBXContainerItemProxy */;
+			remoteRef = BD4A78B0109B92FB0018ABBD /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -382,10 +262,10 @@
 			target = 8D5B49AC048680CD000E48DA /* FFGLPassThrough */;
 			targetProxy = 233E2C650A83C76D005A62DF /* PBXContainerItemProxy */;
 		};
-		BD94DB141099BD250008F720 /* PBXTargetDependency */ = {
+		BD4A78B8109B930A0018ABBD /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = VVFFGL;
-			targetProxy = BD94DB131099BD250008F720 /* PBXContainerItemProxy */;
+			targetProxy = BD4A78B7109B930A0018ABBD /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -394,7 +274,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/../vvopensource/build/Debug\"";
+				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/../VVFFGL/build/Debug\"";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_ENABLE_OBJC_GC = supported;
@@ -414,7 +294,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/../vvopensource/build/Release\"";
+				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/../VVFFGL/build/Release\"";
 				GCC_ENABLE_OBJC_GC = supported;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
