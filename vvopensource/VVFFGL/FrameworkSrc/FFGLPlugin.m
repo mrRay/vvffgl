@@ -275,14 +275,14 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         result = _pluginData->main(FF_GETPLUGINCAPS, (FFMixed)FF_CAP_MAXIMUMINPUTFRAMES, 0);
         _pluginData->maxFrames = result.UIntValue;
         for (i = 0; i < _pluginData->minFrames; i++) {
-            pName = [NSString stringWithFormat:@"Input Image #%u", i];
+            pName = [NSString stringWithFormat:@"Image %u", i+1];
             pAttributes = [NSDictionary dictionaryWithObjectsAndKeys:FFGLParameterTypeImage, FFGLParameterAttributeTypeKey,
                            pName, FFGLParameterAttributeNameKey, [NSNumber numberWithBool:YES], FFGLParameterAttributeRequiredKey, 
                            [NSNumber numberWithUnsignedInt:i], FFGLParameterAttributeIndexKey, nil];
             [(NSMutableDictionary *)_pluginData->parameters setObject:pAttributes forKey:pName];
         }
         for (; i < _pluginData->maxFrames; i++) {
-            pName = [NSString stringWithFormat:@"Input Image #%u", i];
+            pName = [NSString stringWithFormat:@"Image %u", i+1];
             pAttributes = [NSDictionary dictionaryWithObjectsAndKeys:FFGLParameterTypeImage, FFGLParameterAttributeTypeKey,
                            pName, FFGLParameterAttributeNameKey, [NSNumber numberWithBool:NO], FFGLParameterAttributeRequiredKey,
                            [NSNumber numberWithUnsignedInt:i], FFGLParameterAttributeIndexKey, nil];
@@ -486,7 +486,11 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         videoInfo.Orientation = FF_ORIENTATION_TL; // I think ;) If it's upside down then FF_ORIENTATION_BL.
         videoInfo.FrameHeight = bounds.size.height;
         videoInfo.FrameWidth = bounds.size.width;
-        return _pluginData->main(FF_INSTANTIATE, (FFMixed)(void *)&videoInfo, 0).PointerValue;
+		FFGLPluginInstance instance = _pluginData->main(FF_INSTANTIATE, (FFMixed)(void *)&videoInfo, 0).PointerValue;
+		if (instance == NULL) {
+			NSLog(@"instance zero");
+		}
+		return instance;
     } else {
         return 0; // Yikes
     }
