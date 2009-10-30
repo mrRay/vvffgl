@@ -71,6 +71,7 @@
 		9606B184101763A200CC50B7 /* VVFFGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VVFFGL.h; path = FrameworkSource/VVFFGL.h; sourceTree = "<group>"; };
 		9606B18D101763C900CC50B7 /* MainMenu.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = MainMenu.xib; path = AppSource/MainMenu.xib; sourceTree = "<group>"; };
 		9606B18E101763C900CC50B7 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = AppSource/main.m; sourceTree = "<group>"; };
+		BD4A78FD109B94B80018ABBD /* TODO.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TODO.txt; sourceTree = "<group>"; };
 		BD617C95107DE03100125336 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		BD74107E1080F81900BF8285 /* ParametersView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ParametersView.h; path = AppSource/ParametersView.h; sourceTree = "<group>"; };
 		BD74107F1080F81A00BF8285 /* ParametersView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ParametersView.m; path = AppSource/ParametersView.m; sourceTree = "<group>"; };
@@ -129,6 +130,7 @@
 		0867D691FE84028FC02AAC07 /* VVOpenSource */ = {
 			isa = PBXGroup;
 			children = (
+				BD4A78FC109B949C0018ABBD /* Administrivia */,
 				9606B186101763A700CC50B7 /* Framework */,
 				9606B191101763CC00CC50B7 /* Test App */,
 				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
@@ -173,6 +175,14 @@
 				BD90FABE1078FEB5009A6273 /* RenderChain.m */,
 			);
 			name = "Test App";
+			sourceTree = "<group>";
+		};
+		BD4A78FC109B949C0018ABBD /* Administrivia */ = {
+			isa = PBXGroup;
+			children = (
+				BD4A78FD109B94B80018ABBD /* TODO.txt */,
+			);
+			name = Administrivia;
 			sourceTree = "<group>";
 		};
 		BD8E3C641030DB4100152772 /* Public Headers */ = {
