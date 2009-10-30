@@ -129,8 +129,8 @@
 		0867D691FE84028FC02AAC07 /* VVOpenSource */ = {
 			isa = PBXGroup;
 			children = (
-				9606B186101763A700CC50B7 /* VVFFGL framework */,
-				9606B191101763CC00CC50B7 /* VVFFGLTestApp */,
+				9606B186101763A700CC50B7 /* Framework */,
+				9606B191101763CC00CC50B7 /* Test App */,
 				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
 				034768DFFF38A50411DB9C8B /* Products */,
 				BD617C95107DE03100125336 /* QuartzCore.framework */,
@@ -147,17 +147,17 @@
 			name = "External Frameworks and Libraries";
 			sourceTree = "<group>";
 		};
-		9606B186101763A700CC50B7 /* VVFFGL framework */ = {
+		9606B186101763A700CC50B7 /* Framework */ = {
 			isa = PBXGroup;
 			children = (
 				BD8E3C641030DB4100152772 /* Public Headers */,
 				BD8E3C651030DB4A00152772 /* Private */,
 				9606B14E101761EF00CC50B7 /* VVFFGL-Info.plist */,
 			);
-			name = "VVFFGL framework";
+			name = Framework;
 			sourceTree = "<group>";
 		};
-		9606B191101763CC00CC50B7 /* VVFFGLTestApp */ = {
+		9606B191101763CC00CC50B7 /* Test App */ = {
 			isa = PBXGroup;
 			children = (
 				9606B15E1017621200CC50B7 /* FFGLTestApp-Info.plist */,
@@ -172,7 +172,7 @@
 				BD90FABD1078FEB5009A6273 /* RenderChain.h */,
 				BD90FABE1078FEB5009A6273 /* RenderChain.m */,
 			);
-			name = VVFFGLTestApp;
+			name = "Test App";
 			sourceTree = "<group>";
 		};
 		BD8E3C641030DB4100152772 /* Public Headers */ = {
@@ -268,7 +268,7 @@
 /* Begin PBXProject section */
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
-			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "VVOpenSource" */;
+			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "VVFFGL" */;
 			compatibilityVersion = "Xcode 3.1";
 			hasScannedForEncodings = 1;
 			mainGroup = 0867D691FE84028FC02AAC07 /* VVOpenSource */;
@@ -459,7 +459,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "VVOpenSource" */ = {
+		1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "VVFFGL" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB91B208733DA50010E9CD /* Debug */,
