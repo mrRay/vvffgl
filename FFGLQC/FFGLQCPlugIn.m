@@ -449,7 +449,7 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
                                                                    pixelsWide:[output textureRectPixelsWide]
                                                                    pixelsHigh:[output textureRectPixelsHigh]
                                                                          name:[output textureRectName]
-                                                                      flipped:NO
+                                                                      flipped:YES
                                                               releaseCallback:FFImageUnlockTexture
                                                                releaseContext:output
                                                                    colorSpace:_cspace
