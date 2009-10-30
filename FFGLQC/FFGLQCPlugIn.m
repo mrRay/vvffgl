@@ -394,13 +394,13 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
 				{
 					[input lockBufferRepresentationWithPixelFormat:qcPixelFormat colorSpace:_cspace forBounds:[input imageBounds]];
 					image  = [[[FFGLImage alloc] initWithBuffer:[input bufferBaseAddress]
-													 CGLContext:cgl_ctx
-													pixelFormat:ffPixelFormat
-													 pixelsWide:[image bufferPixelsWide]
-													 pixelsHigh:[image bufferPixelsHigh]
-													bytesPerRow:[image bufferBytesPerRow]
-												releaseCallback:QCBufferRelease
-													releaseInfo:input] autorelease];
+									 CGLContext:cgl_ctx
+									pixelFormat:ffPixelFormat
+									 pixelsWide:[input bufferPixelsWide]
+									 pixelsHigh:[input bufferPixelsHigh]
+									bytesPerRow:[input bufferBytesPerRow]
+								    releaseCallback:QCBufferRelease
+									releaseInfo:input] autorelease];
 				}
 				
 				[_renderer setValue:image forParameterKey:key];
