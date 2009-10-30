@@ -58,7 +58,7 @@
             origin.x = 20.0;
             NSDictionary *pAttributes = [[renderer plugin] attributesForParameterWithKey:key];
             NSString *type = [pAttributes objectForKey:FFGLParameterAttributeTypeKey];
-            NSControl *control;
+            NSControl *control = nil;
             NSTextField *label = [[[NSTextField alloc] initWithFrame:NSMakeRect(origin.x, origin.y, 100.0, 14.0)] autorelease];
             [label setBordered:NO];
             [label setEditable:NO];
