@@ -19,6 +19,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 }
 
 @implementation FFGLGPURenderer
+
 - (id)init
 {
     [self doesNotRecognizeSelector:_cmd];
@@ -52,7 +53,8 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
         // TODO: do we need an FBO to reuse for rendering into our output texture?
         _textureWidth = FFGLPOTDimension(bounds.size.width);
         _textureHeight = FFGLPOTDimension(bounds.size.height);
-        
+      
+		
         CGLLockContext(cgl_ctx);
         
         // state vars
@@ -75,8 +77,8 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
                         
         // our depth buffer (NO MSAA)
         glGenRenderbuffersEXT(1, &_rendererDepthBuffer);
-        glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _rendererDepthBuffer);
-        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, _textureWidth, _textureHeight);		
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _rendererDepthBuffer);
+		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, _textureWidth, _textureHeight);		
         
         // our FBO
         glGenFramebuffersEXT(1, &_rendererFBO);
@@ -89,21 +91,22 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
         GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
         if(status != GL_FRAMEBUFFER_COMPLETE_EXT)
         {	
-                // return FBO state
-                glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
-                glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _previousRenderBuffer);
-                glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, _previousReadFBO);
-                glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);
-                
-                // cleanup GL resources
-                glDeleteFramebuffersEXT(1, &_rendererFBO);
-                glDeleteTextures(1, &_rendererFBOTexture);
-                
-                CGLUnlockContext(cgl_ctx);
-                NSLog(@"Cannot create FBO for FFGLGPURenderer: %u", status);
-                
-                [self release];
-                return nil;
+			// return FBO state
+			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
+			glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _previousRenderBuffer);
+			glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, _previousReadFBO);
+			glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);
+			
+			// cleanup GL resources
+			glDeleteFramebuffersEXT(1, &_rendererFBO);
+			glDeleteRenderbuffersEXT(1, &_rendererDepthBuffer);
+			glDeleteTextures(1, &_rendererFBOTexture);
+			
+			CGLUnlockContext(cgl_ctx);
+			NSLog(@"Cannot create FBO for FFGLGPURenderer: %u", status);
+			
+			[self release];
+			return nil;
         }	
 
         _frameStruct.hostFBO = _rendererFBO;
@@ -116,9 +119,12 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
         
         // delete our temporary texture 
         glDeleteTextures(1, &_rendererFBOTexture);
-
+		glDisable(GL_TEXTURE_2D);
+		
         CGLUnlockContext(cgl_ctx);
 		
+		// if all of that worked, we now set our preferred FFGL image type.
+		requestedFFGLImageType = GL_TEXTURE_2D;
 		
     }
     return self;
@@ -171,12 +177,12 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
     
 	// state vars
 	GLint _previousFBO;	
-//	GLint _previousRenderBuffer;	// probably dont need this each frame, only during init? hrm.
+	GLint _previousRenderBuffer;	// probably dont need this each frame, only during init? hrm.
 	GLint _previousReadFBO;	
 	GLint _previousDrawFBO;
 	
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &_previousFBO);
-//	glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &_previousRenderBuffer);
+	glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &_previousRenderBuffer);
 	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &_previousReadFBO);
 	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &_previousDrawFBO);
 	
@@ -186,29 +192,44 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	// create a new texture for this frame
 	GLuint _rendererFBOTexture;
 	
-	glEnable(GL_TEXTURE_2D);
+	// this texture is going to depend on whether or not we have a 2D or RECT texture.
+	glEnable(requestedFFGLImageType);
 	
 	glGenTextures(1, &_rendererFBOTexture);	
-	glBindTexture(GL_TEXTURE_2D, _rendererFBOTexture);
+	glBindTexture(requestedFFGLImageType, _rendererFBOTexture);
 
 	NSLog(@"new implementationRender texture: %u", _rendererFBOTexture);
 	
-	// texture filtering and wrapping modes. Do we actually want to fuck with this here? Hrm.
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, _textureWidth, _textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	if(requestedFFGLImageType == GL_TEXTURE_2D)
+	{
+		NSLog(@"requesting 2D FFGL");
+		glTexImage2D(requestedFFGLImageType, 0, GL_RGBA8, _textureWidth, _textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
+	}
+	else if(requestedFFGLImageType == GL_TEXTURE_RECTANGLE_ARB)
+	{
+		NSLog(@"requesting RECT FFGL");
+		glTexImage2D(requestedFFGLImageType, 0, GL_RGBA8, self.bounds.size.width, self.bounds.size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	}
+	else
+		return NO;
+	
+	// texture filtering and wrapping modes. Do we actually want to fuck with this here? Hrm.
+	glTexParameteri(requestedFFGLImageType, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(requestedFFGLImageType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(requestedFFGLImageType, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(requestedFFGLImageType, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		
+	
 	// bind our FBO
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rendererFBO);
 	
 	// attach our new texture
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, _rendererFBOTexture, 0);
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, requestedFFGLImageType, _rendererFBOTexture, 0);
 	
 	// this was our fix. Disable texturing and now FFGL renders. 
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(requestedFFGLImageType, 0);
+	glDisable(requestedFFGLImageType);
 	
 	// set up viewport/projection matrices and coordinate system for FBO target.
     // Not sure if we want our own dimensions or _textureWidth, _textureHeight here?
@@ -259,26 +280,96 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 
 	// return FBO state
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
-//	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _previousRenderBuffer);
+	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _previousRenderBuffer);
 	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, _previousReadFBO);
 	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);
 		
 	
-//	NSLog(@"new FFGL image with texture: %u", _rendererFBOTexture);
-	FFGLImage *output = [[[FFGLImage alloc] initWithTexture2D:_rendererFBOTexture
-                                                       CGLContext:cgl_ctx
-                                                  imagePixelsWide:self.bounds.size.width
-                                                  imagePixelsHigh:self.bounds.size.height
-                                                texturePixelsWide:_textureWidth
-                                                texturePixelsHigh:_textureHeight
-                                                  releaseCallback:FFGLGPURendererTextureReleaseCallback
-                                                      releaseInfo:NULL] autorelease];
+	NSLog(@"new FFGL image with texture: %u", _rendererFBOTexture);
 	
+	FFGLImage *output;
+	
+	if(requestedFFGLImageType == GL_TEXTURE_2D)
+	{
+		output = [[[FFGLImage alloc] initWithTexture2D:_rendererFBOTexture
+											CGLContext:cgl_ctx
+									   imagePixelsWide:self.bounds.size.width
+									   imagePixelsHigh:self.bounds.size.height
+									 texturePixelsWide:_textureWidth
+									 texturePixelsHigh:_textureHeight
+									   releaseCallback:FFGLGPURendererTextureReleaseCallback
+										   releaseInfo:NULL] autorelease];
+	}
+	else if(requestedFFGLImageType == GL_TEXTURE_RECTANGLE_ARB)
+	{
+		output = [[[FFGLImage alloc] initWithTextureRect:_rendererFBOTexture
+											  CGLContext:cgl_ctx 
+											  pixelsWide:self.bounds.size.width
+											  pixelsHigh:self.bounds.size.height
+										 releaseCallback:FFGLGPURendererTextureReleaseCallback
+											 releaseInfo:NULL] autorelease];
+		
+	}
+
     CGLUnlockContext(cgl_ctx);
     
 	[self setOutputImage:output];
      
     return result;
+}
+
+// if we switch COLOR ATTACHMENT target types we switch widths, thus, we must rebuild our render buffer attachment too
+- (void) setRequestedFFGLImageType:(GLenum)target
+{
+	if(requestedFFGLImageType != target && (_context != NULL))
+	{
+		// respect KVO
+		[self willChangeValueForKey:@"requestedFFGLImageType"];
+
+		requestedFFGLImageType = target;
+		
+		CGLContextObj cgl_ctx = _context;
+		CGLLockContext(cgl_ctx);
+		
+		// state vars
+		GLint _previousFBO;	
+		GLint _previousRenderBuffer;	// probably dont need this each frame, only during init? hrm.
+		GLint _previousReadFBO;	
+		GLint _previousDrawFBO;
+		
+		glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &_previousFBO);
+		glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &_previousRenderBuffer);
+		glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &_previousReadFBO);
+		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &_previousDrawFBO);
+		
+		// delete our current rendererDepthBuffer
+		glDeleteRenderbuffersEXT(1, &_rendererDepthBuffer);
+		
+		// new
+		glGenRenderbuffersEXT(1, &_rendererDepthBuffer);
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _rendererDepthBuffer);
+		
+		if(requestedFFGLImageType == GL_TEXTURE_2D)
+			glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, _textureWidth, _textureHeight);		
+		if(requestedFFGLImageType == GL_TEXTURE_RECTANGLE_ARB)
+			glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, self.bounds.size.width, self.bounds.size.height);		
+		
+		// bind our FBO
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rendererFBO);
+		
+		// set our new renderbuffer depth attachment
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, _rendererDepthBuffer);
+		
+		// return FBO state
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _previousRenderBuffer);
+		glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, _previousReadFBO);
+		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);		
+		
+		CGLUnlockContext(cgl_ctx);
+		
+		[self didChangeValueForKey:@"requestedFFGLImageType"];
+	}
 }
 
 @end

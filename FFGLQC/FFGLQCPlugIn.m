@@ -8,7 +8,7 @@
 
 /* It's highly recommended to use CGL macros instead of changing the current context for plug-ins that perform OpenGL rendering */
 
-#import <OpenGL/CGLMacro.h>
+//#import <OpenGL/CGLMacro.h>
 
 #import "FFGLQCPlugIn.h"
 
@@ -344,8 +344,12 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
         } 
 		else
 		{
-            _renderer = [[FFGLRenderer alloc] initWithPlugin:self.plugin context:cgl_ctx forBounds:bounds];
+            _renderer = [[FFGLRenderer alloc] initWithPlugin:self.plugin context:cgl_ctx forBounds:bounds];			
         }
+		
+		// this will let QC output our FFGLImages texture directly and saves us a 2D to Rect conversion stage.
+		[_renderer setRequestedFFGLImageType:GL_TEXTURE_RECTANGLE_ARB];
+		
         self.rendererNeedsRebuild = NO;
     }
     

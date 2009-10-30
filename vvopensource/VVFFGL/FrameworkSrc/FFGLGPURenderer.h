@@ -23,7 +23,8 @@
 	GLuint _rendererDepthBuffer;	// depth buffer
     NSUInteger _textureWidth;
     NSUInteger _textureHeight;
-	
+		
 	//	GLuint _rendererFBOTexture;	// COLOR_ATTACHMENT_0 for our above FBO
 }
+
 @end

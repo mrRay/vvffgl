@@ -11,7 +11,13 @@
 
 @class FFGLPlugin, FFGLImage;
 
-@interface FFGLRenderer : NSObject {
+@interface FFGLRenderer : NSObject
+{
+// TOM, you will probably hate this, but just for me dicking around...
+@public
+	GLenum requestedFFGLImageType;
+
+	
 @private
     FFGLPlugin          *_plugin;
     void		*_instance;
@@ -24,8 +30,14 @@
     FFGLImage           *_output;
     id                  _params;
     pthread_mutex_t     _lock;
-    
+
 }
+
+// for requestion rendered frames as 2D or RECT textures
+// valid enums are GL_TEXTURE_2D or GL_TEXTURE_RECTANGLE_ARB
+@property (readwrite, assign) GLenum requestedFFGLImageType;
+
+
 // or one long init to support both
 - (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context forBounds:(NSRect)bounds;
 - (id)initWithPlugin:(FFGLPlugin *)plugin pixelFormat:(NSString *)format forBounds:(NSRect)bounds;

@@ -98,6 +98,12 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, const FFGLTextureInfo *fro
 	glBindTexture(toTarget, newTex);
 	glTexImage2D(toTarget, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
+	// texture filtering and wrapping modes. Do we actually want to fuck with this here? Hrm.
+	glTexParameteri(toTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(toTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(toTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(toTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	
 	NSLog(@"new texture: %u, original texture: %u", newTex, fromTexture->texture);
 	toTexture->texture = newTex;
 
@@ -114,9 +120,19 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, const FFGLTextureInfo *fro
 	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 	if(status != GL_FRAMEBUFFER_COMPLETE_EXT)
 	{
-		NSLog(@"Error in FBO: %x", status);
 	    // Anton, I added this and the following else so we cleanly abort. Look right?
-	    glDeleteTextures(1, &newTex);
+				// return FBO state
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previousFBO);
+		glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, previousReadFBO);
+		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, previousDrawFBO);
+		
+		// cleanup GL resources
+		glDeleteFramebuffersEXT(1, &fboID);
+		glDeleteTextures(1, &newTex);
+		
+		CGLUnlockContext(cgl_ctx);
+		NSLog(@"Cannot create FBO for swapTextureTarget: %u", status);
+			
 	    toTexture->texture = 0;
 	}
 	
@@ -138,15 +154,16 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, const FFGLTextureInfo *fro
 	glClearColor(0,0,0,0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	
+	glActiveTexture(GL_TEXTURE0);
 	glEnable(fromTarget);
 	glBindTexture(fromTarget, fromTexture->texture);
 	
 	if(fromTarget == GL_TEXTURE_RECTANGLE_ARB)
 	{	
-		glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+//		glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//		glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//		glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+//		glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 		
 		glBegin(GL_QUADS);
 		glTexCoord2f(0, 0);
@@ -161,10 +178,10 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, const FFGLTextureInfo *fro
 	}
 	else if(fromTarget == GL_TEXTURE_2D)
 	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 		
 		// since our image is NPOT but our texture is POT, we must 
 		// deduce proper texture coords in normalized space

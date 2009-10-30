@@ -11,8 +11,6 @@
 #import "FFGLCPURenderer.h"
 #import "FFGLInternal.h"
 
-#import <OpenGL/CGLMacro.h>
-
 @interface FFGLRendererParametersBindable : NSObject
 {
     FFGLRenderer *_renderer;
@@ -25,6 +23,8 @@
 - (void)_performSetValue:(id)value forParameterKey:(NSString *)key;
 @end
 @implementation FFGLRenderer
+
+@synthesize requestedFFGLImageType;
 
 - (id)init
 {
@@ -91,6 +91,10 @@
                 [self release];
                 return nil;
             }
+			
+			// default to GL_TEXTURE_2D
+			[self setRequestedFFGLImageType:GL_TEXTURE_2D];
+			
             NSLog(@"Renderer initted");
         }
     }	
