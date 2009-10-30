@@ -8,7 +8,7 @@
 
 /* It's highly recommended to use CGL macros instead of changing the current context for plug-ins that perform OpenGL rendering */
 
-//#import <OpenGL/CGLMacro.h>
+#import <OpenGL/CGLMacro.h>
 
 #import "FFGLQCPlugIn.h"
 
@@ -201,7 +201,33 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
 									[NSNumber numberWithUnsignedInt:480], QCPortAttributeDefaultValueKey, nil]];
     }
     keys = [_plugin parameterKeys];
-    for (key in keys) {
+	
+	// We now do a two pass key scanning/ port adding so we can put images on top - Anton
+	
+	// images first
+	for(key in keys)
+	{
+		NSDictionary *attributes = [_plugin attributesForParameterWithKey:key];
+        NSMutableDictionary *portAttributes = [NSMutableDictionary dictionaryWithCapacity:3];
+        NSString *type = [attributes objectForKey:FFGLParameterAttributeTypeKey];
+        NSString *name = [attributes objectForKey:FFGLParameterAttributeNameKey];
+
+		if ([type isEqualToString:FFGLParameterTypeImage])
+		{
+			// clean up image name. remove "Input" and "#"]
+			name = [name stringByReplacingOccurrencesOfString:@"Input " withString:@""];
+			name = [name stringByReplacingOccurrencesOfString:@"#" withString:@""];
+			
+			[portAttributes setObject:name forKey:QCPortAttributeNameKey];
+
+			[self addInputPortWithType:QCPortTypeImage forKey:key
+						withAttributes:portAttributes];
+		}
+	}
+	
+	// everyone else	
+    for (key in keys)
+	{
         NSDictionary *attributes = [_plugin attributesForParameterWithKey:key];
         NSMutableDictionary *portAttributes = [NSMutableDictionary dictionaryWithCapacity:3];
         NSString *type = [attributes objectForKey:FFGLParameterAttributeTypeKey];
@@ -211,10 +237,8 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
         if (defaultValue != nil) {
             [portAttributes setObject:defaultValue forKey:QCPortAttributeDefaultValueKey];
         }
-        if ([type isEqualToString:FFGLParameterTypeImage]) {
-            [self addInputPortWithType:QCPortTypeImage forKey:key
-                        withAttributes:portAttributes];
-        } else if ([type isEqualToString:FFGLParameterTypeBoolean] || [type isEqualToString:FFGLParameterTypeEvent]) {
+		
+		if ([type isEqualToString:FFGLParameterTypeBoolean] || [type isEqualToString:FFGLParameterTypeEvent]) {
             [self addInputPortWithType:QCPortTypeBoolean forKey:key
                         withAttributes:portAttributes];
         } else if ([type isEqualToString:FFGLParameterTypeNumber]) {
@@ -297,7 +321,7 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
 #endif
     
     CGLContextObj cgl_ctx = [context CGLContextObj];
-	CGLSetCurrentContext(cgl_ctx);
+	CGLSetCurrentContext(cgl_ctx); // no idea why we need this.
 	CGLLockContext(cgl_ctx);
 	
     pthread_mutex_lock(&_lock);
