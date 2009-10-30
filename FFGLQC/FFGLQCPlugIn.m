@@ -370,14 +370,14 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
 					if(input && [input lockTextureRepresentationWithColorSpace:[input imageColorSpace] forBounds:[input imageBounds]]);
 					{	
 						
-						NSLog(@"have QCimage for key %@ and locked rep", key);
+						//NSLog(@"have QCimage for key %@ and locked rep", key);
 						// we may have flipping issues here, if the input QC Texture is flipped...
 						// normalizeCoords: YES provides for a flipped texture matrix, but it also means
 						// the texture coords are different than what swapTextureTargets will expect..
 						
 						[input bindTextureRepresentationToCGLContext:cgl_ctx textureUnit:GL_TEXTURE0 normalizeCoordinates:NO];
 						
-						NSLog(@"new FFGL based on rect texture: %u", [input textureName]);
+						//NSLog(@"new FFGL based on rect texture: %u", [input textureName]);
 						
 						image = [[FFGLImage alloc] initWithCopiedTextureRect:[input textureName]
 																  CGLContext:cgl_ctx
@@ -457,6 +457,7 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
 
 - (void) disableExecution:(id<QCPlugInContext>)context
 {
+	NSLog(@"called disable Execution");
 	/*
 	Called by Quartz Composer when the plug-in instance stops being used by Quartz Composer.
 	*/
@@ -464,6 +465,8 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
 
 - (void) stopExecution:(id<QCPlugInContext>)context
 {
+	NSLog(@"called stop Execution");
+
 	/*
 	Called by Quartz Composer when rendering of the composition stops: perform any required cleanup for the plug-in.
 	*/

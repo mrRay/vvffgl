@@ -12,7 +12,7 @@
 #import <OpenGL/CGLMacro.h>
 
 static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl_ctx, void *context) {
-    NSLog(@"delete texture %u in renderer callback (created)", name);
+//  NSLog(@"delete texture %u in renderer callback (created)", name);
     CGLLockContext(cgl_ctx);
     glDeleteTextures(1, &name);
     CGLUnlockContext(cgl_ctx);
@@ -198,17 +198,17 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	glGenTextures(1, &_rendererFBOTexture);	
 	glBindTexture(requestedFFGLImageType, _rendererFBOTexture);
 
-	NSLog(@"new implementationRender texture: %u", _rendererFBOTexture);
+//	NSLog(@"new implementationRender texture: %u", _rendererFBOTexture);
 	
 	if(requestedFFGLImageType == GL_TEXTURE_2D)
 	{
-		NSLog(@"requesting 2D FFGL");
+//		NSLog(@"requesting 2D FFGL");
 		glTexImage2D(requestedFFGLImageType, 0, GL_RGBA8, _textureWidth, _textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
 	}
 	else if(requestedFFGLImageType == GL_TEXTURE_RECTANGLE_ARB)
 	{
-		NSLog(@"requesting RECT FFGL");
+//		NSLog(@"requesting RECT FFGL");
 		glTexImage2D(requestedFFGLImageType, 0, GL_RGBA8, self.bounds.size.width, self.bounds.size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	}
 	else
@@ -285,7 +285,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);
 		
 	
-	NSLog(@"new FFGL image with texture: %u", _rendererFBOTexture);
+//	NSLog(@"new FFGL image with texture: %u", _rendererFBOTexture);
 	
 	FFGLImage *output;
 	
@@ -318,7 +318,9 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
     return result;
 }
 
-// if we switch COLOR ATTACHMENT target types we switch widths, thus, we must rebuild our render buffer attachment too
+// if we switch COLOR ATTACHMENT target types we switch widths, 
+// thus, we must rebuild our render buffer attachment too, 
+// but we only need to do this once, ever, per target type change.
 - (void) setRequestedFFGLImageType:(GLenum)target
 {
 	if(requestedFFGLImageType != target && (_context != NULL))
