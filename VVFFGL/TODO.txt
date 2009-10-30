@@ -3,6 +3,7 @@ Yo, add to this, mark things done, reasign, comment, whateverrrrr.
 1. Buffer <-> texture conversion in FFGLImage - Anton?
 
 2. Documentation in headers (and elsewhere?) - whoever
+2.1 - Copyright/Credits in headers - check with VV.
 
 3. 64-bit: continue interaction with FF list to get a standard agreed so we can release with it. - Tom
 
