@@ -8,7 +8,6 @@
 
 #import <Cocoa/Cocoa.h>
 #import <OpenGL/OpenGL.h>
-#import "VVFFGL.h"
 #import "RenderView.h"
 #import "ParametersView.h"
 #import "RenderChain.h"
