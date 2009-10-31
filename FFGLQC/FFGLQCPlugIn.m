@@ -363,17 +363,15 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
         [_renderer release];
         NSRect bounds = NSMakeRect(0, 0, _dimensions.width, _dimensions.height);
         if ([plugin mode] == FFGLPluginModeCPU) 
-		{
-            _renderer = [[FFGLRenderer alloc] initWithPlugin:self.plugin pixelFormat:ffPixelFormat forBounds:bounds];
+	{
+	    _renderer = [[FFGLRenderer alloc] initWithPlugin:self.plugin context:cgl_ctx pixelFormat:ffPixelFormat outputHint:FFGLRendererHintNone forBounds:bounds];
         } 
-		else
-		{
-            _renderer = [[FFGLRenderer alloc] initWithPlugin:self.plugin context:cgl_ctx forBounds:bounds];			
+	else
+	{
+	    // FFGLRendererHintTextureRect will let QC output our FFGLImages texture directly and saves us a 2D to Rect conversion stage.
+
+            _renderer = [[FFGLRenderer alloc] initWithPlugin:self.plugin context:cgl_ctx pixelFormat:nil outputHint:FFGLRendererHintTextureRect forBounds:bounds];			
         }
-		
-		// this will let QC output our FFGLImages texture directly and saves us a 2D to Rect conversion stage.
-		[_renderer setRequestedFFGLImageType:GL_TEXTURE_RECTANGLE_ARB];
-		
         self.rendererNeedsRebuild = NO;
     }
     
