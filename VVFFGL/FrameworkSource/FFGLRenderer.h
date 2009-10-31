@@ -11,12 +11,20 @@
 
 @class FFGLPlugin, FFGLImage;
 
+enum {
+    FFGLRendererHintNone = 0,
+    FFGLRendererHintTextureRect = 1,
+    FFGLRendererHintTexture2D = 2,
+    FFGLRendererHintBuffer = 3
+};
+typedef NSUInteger FFGLRendererHint;
+
 @interface FFGLRenderer : NSObject
 {
 // TOM, you will probably hate this, but just for me dicking around...
     // ANTON, ha, let's roll with it, saves duplicating it all in subclasses.
 @protected
-    GLenum		_requestedFFGLImageType;
+    FFGLRendererHint	_outputHint;
     FFGLPlugin          *_plugin;
     CGLContextObj       _context;
     NSRect              _bounds;
@@ -31,17 +39,12 @@
     pthread_mutex_t     _lock;
 
 }
-
-// for requestion rendered frames as 2D or RECT textures
-// valid enums are GL_TEXTURE_2D or GL_TEXTURE_RECTANGLE_ARB
-@property (readwrite, assign) GLenum requestedFFGLImageType;
-
-
-- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format forBounds:(NSRect)bounds;
+- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint forBounds:(NSRect)bounds;
 - (FFGLPlugin *)plugin;
 - (CGLContextObj)context;
 - (NSString *)pixelFormat;
 - (NSRect)bounds;
+- (FFGLRendererHint)outputHint;
 /*
  - (BOOL)willUseParameterKey:(NSString *)key
     A plugin may ignore some of its image parameters under certain conditions. Use this method to discover if an input

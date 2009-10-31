@@ -24,7 +24,7 @@
 @end
 @implementation FFGLRenderer
 
-@synthesize requestedFFGLImageType = _requestedFFGLImageType;
+//@synthesize requestedFFGLImageType = _requestedFFGLImageType;
 
 - (id)init
 {
@@ -32,15 +32,15 @@
     return nil;
 }
 
-- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format forBounds:(NSRect)bounds
+- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint forBounds:(NSRect)bounds
 {
     if (self = [super init]) {
         if ([self class] == [FFGLRenderer class]) {
             [self release];
             if ([plugin mode] == FFGLPluginModeGPU) {
-                return [[FFGLGPURenderer alloc] initWithPlugin:plugin context:context pixelFormat:format forBounds:bounds];
+                return [[FFGLGPURenderer alloc] initWithPlugin:plugin context:context pixelFormat:format outputHint:hint forBounds:bounds];
             } else if ([plugin mode] == FFGLPluginModeCPU) {
-                return [[FFGLCPURenderer alloc] initWithPlugin:plugin context:context pixelFormat:format forBounds:bounds];
+                return [[FFGLCPURenderer alloc] initWithPlugin:plugin context:context pixelFormat:format outputHint:hint forBounds:bounds];
             } else {
                 return nil;
             }        
@@ -48,6 +48,7 @@
             if ((plugin == nil)
                 || (([plugin mode] == FFGLPluginModeCPU)
                     && ![[plugin supportedBufferPixelFormats] containsObject:format])
+		|| (hint > FFGLRendererHintBuffer)
                 ) {
 		[self release];
                 [NSException raise:@"FFGLRendererException" format:@"Invalid arguments in init"];
@@ -80,9 +81,7 @@
                 [self release];
                 return nil;
             }
-			
-			// default to GL_TEXTURE_2D
-			[self setRequestedFFGLImageType:GL_TEXTURE_2D];
+	    _outputHint = hint;
 			
             NSLog(@"Renderer initted");
         }
@@ -135,6 +134,11 @@
 - (NSString *)pixelFormat
 {
     return _pixelFormat;
+}
+
+- (FFGLRendererHint)outputHint
+{
+    return _outputHint;
 }
 
 - (BOOL)willUseParameterKey:(NSString *)key

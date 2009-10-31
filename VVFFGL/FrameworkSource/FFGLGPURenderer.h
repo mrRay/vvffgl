@@ -16,7 +16,7 @@
 @private
     FFGLProcessGLStruct _frameStruct;
 
-
+    GLenum _textureTarget;
     GLuint _rendererFBO;		// this FBO is responsible for providing the GL_TEXTURE_2D texture that FFGL requires.
     GLuint _rendererDepthBuffer;	// depth buffer
     NSUInteger _textureWidth;

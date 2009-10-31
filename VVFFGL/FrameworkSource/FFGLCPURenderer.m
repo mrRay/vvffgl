@@ -17,9 +17,9 @@ static void FFGLCPURendererBufferRelease(const void *baseAddress, void* context)
 
 @implementation FFGLCPURenderer
 
-- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format forBounds:(NSRect)bounds
+- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint forBounds:(NSRect)bounds
 {
-    if (self = [super initWithPlugin:plugin context:context pixelFormat:format forBounds:bounds]) {
+    if (self = [super initWithPlugin:plugin context:context pixelFormat:format outputHint:hint forBounds:bounds]) {
         NSUInteger numBuffers = [plugin _maximumInputFrameCount];
         if (numBuffers > 0)
 	{
