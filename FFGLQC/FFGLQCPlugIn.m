@@ -213,13 +213,8 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
         NSString *name = [attributes objectForKey:FFGLParameterAttributeNameKey];
 
 		if ([type isEqualToString:FFGLParameterTypeImage])
-		{
-			// clean up image name. remove "Input" and "#"]
-			name = [name stringByReplacingOccurrencesOfString:@"Input " withString:@""];
-			name = [name stringByReplacingOccurrencesOfString:@"#" withString:@""];
-			
+		{			
 			[portAttributes setObject:name forKey:QCPortAttributeNameKey];
-
 			[self addInputPortWithType:QCPortTypeImage forKey:key
 						withAttributes:portAttributes];
 		}
@@ -362,16 +357,8 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
 	{
         [_renderer release];
         NSRect bounds = NSMakeRect(0, 0, _dimensions.width, _dimensions.height);
-        if ([plugin mode] == FFGLPluginModeCPU) 
-	{
-	    _renderer = [[FFGLRenderer alloc] initWithPlugin:self.plugin context:cgl_ctx pixelFormat:ffPixelFormat outputHint:FFGLRendererHintNone forBounds:bounds];
-        } 
-	else
-	{
-	    // FFGLRendererHintTextureRect will let QC output our FFGLImages texture directly and saves us a 2D to Rect conversion stage.
-
-            _renderer = [[FFGLRenderer alloc] initWithPlugin:self.plugin context:cgl_ctx pixelFormat:nil outputHint:FFGLRendererHintTextureRect forBounds:bounds];			
-        }
+	    // FFGLRendererHintTextureRect asks the renderer to output rect textures directly (if it can) and saves a 2D to Rect conversion stage.
+		_renderer = [[FFGLRenderer alloc] initWithPlugin:self.plugin context:cgl_ctx pixelFormat:ffPixelFormat outputHint:FFGLRendererHintTextureRect forBounds:bounds];			
         self.rendererNeedsRebuild = NO;
     }
     
