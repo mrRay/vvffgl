@@ -17,13 +17,15 @@ static void FFGLCPURendererBufferRelease(const void *baseAddress, void* context)
 
 @implementation FFGLCPURenderer
 
-- (id)initWithPlugin:(FFGLPlugin *)plugin pixelFormat:(NSString *)format forBounds:(NSRect)bounds
+- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format forBounds:(NSRect)bounds
 {
-    if (self = [super initWithPlugin:plugin pixelFormat:format forBounds:bounds]) {
+    if (self = [super initWithPlugin:plugin context:context pixelFormat:format forBounds:bounds]) {
         NSUInteger numBuffers = [plugin _maximumInputFrameCount];
-        if (numBuffers > 0) {
+        if (numBuffers > 0)
+	{
             _buffers = malloc(sizeof(void *) * numBuffers);
-            if (_buffers == NULL) {
+            if (_buffers == NULL)
+	    {
                 [self release];
                 return nil;
             }
@@ -55,15 +57,16 @@ static void FFGLCPURendererBufferRelease(const void *baseAddress, void* context)
 
 - (BOOL)_implementationSetImage:(id)image forInputAtIndex:(NSUInteger)index
 {
-    if ([image lockBufferRepresentationWithPixelFormat:[self pixelFormat]]) {
-        if (([image bufferPixelsHigh] != [self bounds].size.height) || ([image bufferPixelsWide] != [self bounds].size.width)
-            || ([image bufferPixelFormat] != [self pixelFormat])) {
+    if ([image lockBufferRepresentationWithPixelFormat:_pixelFormat]) {
+        if (([image bufferPixelsHigh] != _bounds.size.height) || ([image bufferPixelsWide] != _bounds.size.width)
+            || ([image bufferPixelFormat] != _pixelFormat)) {
             [image unlockBufferRepresentation];
             // Not sure what we do here - for now raise exception, could just return NO.
             // But that failure is only used within FFGLRenderer, not transmitted to client.
             [NSException raise:@"FFGLRendererException" format:@"Input image dimensions or format do not match renderer."];
             return NO;
         }
+	// TODO: unlock previous image, in case we ever do anything in unlock
         _buffers[index] = (void *)[image bufferBaseAddress];
         return YES;
     } else {
@@ -73,31 +76,27 @@ static void FFGLCPURendererBufferRelease(const void *baseAddress, void* context)
 
 - (BOOL)_implementationRender
 {
-    // We could cache the values of [self plugin], [self bounds], [self _instance] and [self pixelFormat]
-    // at init, as they are constant for our lifetime.
-    FFGLPlugin *plugin = [self plugin];
-    NSRect bounds = [self bounds];
     BOOL result;
-    _fcStruct.outputFrame = valloc(bounds.size.width * _bpp * bounds.size.height);
+    _fcStruct.outputFrame = valloc(_bounds.size.width * _bpp * _bounds.size.height);
     if (_fcStruct.outputFrame == NULL) {
         return NO;
     }
-    if ([plugin _prefersFrameCopy]) {
-        result = [plugin _processFrameCopy:&_fcStruct forInstance:[self _instance]];
+    if ([_plugin _prefersFrameCopy]) {
+        result = [_plugin _processFrameCopy:&_fcStruct forInstance:_instance];
     } else {
         if (_fcStruct.inputFrameCount > 0) { // ie we are not a source
-            memcpy(_fcStruct.outputFrame, _buffers[0], bounds.size.width * _bpp * bounds.size.height);
+            memcpy(_fcStruct.outputFrame, _buffers[0], _bounds.size.width * _bpp * _bounds.size.height);
         }
-        result = [plugin _processFrameInPlace:_fcStruct.outputFrame forInstance:[self _instance]];
+        result = [_plugin _processFrameInPlace:_fcStruct.outputFrame forInstance:_instance];
     }
     FFGLImage *output;
     if (result) {
         output = [[[FFGLImage alloc] initWithBuffer:_fcStruct.outputFrame
-                                         CGLContext:NULL // TODO:
-                                        pixelFormat:[self pixelFormat]
-                                         pixelsWide:bounds.size.width
-                                         pixelsHigh:bounds.size.height
-                                        bytesPerRow:bounds.size.width * _bpp
+                                         CGLContext:_context
+                                        pixelFormat:_pixelFormat
+                                         pixelsWide:_bounds.size.width
+                                         pixelsHigh:_bounds.size.height
+                                        bytesPerRow:_bounds.size.width * _bpp
                                     releaseCallback:FFGLCPURendererBufferRelease
                                         releaseInfo:NULL] autorelease];
     } else {

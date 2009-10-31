@@ -101,10 +101,10 @@
         FFGLRenderer *renderer = nil;
         if ([plugin mode] == FFGLPluginModeCPU) {
             if ([[plugin supportedBufferPixelFormats] containsObject:kFFPixelFormat]) {
-                renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin pixelFormat:kFFPixelFormat forBounds:kRenderBounds] autorelease];
+                renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:[[_renderView openGLContext] CGLContextObj] pixelFormat:kFFPixelFormat forBounds:kRenderBounds] autorelease];
             }
         } else {
-            renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:[[_renderView openGLContext] CGLContextObj] forBounds:kRenderBounds] autorelease];
+            renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:[[_renderView openGLContext] CGLContextObj] pixelFormat:kFFPixelFormat forBounds:kRenderBounds] autorelease];
         }
         if (renderer == nil) {
             NSLog(@"Couldn't create plugin renderer.");

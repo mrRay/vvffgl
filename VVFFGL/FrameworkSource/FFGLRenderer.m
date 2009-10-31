@@ -24,7 +24,7 @@
 @end
 @implementation FFGLRenderer
 
-@synthesize requestedFFGLImageType;
+@synthesize requestedFFGLImageType = _requestedFFGLImageType;
 
 - (id)init
 {
@@ -32,36 +32,25 @@
     return nil;
 }
 
-- (id)_initWithPlugin:(FFGLPlugin *)plugin pixelFormat:(NSString *)format context:(CGLContextObj)context forBounds:(NSRect)bounds
+- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format forBounds:(NSRect)bounds
 {
     if (self = [super init]) {
         if ([self class] == [FFGLRenderer class]) {
             [self release];
             if ([plugin mode] == FFGLPluginModeGPU) {
-                return [[FFGLGPURenderer alloc] initWithPlugin:plugin context:context forBounds:bounds];
+                return [[FFGLGPURenderer alloc] initWithPlugin:plugin context:context pixelFormat:format forBounds:bounds];
             } else if ([plugin mode] == FFGLPluginModeCPU) {
-                return [[FFGLCPURenderer alloc] initWithPlugin:plugin pixelFormat:format forBounds:bounds];
+                return [[FFGLCPURenderer alloc] initWithPlugin:plugin context:context pixelFormat:format forBounds:bounds];
             } else {
                 return nil;
             }        
         } else {
             if ((plugin == nil)
-                || (format != nil
-#if __BIG_ENDIAN__
-                    && ![format isEqualToString:FFGLPixelFormatRGB565]
-                    && ![format isEqualToString:FFGLPixelFormatRGB888]
-                    && ![format isEqualToString:FFGLPixelFormatARGB8888]
-#else
-                    && ![format isEqualToString:FFGLPixelFormatBGR565]
-                    && ![format isEqualToString:FFGLPixelFormatBGR565]
-                    && ![format isEqualToString:FFGLPixelFormatBGRA8888]
-#endif
-                )
                 || (([plugin mode] == FFGLPluginModeCPU)
                     && ![[plugin supportedBufferPixelFormats] containsObject:format])
                 ) {
+		[self release];
                 [NSException raise:@"FFGLRendererException" format:@"Invalid arguments in init"];
-                [self release];
                 return nil;
             }
             NSUInteger maxInputs = [plugin _maximumInputFrameCount];
@@ -81,8 +70,8 @@
                 return nil;
             }
             _plugin = [plugin retain];
-            if (_pluginContext != NULL) {
-                _pluginContext = CGLRetainContext(context);                
+            if (context != NULL) {
+                _context = CGLRetainContext(context);                
             }
             _bounds = bounds;
             _pixelFormat = [format retain];
@@ -101,20 +90,10 @@
     return self;
 }
 
-- (id)initWithPlugin:(FFGLPlugin *)plugin pixelFormat:(NSString *)format forBounds:(NSRect)bounds
-{
-    return [self _initWithPlugin:plugin pixelFormat:format context:NULL forBounds:bounds];
-}
-
-- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context forBounds:(NSRect)bounds
-{
-    return [self _initWithPlugin:plugin pixelFormat:nil context:context forBounds:bounds];
-}
-
 - (void)releaseResources {
     NSLog(@"releaseResources");
-    if(_pluginContext != nil)
-        CGLReleaseContext(_pluginContext);
+    if(_context != nil)
+        CGLReleaseContext(_context);
     if (_instance != 0)
         [[self plugin] _disposeInstance:_instance];
     if (_imageInputValidity != NULL)
@@ -138,11 +117,6 @@
     [super dealloc];
 }
 
-- (FFGLPluginInstance)_instance
-{
-    return _instance;
-}
-
 - (FFGLPlugin *)plugin
 {
     return _plugin;
@@ -150,7 +124,7 @@
 
 - (CGLContextObj)context
 {
-    return _pluginContext;
+    return _context;
 }
 
 - (NSRect)bounds
@@ -232,6 +206,7 @@
 - (id)parameters
 {
     if (_params == nil) {
+	//TODO: need a lock here
         _params = [[FFGLRendererParametersBindable alloc] initWithRenderer:self]; // released in dealloc
     }
     return _params;
@@ -281,7 +256,6 @@
         }
         success = [self _implementationRender];        
     } else {
-        NSLog(@"Inputs not set."); // TODO: remove this NSLog
         success = NO;
     }
     pthread_mutex_unlock(&_lock);
@@ -292,16 +266,12 @@
 @implementation FFGLRendererParametersBindable
 - (id)initWithRenderer:(FFGLRenderer *)renderer
 {
-    if (self = [super init]) {
-        _renderer = [renderer retain];
+    if (self = [super init])
+    {
+	/* Don't retain the renderer, or it will never be released */
+        _renderer = renderer;
     }
     return self;
-}
-
-- (void)dealloc
-{
-    [_renderer release];
-    [super dealloc];
 }
 
 - (id)valueForUndefinedKey:(NSString *)key
@@ -312,17 +282,7 @@
         return [super valueForUndefinedKey:key];
 }
 
-/*
-- (id)valueForKeyPath:(NSString *)keyPath
-{
-    NSArray *pathParts = [keyPath componentsSeparatedByString:@"."];
-    if ([[pathParts lastObject] isEqualToString:@"value"] && ([pathParts count] > 1)) {
-        return [_renderer valueForParameterKey:[pathParts objectAtIndex:[pathParts count] - 2]];
-    } else {
-        return [super valueForKeyPath:keyPath];
-    }
-}
-*/
+
 - (void)setValue:(id)value forUndefinedKey:(NSString *)key
 {
     if ([[[_renderer plugin] parameterKeys] containsObject:key])
@@ -330,15 +290,5 @@
     else
         [super setValue:value forUndefinedKey:key];
 }
-/*
-- (void)setValue:(id)value forKeyPath:(NSString *)keyPath
-{
-    NSArray *pathParts = [keyPath componentsSeparatedByString:@"."];
-    if ([[pathParts lastObject] isEqualToString:@"value"] && ([pathParts count] > 1)) {
-        [_renderer _performSetValue:value forParameterKey:[pathParts objectAtIndex:[pathParts count] - 2]];
-    } else {
-        [super setValue:value forKeyPath:keyPath];
-    }
-}
- */
+
 @end

@@ -14,16 +14,15 @@
 @interface FFGLRenderer : NSObject
 {
 // TOM, you will probably hate this, but just for me dicking around...
-@public
-	GLenum requestedFFGLImageType;
-
-	
-@private
+    // ANTON, ha, let's roll with it, saves duplicating it all in subclasses.
+@protected
+    GLenum		_requestedFFGLImageType;
     FFGLPlugin          *_plugin;
-    void		*_instance;
-    CGLContextObj       _pluginContext;
+    CGLContextObj       _context;
     NSRect              _bounds;
     NSString            *_pixelFormat;
+    void		*_instance;
+@private
     NSMutableDictionary *_imageInputs;
     BOOL                _needsToCheckValidity;
     BOOL                *_imageInputValidity;
@@ -38,9 +37,7 @@
 @property (readwrite, assign) GLenum requestedFFGLImageType;
 
 
-// or one long init to support both
-- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context forBounds:(NSRect)bounds;
-- (id)initWithPlugin:(FFGLPlugin *)plugin pixelFormat:(NSString *)format forBounds:(NSRect)bounds;
+- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format forBounds:(NSRect)bounds;
 - (FFGLPlugin *)plugin;
 - (CGLContextObj)context;
 - (NSString *)pixelFormat;
