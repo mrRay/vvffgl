@@ -10,6 +10,13 @@
 
 static FFGLPluginManager *_sharedPluginManager = nil;
 
+static NSInteger FFGLPluginManagerSortPlugins(FFGLPlugin *first, FFGLPlugin *second, void *context)
+{
+    NSString *a = [[first attributes] objectForKey:FFGLPluginAttributeNameKey];
+    NSString *b = [[second attributes] objectForKey:FFGLPluginAttributeNameKey];
+    return [a compare:b];
+}
+
 @implementation FFGLPluginManager
 #pragma mark Singleton Instance
 + (FFGLPluginManager*)sharedManager
@@ -143,6 +150,8 @@ static FFGLPluginManager *_sharedPluginManager = nil;
                 }
             }
         }
+	[_sources sortUsingFunction:FFGLPluginManagerSortPlugins context:NULL];
+	[_effects sortUsingFunction:FFGLPluginManagerSortPlugins context:NULL];
     }    
 }
 
