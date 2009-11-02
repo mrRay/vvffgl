@@ -18,6 +18,14 @@
 
 @implementation TestAppController
 
+- (id)init
+{
+	if (self = [super init]) {
+		_caps = YES;
+	}
+	return self;
+}
+
 - (void)awakeFromNib
 {
     [_sourcesTableView setTarget:self];
@@ -35,6 +43,8 @@
         NSLog(@"No effect plugins loaded. Copy some to your \"~/Library/Graphics/Free Frame Plug-Ins\" folder.");
     }
     [_paramsView bind:@"renderer" toObject:_renderChainRenderersController withKeyPath:@"selection.self" options:nil];
+	_renderStart = [NSDate timeIntervalSinceReferenceDate];
+    [self setCapsFrameRate:YES];
 }
 
 - (void)dealloc
@@ -51,17 +61,28 @@
      I've also made the view our own subclass which isn't going to do much, but makes the code clearer I hope.
      
      */
-        _renderStart = [NSDate timeIntervalSinceReferenceDate];
-        ffglRenderTimer = [NSTimer timerWithTimeInterval:(1.0/60.0) target:self selector:@selector(renderForTimer:) userInfo:nil repeats:YES];
-	[ffglRenderTimer retain];
-	[[NSRunLoop currentRunLoop] addTimer:ffglRenderTimer forMode:NSDefaultRunLoopMode];
-	[[NSRunLoop currentRunLoop] addTimer:ffglRenderTimer forMode:NSModalPanelRunLoopMode];
-	[[NSRunLoop currentRunLoop] addTimer:ffglRenderTimer forMode:NSEventTrackingRunLoopMode];
 
 	// for shits and giggles lets make sure we have some plugins in our plugin manager
     // No need to do this - they're loaded because the source/effects panel is bound to the plugin manager in the xib. No code, magic.
 //	NSLog(@"Loaded source plugins: %@, loaded effect plugins: %@", [ffglManager sourcePlugins], [ffglManager effectPlugins]);
 
+}
+
+- (BOOL)capsFrameRate
+{
+	return _caps;
+}
+
+- (void)setCapsFrameRate:(BOOL)caps
+{
+	[ffglRenderTimer invalidate];
+	[ffglRenderTimer release];
+	ffglRenderTimer = [NSTimer timerWithTimeInterval:(caps ? 1.0 / 60.0 : 0.0) target:self selector:@selector(renderForTimer:) userInfo:nil repeats:YES];
+	[ffglRenderTimer retain];
+	[[NSRunLoop currentRunLoop] addTimer:ffglRenderTimer forMode:NSDefaultRunLoopMode];
+	[[NSRunLoop currentRunLoop] addTimer:ffglRenderTimer forMode:NSModalPanelRunLoopMode];
+	[[NSRunLoop currentRunLoop] addTimer:ffglRenderTimer forMode:NSEventTrackingRunLoopMode];
+	
 }
 
 @synthesize FPS = _fps;

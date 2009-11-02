@@ -26,8 +26,10 @@
         NSTimeInterval  _fpsStart;
         NSUInteger      _frameCount;
         double          _fps;
+	BOOL _caps;
 }
 - (IBAction)addRendererFromTableView:(id)sender;
 - (RenderChain *)renderChain;
 @property (readwrite, assign) double FPS;
+@property (readwrite, assign) BOOL capsFrameRate;
 @end
