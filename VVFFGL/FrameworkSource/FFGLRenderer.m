@@ -82,7 +82,7 @@
                 return nil;
             }
 	    _outputHint = hint;
-			
+	    _pLock = OS_SPINLOCK_INIT;
             NSLog(@"Renderer initted");
         }
     }	
@@ -209,10 +209,12 @@
 
 - (id)parameters
 {
-    if (_params == nil) {
-	//TODO: need a lock here
-        _params = [[FFGLRendererParametersBindable alloc] initWithRenderer:self]; // released in dealloc
+    OSSpinLockLock(&_pLock);
+    if (_params == nil)
+    {
+	_params = [[FFGLRendererParametersBindable alloc] initWithRenderer:self]; // released in dealloc
     }
+    OSSpinLockUnlock(&_pLock);
     return _params;
 }
 

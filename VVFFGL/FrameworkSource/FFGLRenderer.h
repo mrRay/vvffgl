@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import <OpenGL/OpenGL.h>
+#import <libkern/OSAtomic.h>
 #import <pthread.h> // maybe obscure our ivars in a struct and move this to the .m?
 
 @class FFGLPlugin, FFGLImage;
@@ -37,7 +38,7 @@ typedef NSUInteger FFGLRendererHint;
     FFGLImage           *_output;
     id                  _params;
     pthread_mutex_t     _lock;
-
+    OSSpinLock		_pLock;
 }
 - (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint forBounds:(NSRect)bounds;
 - (FFGLPlugin *)plugin;
