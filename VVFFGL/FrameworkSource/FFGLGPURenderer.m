@@ -20,12 +20,6 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 
 @implementation FFGLGPURenderer
 
-- (id)init
-{
-    [self doesNotRecognizeSelector:_cmd];
-    return nil;
-}
-
 - (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint forBounds:(NSRect)bounds
 {
     if (self = [super initWithPlugin:plugin context:context pixelFormat:format outputHint:hint forBounds:bounds]) {

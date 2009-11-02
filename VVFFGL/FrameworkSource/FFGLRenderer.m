@@ -46,9 +46,10 @@
             if ((plugin == nil)
                 || (([plugin mode] == FFGLPluginModeCPU)
                     && ![[plugin supportedBufferPixelFormats] containsObject:format])
-		|| (hint > FFGLRendererHintBuffer)
-                ) {
-		[self release];
+				|| (hint > FFGLRendererHintBuffer)
+				)
+			{
+				[self release];
                 [NSException raise:@"FFGLRendererException" format:@"Invalid arguments in init"];
                 return nil;
             }
@@ -79,8 +80,8 @@
                 [self release];
                 return nil;
             }
-	    _outputHint = hint;
-	    _pLock = OS_SPINLOCK_INIT;
+			_outputHint = hint;
+			_pLock = OS_SPINLOCK_INIT;
         }
     }	
     return self;
@@ -151,8 +152,9 @@
             return YES;
         }
         pthread_mutex_lock(&_lock);
-        return [_plugin _imageInputAtIndex:index willBeUsedByInstance:_instance];
-        pthread_mutex_unlock(&_lock);        
+        BOOL result = [_plugin _imageInputAtIndex:index willBeUsedByInstance:_instance];
+        pthread_mutex_unlock(&_lock);
+		return result;
     } else {
         return YES;
     }
