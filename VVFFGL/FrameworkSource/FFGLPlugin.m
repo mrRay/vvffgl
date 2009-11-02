@@ -499,16 +499,10 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 {
     // Plugins indicate success or failure in return, but as it's not clear what
     // failure means, let's ignore it.
-    uint32_t result;
     if (_pluginData->mode == FFGLPluginModeGPU)
-        result = _pluginData->main(FF_DEINSTANTIATEGL, (FFMixed)0U, instance).UIntValue;
+		_pluginData->main(FF_DEINSTANTIATEGL, (FFMixed)0U, instance).UIntValue;
     else if (_pluginData->mode == FFGLPluginModeCPU)
-        result = _pluginData->main(FF_DEINSTANTIATE, (FFMixed)0U, instance).UIntValue;
-    else
-        result = FF_FAIL;
-    NSLog(@"disposeInstance");
-    if (result == FF_FAIL)
-        NSLog(@"(failed)");
+        _pluginData->main(FF_DEINSTANTIATE, (FFMixed)0U, instance).UIntValue;
 }
 
 - (id)_valueForNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance

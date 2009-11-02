@@ -45,7 +45,6 @@
 
 - (void) applicationDidFinishLaunching:(NSNotification *)notification
 {
-	NSLog(@"FFGL Test App launched");
     /*
      yo
      I ditched your code here and just used an NSOpenGLView, so we don't have to set up the context, etc in code. That OK?

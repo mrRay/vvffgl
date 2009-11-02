@@ -24,8 +24,6 @@
 @end
 @implementation FFGLRenderer
 
-//@synthesize requestedFFGLImageType = _requestedFFGLImageType;
-
 - (id)init
 {
     [self doesNotRecognizeSelector:_cmd];
@@ -83,14 +81,12 @@
             }
 	    _outputHint = hint;
 	    _pLock = OS_SPINLOCK_INIT;
-            NSLog(@"Renderer initted");
         }
     }	
     return self;
 }
 
 - (void)releaseResources {
-    NSLog(@"releaseResources");
     if(_context != nil)
         CGLReleaseContext(_context);
     if (_instance != 0)
