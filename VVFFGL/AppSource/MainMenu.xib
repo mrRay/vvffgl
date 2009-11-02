@@ -1344,18 +1344,18 @@
 								<int key="NSPeriodicInterval">75</int>
 							</object>
 						</object>
-						<object class="NSButton" id="173688270">
+						<object class="NSButton" id="639384789">
 							<reference key="NSNextResponder" ref="414427165"/>
-							<int key="NSvFlags">268</int>
+							<int key="NSvFlags">289</int>
 							<string key="NSFrame">{{828, 1}, {63, 18}}</string>
 							<reference key="NSSuperview" ref="414427165"/>
 							<bool key="NSEnabled">YES</bool>
-							<object class="NSButtonCell" key="NSCell" id="848762166">
+							<object class="NSButtonCell" key="NSCell" id="136182175">
 								<int key="NSCellFlags">-2080244224</int>
 								<int key="NSCellFlags2">131072</int>
 								<string key="NSContents">Capped</string>
 								<reference key="NSSupport" ref="26"/>
-								<reference key="NSControlView" ref="173688270"/>
+								<reference key="NSControlView" ref="639384789"/>
 								<int key="NSButtonFlags">1211912703</int>
 								<int key="NSButtonFlags2">2</int>
 								<object class="NSCustomResource" key="NSNormalImage">
@@ -3007,10 +3007,10 @@
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">value: capsFrameRate</string>
-						<reference key="source" ref="173688270"/>
+						<reference key="source" ref="639384789"/>
 						<reference key="destination" ref="672713853"/>
 						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="173688270"/>
+							<reference key="NSSource" ref="639384789"/>
 							<reference key="NSDestination" ref="672713853"/>
 							<string key="NSLabel">value: capsFrameRate</string>
 							<string key="NSBinding">value</string>
@@ -3595,7 +3595,7 @@
 							<reference ref="403597398"/>
 							<reference ref="129997279"/>
 							<reference ref="479649550"/>
-							<reference ref="173688270"/>
+							<reference ref="639384789"/>
 							<reference ref="955374440"/>
 						</object>
 						<reference key="parent" ref="513744381"/>
@@ -4484,17 +4484,17 @@
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">778</int>
-						<reference key="object" ref="173688270"/>
+						<reference key="object" ref="639384789"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="848762166"/>
+							<reference ref="136182175"/>
 						</object>
 						<reference key="parent" ref="414427165"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">779</int>
-						<reference key="object" ref="848762166"/>
-						<reference key="parent" ref="173688270"/>
+						<reference key="object" ref="136182175"/>
+						<reference key="parent" ref="639384789"/>
 					</object>
 				</object>
 			</object>
