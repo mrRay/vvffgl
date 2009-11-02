@@ -315,8 +315,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
                     [pAttributes setValue:[NSNumber numberWithFloat:0.0] forKey:FFGLParameterAttributeMinimumValueKey];
                     [pAttributes setValue:[NSNumber numberWithFloat:1.0] forKey:FFGLParameterAttributeMaximumValueKey];
                     result = _pluginData->main(FF_GETPARAMETERDEFAULT, (FFMixed)i, 0);
-//                    [pAttributes setValue:[NSNumber numberWithFloat:(float)result.UIntValue] forKey:FFGLParameterAttributeDefaultValueKey];
-		    [pAttributes setValue:[NSNumber numberWithFloat:*((float *)&result.UIntValue)] forKey:FFGLParameterAttributeDefaultValueKey];
+					[pAttributes setValue:[NSNumber numberWithFloat:*((float *)&result.UIntValue)] forKey:FFGLParameterAttributeDefaultValueKey];
                     break;
                 case FF_TYPE_TEXT:
                     [pAttributes setValue:FFGLParameterTypeString forKey:FFGLParameterAttributeTypeKey];
@@ -488,7 +487,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         videoInfo.FrameWidth = bounds.size.width;
 		FFGLPluginInstance instance = _pluginData->main(FF_INSTANTIATE, (FFMixed)(void *)&videoInfo, 0).PointerValue;
 		if (instance == NULL) {
-			NSLog(@"instance zero");
+			NSLog(@"instance zero, if we see this log, we need a rethink");
 		}
 		return instance;
     } else {
@@ -502,9 +501,9 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
     // failure means, let's ignore it.
     uint32_t result;
     if (_pluginData->mode == FFGLPluginModeGPU)
-        result = _pluginData->main(FF_DEINSTANTIATE, (FFMixed)0U, instance).UIntValue;
-    else if (_pluginData->mode == FFGLPluginModeCPU)
         result = _pluginData->main(FF_DEINSTANTIATEGL, (FFMixed)0U, instance).UIntValue;
+    else if (_pluginData->mode == FFGLPluginModeCPU)
+        result = _pluginData->main(FF_DEINSTANTIATE, (FFMixed)0U, instance).UIntValue;
     else
         result = FF_FAIL;
     NSLog(@"disposeInstance");
