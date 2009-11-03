@@ -10,6 +10,7 @@
 #import "FFGLFreeFrame.h"
 
 #import <pthread.h>
+#import <dlfcn.h>
 
 /*
  
@@ -23,7 +24,7 @@
  */
 
 struct FFGLPluginData {
-    CFBundleRef bundle;
+    void *handle;
     FF_Main_FuncPtr main;
     BOOL initted;
     FFGLPluginType type;
@@ -96,18 +97,18 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 - (id)initWithPath:(NSString *)path
 {
     if (self = [super init]) {
-        FFGLPlugin *p;
+	if (path == nil) {
+            [self release];
+            return nil;
+        }
         pthread_mutex_lock(&_FFGLPluginInstancesLock);
+	// check if we already have an instance of this plugin
+	FFGLPlugin *p;
         p = [_FFGLPluginInstances objectForKey:path];
         if (p != nil) {
             pthread_mutex_unlock(&_FFGLPluginInstancesLock);
             [self release];
             return [p retain];
-        }
-        if (path == nil) {
-            pthread_mutex_unlock(&_FFGLPluginInstancesLock);
-            [self release];
-            return nil;
         }
         _pluginData = malloc(sizeof(struct FFGLPluginData));
         if (_pluginData == NULL) {
@@ -117,32 +118,36 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         }
         // Set everything we need in dealloc, in case we bail from init.
         _pluginData->initted = NO;
-        _pluginData->bundle = NULL;
+        _pluginData->handle = NULL;
         _pluginData->bufferPixelFormats = nil;
         _pluginData->parameters = nil;
         _pluginData->attributes = nil;
+	_pluginData->main = NULL;
         
-        // Load the plugin bundle.
-        NSURL *url = [NSURL fileURLWithPath:path isDirectory:NO];
-        if (url == nil) {
-            pthread_mutex_unlock(&_FFGLPluginInstancesLock);
-            [self release];
-            return nil;
-        }
-        _pluginData->bundle = CFBundleCreate(kCFAllocatorDefault, (CFURLRef)url);
-        if (_pluginData->bundle == NULL) {
-            pthread_mutex_unlock(&_FFGLPluginInstancesLock);
-            [self release];
-            return nil;
-        }
-        
-        // Get a pointer to the function.
-        _pluginData->main = CFBundleGetFunctionPointerForName(_pluginData->bundle, CFSTR("plugMain"));
-        if (_pluginData->main == NULL) {
-            pthread_mutex_unlock(&_FFGLPluginInstancesLock);
-            [self release];
-            return nil;
-        }
+	NSString *loadableName = [[path lastPathComponent] stringByDeletingPathExtension];
+	CFStringRef pathToLoadable = (CFStringRef)[NSString stringWithFormat:@"%@/Contents/MacOS/%@", path, loadableName];
+	if (pathToLoadable != NULL)
+	{
+	    CFIndex buffSize = CFStringGetMaximumSizeOfFileSystemRepresentation(pathToLoadable);
+	    char cPathToLoadable[buffSize];
+	    if (CFStringGetFileSystemRepresentation(pathToLoadable, cPathToLoadable, buffSize))
+	    {
+		/*
+		 Don't change (RTLD_NOW | RTLD_LOCAL | RTLD_FIRST) -
+		 Changes can have a serious impact on speed (ie increase init time by a factor of 3).
+		 */
+		_pluginData->handle = dlopen(cPathToLoadable, (RTLD_NOW | RTLD_LOCAL | RTLD_FIRST));
+		if (_pluginData->handle != NULL) {
+		    _pluginData->main = dlsym(_pluginData->handle, "plugMain");
+		}
+	    }
+	}
+	if (_pluginData->main == NULL)
+	{
+	    pthread_mutex_unlock(&_FFGLPluginInstancesLock);
+	    [self release];
+	    return nil;
+	}
         
         FFMixed result;
 
@@ -352,29 +357,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
     return self;
 }
 
-- (void)dealloc
-{   
-    if (_pluginData != NULL) {
-        pthread_mutex_lock(&_FFGLPluginInstancesLock);
-        NSString *path = [_pluginData->attributes objectForKey:FFGLPluginAttributePathKey];
-        if (path != nil) {
-            [_FFGLPluginInstances removeObjectForKey:path];
-        }
-        pthread_mutex_unlock(&_FFGLPluginInstancesLock); 
-        if (_pluginData->initted == YES) {
-            _pluginData->main(FF_DEINITIALISE, (FFMixed)0U, 0);
-        }
-        if (_pluginData->bundle != NULL)
-            CFRelease(_pluginData->bundle);
-        [_pluginData->bufferPixelFormats release];
-        [_pluginData->parameters release];
-        [_pluginData->attributes release];
-        free(_pluginData);
-    }
-    [super dealloc];
-}
-
-- (void)finalize
+- (void)unregisterAndRelease
 {
     if (_pluginData != NULL) {
         pthread_mutex_lock(&_FFGLPluginInstancesLock);
@@ -386,10 +369,24 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         if (_pluginData->initted == YES) {
             _pluginData->main(FF_DEINITIALISE, (FFMixed)0U, 0);
         }
-        if (_pluginData->bundle != NULL)
-            CFRelease(_pluginData->bundle);
+	if (_pluginData->handle != NULL)
+	    dlclose(_pluginData->handle);
+        [_pluginData->bufferPixelFormats release];
+        [_pluginData->parameters release];
+        [_pluginData->attributes release];
         free(_pluginData);
-    }
+    }    
+}
+
+- (void)dealloc
+{   
+    [self unregisterAndRelease];
+    [super dealloc];
+}
+
+- (void)finalize
+{
+    [self unregisterAndRelease];
     [super finalize];
 }
 
@@ -400,6 +397,8 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 
 - (BOOL)isEqual:(id)anObject
 {
+    /* This depends on our instance tracking being functional, otherwise
+	we would have to compare our attributes */
     if (anObject == self) {
         return YES;
     }
