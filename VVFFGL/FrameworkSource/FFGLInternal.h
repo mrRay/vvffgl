@@ -37,9 +37,9 @@ typedef struct FFGLProcessGLStruct {
 } FFGLProcessGLStruct; // According to FF standard, do not modify.
 
 #pragma mark Utility Functions
-static inline NSUInteger FFGLPOTDimension(NSUInteger dimension)
+static inline unsigned int FFGLPOTDimension(unsigned int dimension)
 {
-    NSUInteger glSize = 1;
+    unsigned int glSize = 1;
     while (glSize<dimension) glSize<<=1;    
     return glSize;
 }
@@ -68,8 +68,6 @@ static inline NSUInteger FFGLPOTDimension(NSUInteger dimension)
 @end
 
 @interface FFGLRenderer (Subclassing)
-/* This method is provided by FFGLRenderer for subclasses to use when calling FFGLPlugin's instance methods */
-- (FFGLPluginInstance)_instance;
 
 /* Subclasses must implement these methods */
 - (BOOL)_implementationSetImage:(FFGLImage *)image forInputAtIndex:(NSUInteger)index;

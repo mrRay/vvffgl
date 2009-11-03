@@ -39,6 +39,11 @@ struct FFGLPluginData {
 };
 
 @interface NSString (FFGLPluginExtensions)
+/*
+ Lots of FF plugins return null-terminated strings when the spec requires strings of a specific length.
+ Use this method to get strings from the plugin in situations where the spec requires them to be a
+ specific length.
+ */
 + (NSString *)stringWithFFPluginDubiousBytes:(const void *)bytes nominalLength:(NSUInteger)len;
 @end
 
@@ -235,8 +240,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
             // Fill out our preferred mode
             _pluginData->preferredBufferMode = _pluginData->main(FF_GETPLUGINCAPS, (FFMixed)FF_CAP_COPYORINPLACE, 0).UIntValue;
             /*
-             Get information about the pixel formats we support. FF plugins only support native-endian pixel formats. We could
-             support both and handle conversion, however that doesn't seem a priority.
+             Get information about the pixel formats we support. FF plugins only support native-endian pixel formats.
              */
             _pluginData->bufferPixelFormats = [[NSMutableArray alloc] initWithCapacity:3];
             result = _pluginData->main(FF_GETPLUGINCAPS, (FFMixed)FF_CAP_16BITVIDEO, 0);
@@ -574,11 +578,6 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 
 @implementation NSString (FFGLPluginExtensions)
 
-/*
- Lots of FF plugins return null-terminated strings when the spec requires strings of a specific length.
- Use this method to get strings from the plugin in situations where the spec requires them to be a
- specific length.
- */
 + (NSString *)stringWithFFPluginDubiousBytes:(const void *)bytes nominalLength:(NSUInteger)len {
     NSUInteger i;
     NSUInteger safe;
