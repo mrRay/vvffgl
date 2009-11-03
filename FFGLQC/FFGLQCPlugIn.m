@@ -377,9 +377,10 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
 			    //NSLog(@"new FFGL based on rect texture: %u", [input textureName]);
 			    
 			    image = [[FFGLImage alloc] initWithCopiedTextureRect:[input textureName]
-								      CGLContext:cgl_ctx
-								      pixelsWide:[input imageBounds].size.width
-								      pixelsHigh:[input imageBounds].size.height];
+														  CGLContext:cgl_ctx
+														  pixelsWide:[input imageBounds].size.width
+														  pixelsHigh:[input imageBounds].size.height
+															 flipped:[input textureFlipped]];
 			     
 			    [image autorelease];
 			    
