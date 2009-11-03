@@ -97,8 +97,10 @@ static void FFGLCPURendererBufferRelease(const void *baseAddress, void* context)
                                          pixelsWide:_bounds.size.width
                                          pixelsHigh:_bounds.size.height
                                         bytesPerRow:_bounds.size.width * _bpp
+											flipped:NO
                                     releaseCallback:FFGLCPURendererBufferRelease
-                                        releaseInfo:NULL] autorelease];
+                                        releaseInfo:NULL]autorelease];
+;
     } else {
         free(_fcStruct.outputFrame);
         output = nil;

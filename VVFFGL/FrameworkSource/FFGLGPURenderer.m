@@ -272,23 +272,26 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	if(_textureTarget == GL_TEXTURE_2D)
 	{
 		output = [[[FFGLImage alloc] initWithTexture2D:_rendererFBOTexture
-						    CGLContext:cgl_ctx
-					       imagePixelsWide:_bounds.size.width
-					       imagePixelsHigh:_bounds.size.height
-					     texturePixelsWide:_textureWidth
-					     texturePixelsHigh:_textureHeight
-					       releaseCallback:FFGLGPURendererTextureReleaseCallback
-						   releaseInfo:NULL] autorelease];
+											CGLContext:cgl_ctx
+									   imagePixelsWide:_bounds.size.width
+									   imagePixelsHigh:_bounds.size.height
+									 texturePixelsWide:_textureWidth
+									 texturePixelsHigh:_textureHeight
+											   flipped:NO
+									   releaseCallback:FFGLGPURendererTextureReleaseCallback
+										   releaseInfo:NULL]
+							    autorelease];
 	}
 	else if(_textureTarget == GL_TEXTURE_RECTANGLE_ARB)
 	{
 		output = [[[FFGLImage alloc] initWithTextureRect:_rendererFBOTexture
-						      CGLContext:cgl_ctx 
-						      pixelsWide:_bounds.size.width
-						      pixelsHigh:_bounds.size.height
-						 releaseCallback:FFGLGPURendererTextureReleaseCallback
-						     releaseInfo:NULL] autorelease];
-		
+											  CGLContext:cgl_ctx 
+											  pixelsWide:_bounds.size.width
+											  pixelsHigh:_bounds.size.height
+												 flipped:NO
+										 releaseCallback:FFGLGPURendererTextureReleaseCallback
+											 releaseInfo:NULL] autorelease];
+						
 	}
 
     CGLUnlockContext(cgl_ctx);

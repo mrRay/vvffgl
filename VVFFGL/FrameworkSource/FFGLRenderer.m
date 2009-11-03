@@ -30,19 +30,28 @@
     return nil;
 }
 
-- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint forBounds:(NSRect)bounds
+- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint forBounds:(NSRect)bounds flipped:(BOOL)isFlipped
 {
-    if (self = [super init]) {
-        if ([self class] == [FFGLRenderer class]) {
+    if (self = [super init])
+	{
+        if ([self class] == [FFGLRenderer class])
+		{
             [self release];
-            if ([plugin mode] == FFGLPluginModeGPU) {
+            if ([plugin mode] == FFGLPluginModeGPU)
+			{
                 return [[FFGLGPURenderer alloc] initWithPlugin:plugin context:context pixelFormat:format outputHint:hint forBounds:bounds];
-            } else if ([plugin mode] == FFGLPluginModeCPU) {
+            }
+			else if ([plugin mode] == FFGLPluginModeCPU)
+			{
                 return [[FFGLCPURenderer alloc] initWithPlugin:plugin context:context pixelFormat:format outputHint:hint forBounds:bounds];
-            } else {
+            } 
+			else
+			{
                 return nil;
             }        
-        } else {
+        }
+		else
+		{
             if ((plugin == nil)
                 || (([plugin mode] == FFGLPluginModeCPU)
                     && ![[plugin supportedBufferPixelFormats] containsObject:format])
@@ -53,30 +62,41 @@
                 [NSException raise:@"FFGLRendererException" format:@"Invalid arguments in init"];
                 return nil;
             }
-            NSUInteger maxInputs = [plugin _maximumInputFrameCount];
+            
+			NSUInteger maxInputs = [plugin _maximumInputFrameCount];
             _imageInputValidity = malloc(sizeof(BOOL) * maxInputs);
             _needsToCheckValidity = YES;
-            if (_imageInputValidity == NULL) {
+            
+			if (_imageInputValidity == NULL) 
+			{
                 [self release];
                 return nil;
             }
+			
             NSUInteger i;
-            for (i = 0; i < maxInputs; i++) {
+            for (i = 0; i < maxInputs; i++)
+			{
                 _imageInputValidity[i] = NO;
             }
             _instance = [plugin _newInstanceWithBounds:bounds pixelFormat:format];
-            if (_instance == 0) {
+            
+			if (_instance == 0)
+			{
                 [self release];
                 return nil;
             }
             _plugin = [plugin retain];
-            if (context != NULL) {
+			
+            if (context != NULL)
+			{
                 _context = CGLRetainContext(context);                
             }
             _bounds = bounds;
             _pixelFormat = [format retain];
             _imageInputs = [[NSMutableDictionary alloc] initWithCapacity:4];
-            if (pthread_mutex_init(&_lock, NULL) != 0) {
+			
+            if (pthread_mutex_init(&_lock, NULL) != 0)
+			{
                 [self release];
                 return nil;
             }

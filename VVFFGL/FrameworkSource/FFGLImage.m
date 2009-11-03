@@ -289,6 +289,7 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
            texture2DInfo:(FFGLTextureInfo *)texture2DInfo texture2DReleaseCallback:(FFGLImageTextureReleaseCallback)callback2D texture2DReleaseInfo:(void *)releaseInfo2D
          textureRectInfo:(FFGLTextureInfo *)textureRectInfo textureRectReleaseCallback:(FFGLImageTextureReleaseCallback)callbackRect textureRectReleaseInfo:(void *)releaseInfoRect
                   buffer:(const void *)buffer pixelFormat:(NSString *)pixelFormat bufferReleaseCallback:(FFGLImageBufferReleaseCallback)callbackBuffer bufferReleaseInfo:(void *)releaseInfoBuffer
+				 flipped:(BOOL)isFlipped
 {
     if (self = [super init]) {
         if (imageWidth == 0 || imageHeight == 0) {
@@ -325,11 +326,12 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
             [self release];
             return nil;
         }
+		_flipped = isFlipped; 
     }
     return self;
 }
            
-- (id)initWithTexture2D:(GLuint)texture CGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo
+- (id)initWithTexture2D:(GLuint)texture CGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight flipped:(BOOL)isFlipped releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo
 {
     FFGLTextureInfo *info = malloc(sizeof(FFGLTextureInfo));
     if (info != NULL) {
@@ -342,10 +344,10 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
     return [self initWithCGLContext:context imagePixelsWide:imageWidth imagePixelsHigh:imageHeight
                       texture2DInfo:info texture2DReleaseCallback:callback texture2DReleaseInfo:userInfo
                     textureRectInfo:NULL textureRectReleaseCallback:NULL textureRectReleaseInfo:NULL
-                             buffer:NULL pixelFormat:nil bufferReleaseCallback:NULL bufferReleaseInfo:NULL];
+                             buffer:NULL pixelFormat:nil bufferReleaseCallback:NULL bufferReleaseInfo:NULL flipped:isFlipped];
 }
 
-- (id)initWithTextureRect:(GLuint)texture CGLContext:(CGLContextObj)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo
+- (id)initWithTextureRect:(GLuint)texture CGLContext:(CGLContextObj)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height flipped:(BOOL)isFlipped releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo
 {
     FFGLTextureInfo *info = malloc(sizeof(FFGLTextureInfo));
     if (info != NULL) {
@@ -358,10 +360,10 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
     return [self initWithCGLContext:context imagePixelsWide:width imagePixelsHigh:height
                       texture2DInfo:NULL texture2DReleaseCallback:NULL texture2DReleaseInfo:NULL
                     textureRectInfo:info textureRectReleaseCallback:callback textureRectReleaseInfo:userInfo
-                             buffer:NULL pixelFormat:nil bufferReleaseCallback:NULL bufferReleaseInfo:NULL];
+                             buffer:NULL pixelFormat:nil bufferReleaseCallback:NULL bufferReleaseInfo:NULL flipped:isFlipped];
 }
 
-- (id)initWithBuffer:(const void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo
+- (id)initWithBuffer:(const void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes flipped:(BOOL)isFlipped releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo
 {
     // Check the pixel-format is valid
     NSUInteger bpp = bytesPerPixelForPixelFormat(format);
@@ -393,10 +395,10 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
     return [self initWithCGLContext:context imagePixelsWide:width imagePixelsHigh:height
                       texture2DInfo:NULL texture2DReleaseCallback:NULL texture2DReleaseInfo:NULL
                     textureRectInfo:NULL textureRectReleaseCallback:NULL textureRectReleaseInfo:NULL
-                             buffer:buffer pixelFormat:format bufferReleaseCallback:callback bufferReleaseInfo:userInfo];
+                             buffer:buffer pixelFormat:format bufferReleaseCallback:callback bufferReleaseInfo:userInfo flipped:isFlipped];
 }
 
-- (id)initWithCopiedTextureRect:(GLuint)texture CGLContext:(CGLContextObj)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height
+- (id)initWithCopiedTextureRect:(GLuint)texture CGLContext:(CGLContextObj)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height flipped:(BOOL)isFlipped
 {
     FFGLTextureInfo source;
     source.texture = texture;
@@ -414,7 +416,7 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
     return [self initWithCGLContext:context imagePixelsWide:width imagePixelsHigh:height
 		      texture2DInfo:dest texture2DReleaseCallback:FFGLImageTextureRelease texture2DReleaseInfo:NULL
 		    textureRectInfo:NULL textureRectReleaseCallback:NULL textureRectReleaseInfo:NULL
-			     buffer:NULL pixelFormat:nil bufferReleaseCallback:NULL bufferReleaseInfo:NULL];
+							 buffer:NULL pixelFormat:nil bufferReleaseCallback:NULL bufferReleaseInfo:NULL flipped:isFlipped];
     
 }
 
