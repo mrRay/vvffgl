@@ -201,7 +201,7 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
         NSString *name = [attributes objectForKey:FFGLParameterAttributeNameKey];
 
 		if ([type isEqualToString:FFGLParameterTypeImage])
-		{			
+		{
 			[portAttributes setObject:name forKey:QCPortAttributeNameKey];
 			[self addInputPortWithType:QCPortTypeImage forKey:key
 						withAttributes:portAttributes];

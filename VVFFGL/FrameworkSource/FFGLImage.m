@@ -47,7 +47,7 @@ static NSUInteger bytesPerPixelForPixelFormat(NSString *format) {
  On return toTexture will be filled out with details of a new texture.
  You are responsible for deleting this texture (using glDeleteTextures).
  */
-static void swapTextureTargets(CGLContextObj cgl_ctx, const FFGLTextureInfo *fromTexture, FFGLTextureInfo *toTexture, GLenum fromTarget)
+static void swapTextureTargets(CGLContextObj cgl_ctx, const FFGLTextureInfo *fromTexture, FFGLTextureInfo *toTexture, GLenum fromTarget, BOOL isFlipped)
 {		
     CGLLockContext(cgl_ctx);
     
@@ -165,16 +165,32 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, const FFGLTextureInfo *fro
 		glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 		glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 		
-		glBegin(GL_QUADS);
-		glTexCoord2f(0, 0);
-		glVertex2f(0, 0);
-		glTexCoord2f(0, height);
-		glVertex2f(0, height);
-		glTexCoord2f(width, height);
-		glVertex2f(width, height);
-		glTexCoord2f(width, 0);
-		glVertex2f(width, 0);
-		glEnd();		
+		if(isFlipped)
+		{
+			glBegin(GL_QUADS);
+			glTexCoord2f(0, 0);
+			glVertex2f(0, height);
+			glTexCoord2f(0, height);
+			glVertex2f(0, 0);
+			glTexCoord2f(width, height);
+			glVertex2f(width, 0);
+			glTexCoord2f(width, 0);
+			glVertex2f(width, height);
+			glEnd();		
+		}
+		else
+		{
+			glBegin(GL_QUADS);
+			glTexCoord2f(0, 0);
+			glVertex2f(0, 0);
+			glTexCoord2f(0, height);
+			glVertex2f(0, height);
+			glTexCoord2f(width, height);
+			glVertex2f(width, height);
+			glTexCoord2f(width, 0);
+			glVertex2f(width, 0);
+			glEnd();					
+		}
 	}
 	else if(fromTarget == GL_TEXTURE_2D)
 	{
@@ -188,16 +204,33 @@ static void swapTextureTargets(CGLContextObj cgl_ctx, const FFGLTextureInfo *fro
 		GLfloat texWidth = (GLfloat) fromTexture->width / (GLfloat)fromTexture->hardwareWidth;
 		GLfloat texHeight = (GLfloat)fromTexture->height / (GLfloat)fromTexture->hardwareHeight;
 		
-		glBegin(GL_QUADS);
-		glTexCoord2f(0, 0);
-		glVertex2f(0, 0);
-		glTexCoord2f(0, texHeight); 
-		glVertex2f(0, height);
-		glTexCoord2f(texWidth, texHeight);
-		glVertex2f(width, height);
-		glTexCoord2f(texWidth, 0);
-		glVertex2f(width, 0);
-		glEnd();		
+		if(isFlipped)
+		{
+			glBegin(GL_QUADS);
+			glTexCoord2f(0, 0);
+			glVertex2f(0, texHeight);
+			glTexCoord2f(0, 0); 
+			glVertex2f(0, height);
+			glTexCoord2f(texWidth, texHeight);
+			glVertex2f(width, 0);
+			glTexCoord2f(texWidth, 0);
+			glVertex2f(width, texHeight);
+			glEnd();		
+			
+		}
+		else
+		{
+			glBegin(GL_QUADS);
+			glTexCoord2f(0, 0);
+			glVertex2f(0, 0);
+			glTexCoord2f(0, texHeight); 
+			glVertex2f(0, height);
+			glTexCoord2f(texWidth, texHeight);
+			glVertex2f(width, height);
+			glTexCoord2f(texWidth, 0);
+			glVertex2f(width, 0);
+			glEnd();		
+		}	
 	}
 	else
 	{
@@ -373,7 +406,7 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
     source.height = height;
     
     FFGLTextureInfo *dest = malloc(sizeof(FFGLTextureInfo));
-    swapTextureTargets(context, &source, dest, GL_TEXTURE_RECTANGLE_ARB);
+    swapTextureTargets(context, &source, dest, GL_TEXTURE_RECTANGLE_ARB, NO);
     if (dest->texture == 0) {
 	free(dest);
 	dest = NULL; // We couldn't make the new texture. This causes the following init to fail (returns nil)
@@ -431,7 +464,7 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
     } else {
         if (_hasTextureRect == YES) { // or would we rather check them in the other order?
             _texture2DInfo = malloc(sizeof(FFGLTextureInfo));
-            swapTextureTargets(_context, (FFGLTextureInfo *)_textureRectInfo, (FFGLTextureInfo *)_texture2DInfo, GL_TEXTURE_RECTANGLE_ARB);
+            swapTextureTargets(_context, (FFGLTextureInfo *)_textureRectInfo, (FFGLTextureInfo *)_texture2DInfo, GL_TEXTURE_RECTANGLE_ARB, NO);
             if (((FFGLTextureInfo *)_texture2DInfo)->texture == 0) {
                 free(_texture2DInfo);
             } else {
@@ -482,7 +515,7 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
     else if (_hasTexture2D)
     {
         _textureRectInfo = malloc(sizeof(FFGLTextureInfo));
-        swapTextureTargets(_context, (FFGLTextureInfo *)_texture2DInfo, (FFGLTextureInfo *)_textureRectInfo, GL_TEXTURE_2D);
+        swapTextureTargets(_context, (FFGLTextureInfo *)_texture2DInfo, (FFGLTextureInfo *)_textureRectInfo, GL_TEXTURE_2D, NO);
 		
         if (((FFGLTextureInfo *)_textureRectInfo)->texture == 0)
 	{
