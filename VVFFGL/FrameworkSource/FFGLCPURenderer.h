@@ -7,7 +7,6 @@
 
 #import <Cocoa/Cocoa.h>
 #import "FFGLRenderer.h"
-//#import "FFGLPluginInstances.h"
 #import "FFGLInternal.h"
 #import "FFGLPool.h"
 
@@ -16,8 +15,8 @@
     FFGLProcessFrameCopyStruct _fcStruct;
     BOOL _frameCopies;
     NSUInteger _bpp;
-	size_t _bpb;
-	FFGLPoolRef _pool;
+    size_t _bpb;
+    FFGLPoolRef _pool;
 }
 
 @end

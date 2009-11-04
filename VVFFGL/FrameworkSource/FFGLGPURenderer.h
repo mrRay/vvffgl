@@ -11,11 +11,8 @@
 #import <OpenGL/OpenGL.h>
 #import "FFGLPool.h"
 
-//typedef struct FFGLGPURendererTexInfo FFGLGPURendererTexInfo;
-
 @interface FFGLGPURenderer : FFGLRenderer {
 @private
-//	FFGLGPURendererTexInfo *_textureInfo;
     FFGLProcessGLStruct _frameStruct;
 
     GLenum _textureTarget;
@@ -23,7 +20,7 @@
     GLuint _rendererDepthBuffer;	// depth buffer
     NSUInteger _textureWidth;
     NSUInteger _textureHeight;
-	FFGLPoolRef _pool;
+    FFGLPoolRef _pool;
 	//	GLuint _rendererFBOTexture;	// COLOR_ATTACHMENT_0 for our above FBO
 }
 

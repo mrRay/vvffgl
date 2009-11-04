@@ -11,32 +11,31 @@
 
 #import <OpenGL/CGLMacro.h>
 
-//struct FFGLGPURendererTexInfo {
-//	CGLContextObj context;
-//	GLenum target;
-//}
+//#define FFGL_USE_TEXTURE_POOLS 1
+
+#if defined(FFGL_USE_TEXTURE_POOLS)
 
 // to pass to FFGLPool
 static const void *FFGLGPURendererTextureCreate(const void *userInfo)
 {
-	CGLContextObj cgl_ctx = (CGLContextObj)userInfo;
-	// This is only ever called (by FFGLPoolObjectCreate())
-	// in _implementationRender. GL context and state are
-	// already set up.
-	GLuint *texturePtr = malloc(sizeof(GLuint));
-	glGenTextures(1, texturePtr);
-	return texturePtr;
+    CGLContextObj cgl_ctx = (CGLContextObj)userInfo;
+    // This is only ever called (by FFGLPoolObjectCreate())
+    // in _implementationRender. GL context and state are
+    // already set up.
+    GLuint *texturePtr = malloc(sizeof(GLuint));
+    glGenTextures(1, texturePtr);
+    return texturePtr;
 }
 
 // to pass to FFGLPool
-static void FFGLGPURendererTextureRelease(const void *item, const void *userInfo)
+static void FFGLGPURendererTextureDelete(const void *item, const void *userInfo)
 {
-	CGLContextObj cgl_ctx = (CGLContextObj)userInfo;
-	GLuint *name = (GLuint*)item;
+    CGLContextObj cgl_ctx = (CGLContextObj)userInfo;
+    GLuint *name = (GLuint*)item;
     CGLLockContext(cgl_ctx);
     glDeleteTextures(1, name);
     CGLUnlockContext(cgl_ctx);
-	free(name);
+    free(name);
 }
 
 // to pass to FFGLImage
@@ -45,12 +44,17 @@ static void FFGLGPURendererPoolObjectRelease(GLuint name, CGLContextObj cgl_ctx,
 	FFGLPoolObjectRelease(object);
 }
 
-static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, void *object) // temporary while I play around with pools
+#else /* FFGL_USE_TEXTURE_POOLS is not defined */
+
+static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, void *object)
 {
     CGLLockContext(cgl_ctx);
     glDeleteTextures(1, &name);
     CGLUnlockContext(cgl_ctx);
 }
+
+#endif /* FFGL_USE_TEXTURE_POOLS */
+
 @implementation FFGLGPURenderer
 
 - (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint forBounds:(NSRect)bounds
@@ -69,32 +73,34 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
                 return nil;
             }
         } else
-		{
+	{
             _frameStruct.inputTextures = NULL;
         }
 		
-		// set up our texture properties
-		if (_outputHint == FFGLRendererHintTextureRect)
-		{
-			_textureTarget = GL_TEXTURE_RECTANGLE_ARB;
-			_textureWidth = bounds.size.width;
-			_textureHeight = bounds.size.height;
-		}
-		else
-		{
-			_textureTarget = GL_TEXTURE_2D;
-			_textureWidth = FFGLPOTDimension(bounds.size.width);
-			_textureHeight = FFGLPOTDimension(bounds.size.height);
-		}
-		
-		// set up our texture pool
-		FFGLPoolCallBacks callbacks = {FFGLGPURendererTextureCreate, FFGLGPURendererTextureRelease};
-		_pool = FFGLPoolCreate(&callbacks, 3, context);
-		if (_pool == NULL)
-		{
-			[self release];
-			return nil;
-		}
+	// set up our texture properties
+	if (_outputHint == FFGLRendererHintTextureRect)
+	{
+		_textureTarget = GL_TEXTURE_RECTANGLE_ARB;
+		_textureWidth = bounds.size.width;
+		_textureHeight = bounds.size.height;
+	}
+	else
+	{
+		_textureTarget = GL_TEXTURE_2D;
+		_textureWidth = FFGLPOTDimension(bounds.size.width);
+		_textureHeight = FFGLPOTDimension(bounds.size.height);
+	}
+
+#if defined(FFGL_USE_TEXTURE_POOLS)
+	// set up our texture pool
+	FFGLPoolCallBacks callbacks = {FFGLGPURendererTextureCreate, FFGLGPURendererTextureDelete};
+	_pool = FFGLPoolCreate(&callbacks, 3, context);
+	if (_pool == NULL)
+	{
+		[self release];
+		return nil;
+	}
+#endif
 	
 	CGLContextObj cgl_ctx = context;
         CGLLockContext(cgl_ctx);
@@ -170,7 +176,9 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
 
 - (void)nonGCCleanup
 {
-	FFGLPoolRelease(_pool);
+#if defined(FFGL_USE_TEXTURE_POOLS)
+    FFGLPoolRelease(_pool);
+#endif
     CGLContextObj cgl_ctx = _context;
     CGLLockContext(cgl_ctx);
     
@@ -232,10 +240,15 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
 	glEnable(_textureTarget);
 	
 	// create a new texture for this frame
-//	FFGLPoolObjectRef obj = FFGLPoolObjectCreate(_pool);
-//	GLuint rendererFBOTexture = *(GLuint *)FFGLPoolObjectGetData(obj);
+#if defined(FFGL_USE_TEXTURE_POOLS)
+
+	FFGLPoolObjectRef obj = FFGLPoolObjectCreate(_pool);
+	GLuint rendererFBOTexture = *(GLuint *)FFGLPoolObjectGetData(obj);
+#else
+    
 	GLuint rendererFBOTexture;
 	glGenTextures(1, &rendererFBOTexture);
+#endif
 	glBindTexture(_textureTarget, rendererFBOTexture);
 
 //	NSLog(@"new implementationRender texture: %u", _rendererFBOTexture);
@@ -315,33 +328,36 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
 //	NSLog(@"new FFGL image with texture: %u", _rendererFBOTexture);
 	
 	FFGLImage *output = nil;
-	
+#if defined(FFGL_USE_TEXTURE_POOLS)
+
+	FFGLImageTextureReleaseCallback callback = FFGLGPURendererPoolObjectRelease;
+	void *info = obj;
+#else
+    
+	FFGLImageTextureReleaseCallback callback = FFGLGPURendererTextureDelete;
+	void *info = NULL;
+#endif
 	if(_textureTarget == GL_TEXTURE_2D)
 	{
 		output = [[[FFGLImage alloc] initWithTexture2D:rendererFBOTexture
-											CGLContext:cgl_ctx
-									   imagePixelsWide:_bounds.size.width
-									   imagePixelsHigh:_bounds.size.height
-									 texturePixelsWide:_textureWidth
-									 texturePixelsHigh:_textureHeight
-											   flipped:NO
-									   releaseCallback:FFGLGPURendererTextureDelete
-										   releaseInfo:NULL] autorelease];
-//									   releaseCallback:FFGLGPURendererPoolObjectRelease
-//											releaseInfo:obj]
+						    CGLContext:cgl_ctx
+					       imagePixelsWide:_bounds.size.width
+					       imagePixelsHigh:_bounds.size.height
+					     texturePixelsWide:_textureWidth
+					     texturePixelsHigh:_textureHeight
+						       flipped:NO
+					       releaseCallback:callback
+						   releaseInfo:info] autorelease];
 	}
 	else if(_textureTarget == GL_TEXTURE_RECTANGLE_ARB)
 	{
 		output = [[[FFGLImage alloc] initWithTextureRect:rendererFBOTexture
-											  CGLContext:cgl_ctx 
-											  pixelsWide:_bounds.size.width
-											  pixelsHigh:_bounds.size.height
-												 flipped:NO
-										 releaseCallback:FFGLGPURendererTextureDelete
-											 releaseInfo:NULL] autorelease];
-//										 releaseCallback:FFGLGPURendererPoolObjectRelease
-//											releaseInfo:obj]
-						
+						      CGLContext:cgl_ctx 
+						      pixelsWide:_bounds.size.width
+						      pixelsHigh:_bounds.size.height
+							 flipped:NO
+						 releaseCallback:callback
+						     releaseInfo:info] autorelease];						
 	}
 
     CGLUnlockContext(cgl_ctx);
@@ -350,62 +366,5 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
      
     return result;
 }
-/*
- // ANTON - moved the following into init, hopefully without mucking things up. Lightens the code a bit
-// if we switch COLOR ATTACHMENT target types we switch widths, 
-// thus, we must rebuild our render buffer attachment too, 
-// but we only need to do this once, ever, per target type change.
-- (void) setRequestedFFGLImageType:(GLenum)target
-{
-	if(_requestedFFGLImageType != target && (_context != NULL))
-	{
-		// respect KVO
-		[self willChangeValueForKey:@"requestedFFGLImageType"];
 
-		_requestedFFGLImageType = target;
-		
-		CGLContextObj cgl_ctx = _context;
-		CGLLockContext(cgl_ctx);
-		
-		// state vars
-		GLint _previousFBO;	
-		GLint _previousRenderBuffer;	// probably dont need this each frame, only during init? hrm.
-		GLint _previousReadFBO;	
-		GLint _previousDrawFBO;
-		
-		glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &_previousFBO);
-		glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &_previousRenderBuffer);
-		glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &_previousReadFBO);
-		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &_previousDrawFBO);
-		
-		// delete our current rendererDepthBuffer
-		glDeleteRenderbuffersEXT(1, &_rendererDepthBuffer);
-		
-		// new
-		glGenRenderbuffersEXT(1, &_rendererDepthBuffer);
-		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _rendererDepthBuffer);
-		
-		if(_requestedFFGLImageType == GL_TEXTURE_2D)
-			glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, _textureWidth, _textureHeight);		
-		if(_requestedFFGLImageType == GL_TEXTURE_RECTANGLE_ARB)
-			glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, _bounds.size.width, _bounds.size.height);		
-		
-		// bind our FBO
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rendererFBO);
-		
-		// set our new renderbuffer depth attachment
-		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, _rendererDepthBuffer);
-		
-		// return FBO state
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
-		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _previousRenderBuffer);
-		glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, _previousReadFBO);
-		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);		
-		
-		CGLUnlockContext(cgl_ctx);
-		
-		[self didChangeValueForKey:@"requestedFFGLImageType"];
-	}
-}
-*/
 @end

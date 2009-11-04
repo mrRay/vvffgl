@@ -6,9 +6,12 @@
 //
 
 #import "FFGLCPURenderer.h"
-//#import "FFGLRendererSubclassing.h"
 #import "FFGLImage.h"
 #import <QuartzCore/QuartzCore.h>
+
+#define FFGL_USE_BUFFER_POOLS 1
+
+#if defined(FFGL_USE_BUFFER_POOLS)
 
 static const void *FFGLCPURendererBufferCreate(const void *userInfo)
 {
@@ -22,6 +25,15 @@ static void FFGLCPURendererBufferDestroy(const void *baseAddress, const void* co
 static void FFGLCPURendererPoolObjectRelease(const void *baseAddress, void *context) {
 	FFGLPoolObjectRelease((FFGLPoolObjectRef)context);
 }
+
+#else /* FFGL_USE_BUFFER_POOLS not defined */
+
+static void FFGLCPURendererFree(const void *baseAddress, void *context)
+{
+    free((void *)baseAddress);
+}
+
+#endif /* FFGL_USE_BUFFER_POOLS */
 
 @implementation FFGLCPURenderer
 
@@ -38,6 +50,7 @@ static void FFGLCPURendererPoolObjectRelease(const void *baseAddress, void *cont
                 return nil;
             }
         }
+	_frameCopies = [_plugin _prefersFrameCopy];
         _fcStruct.inputFrameCount = numBuffers;
         _fcStruct.inputFrames = _buffers;
 #if __BIG_ENDIAN__
@@ -52,9 +65,11 @@ static void FFGLCPURendererPoolObjectRelease(const void *baseAddress, void *cont
         else { // This should never happen, as it is checked in FFGLRenderer at init.
             [NSException raise:@"FFGLRendererException" format:@"Unexpected pixel format."];
         }
-		FFGLPoolCallBacks callbacks = {FFGLCPURendererBufferCreate, FFGLCPURendererBufferDestroy};
-		_bpb = _bounds.size.width * _bpp * _bounds.size.height;
-		_pool = FFGLPoolCreate(&callbacks, 1, &_bpb);
+	_bpb = _bounds.size.width * _bpp * _bounds.size.height;
+#if defined(FFGL_USE_BUFFER_POOLS)
+	FFGLPoolCallBacks callbacks = {FFGLCPURendererBufferCreate, FFGLCPURendererBufferDestroy};
+	_pool = FFGLPoolCreate(&callbacks, 3, &_bpb);
+#endif /* FFGL_USE_BUFFER_POOLS */
     }
     return self;
 }
@@ -63,8 +78,9 @@ static void FFGLCPURendererPoolObjectRelease(const void *baseAddress, void *cont
 {
     if (_buffers != NULL)
         free(_buffers);
-	if (_pool != NULL)
-		FFGLPoolRelease(_pool);
+#if defined(FFGL_USE_BUFFER_POOLS)
+    FFGLPoolRelease(_pool);
+#endif
 }
 
 - (void)finalize
@@ -101,17 +117,20 @@ static void FFGLCPURendererPoolObjectRelease(const void *baseAddress, void *cont
 - (BOOL)_implementationRender
 {
     BOOL result;
-	FFGLPoolObjectRef obj = FFGLPoolObjectCreate(_pool);
+#if defined(FFGL_USE_BUFFER_POOLS)
+    FFGLPoolObjectRef obj = FFGLPoolObjectCreate(_pool);
     _fcStruct.outputFrame = (void *)FFGLPoolObjectGetData(obj);
-//	_fcStruct.outputFrame = FFGLCPURendererBufferCreate(&_bpb);
+#else
+    _fcStruct.outputFrame = valloc(_bpb);
+#endif
     if (_fcStruct.outputFrame == NULL) {
         return NO;
     }
-    if ([_plugin _prefersFrameCopy]) {
+    if (_frameCopies) {
         result = [_plugin _processFrameCopy:&_fcStruct forInstance:_instance];
     } else {
         if (_fcStruct.inputFrameCount > 0) { // ie we are not a source
-            memcpy(_fcStruct.outputFrame, _buffers[0], _bounds.size.width * _bpp * _bounds.size.height);
+            memcpy(_fcStruct.outputFrame, _buffers[0], _bpb);
         }
         result = [_plugin _processFrameInPlace:_fcStruct.outputFrame forInstance:_instance];
     }
@@ -123,15 +142,22 @@ static void FFGLCPURendererPoolObjectRelease(const void *baseAddress, void *cont
                                          pixelsWide:_bounds.size.width
                                          pixelsHigh:_bounds.size.height
                                         bytesPerRow:_bounds.size.width * _bpp
-											flipped:NO
+					    flipped:NO
+#if defined(FFGL_USE_BUFFER_POOLS)
                                     releaseCallback:FFGLCPURendererPoolObjectRelease
-//									releaseCallback:FFGLCPURendererBufferRelease
-                                        releaseInfo:obj]autorelease];
-;
+                                        releaseInfo:obj] autorelease];
     } else {
-        free(_fcStruct.outputFrame);
+        FFGLPoolObjectRelease(obj);
         output = nil;
     }
+#else
+				    releaseCallback:FFGLCPURendererFree
+					releaseInfo:NULL] autorelease];
+    } else {
+	free(_fcStruct.outputFrame);
+	output = nil;
+    }
+#endif
     [self setOutputImage:output];
     return result;
 }
