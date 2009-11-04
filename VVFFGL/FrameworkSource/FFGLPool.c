@@ -86,6 +86,7 @@ void FFGLPoolRelease(FFGLPoolRef pool)
 					_FFGLPoolObjectDispose(pool->members[i]);
 			}
 			free(pool->members);
+			free(pool->callbacks);
 			free(pool);
 		}
 	}
