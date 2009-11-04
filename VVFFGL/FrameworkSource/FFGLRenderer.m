@@ -129,6 +129,7 @@
     [_plugin release];
     [_pixelFormat release];
     [_imageInputs release];
+	[_output release];
     [self releaseResources];
     [super dealloc];
 }
