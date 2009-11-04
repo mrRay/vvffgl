@@ -9,12 +9,15 @@
 #import "FFGLRenderer.h"
 //#import "FFGLPluginInstances.h"
 #import "FFGLInternal.h"
+#import "FFGLPool.h"
 
 @interface FFGLCPURenderer : FFGLRenderer {
     void **_buffers;
     FFGLProcessFrameCopyStruct _fcStruct;
     BOOL _frameCopies;
     NSUInteger _bpp;
+	size_t _bpb;
+	FFGLPoolRef _pool;
 }
 
 @end

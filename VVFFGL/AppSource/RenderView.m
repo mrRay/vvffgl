@@ -110,7 +110,7 @@
 	
 	// render everything?
     FFGLImage *image = [_chain output];
-    
+    [image retain];
 	if ([image lockTextureRectRepresentation])
 	{
         // draw it
@@ -204,7 +204,7 @@
      //   glClear(GL_COLOR_BUFFER_BIT);
     }
  
-	
+	[image release];
 	CGLFlushDrawable(cgl_ctx);	
 	CGLUnlockContext(cgl_ctx);
 }

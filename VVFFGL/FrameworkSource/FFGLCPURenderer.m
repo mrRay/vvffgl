@@ -10,9 +10,17 @@
 #import "FFGLImage.h"
 #import <QuartzCore/QuartzCore.h>
 
-static void FFGLCPURendererBufferRelease(const void *baseAddress, void* context) {
-    // for now, just free the buffer, could make them reusable, or use a CVPixelBufferPool
+static const void *FFGLCPURendererBufferCreate(const void *userInfo)
+{
+	return valloc(*(size_t *)userInfo);
+}
+
+static void FFGLCPURendererBufferDestroy(const void *baseAddress, const void* context) {
     free((void *)baseAddress);
+}
+
+static void FFGLCPURendererPoolObjectRelease(const void *baseAddress, void *context) {
+	FFGLPoolObjectRelease((FFGLPoolObjectRef)context);
 }
 
 @implementation FFGLCPURenderer
@@ -44,14 +52,30 @@ static void FFGLCPURendererBufferRelease(const void *baseAddress, void* context)
         else { // This should never happen, as it is checked in FFGLRenderer at init.
             [NSException raise:@"FFGLRendererException" format:@"Unexpected pixel format."];
         }
+		FFGLPoolCallBacks callbacks = {FFGLCPURendererBufferCreate, FFGLCPURendererBufferDestroy};
+		_bpb = _bounds.size.width * _bpp * _bounds.size.height;
+		_pool = FFGLPoolCreate(&callbacks, 1, &_bpb);
     }
     return self;
 }
 
-- (void)dealloc
+- (void)releaseNonGCResources
 {
     if (_buffers != NULL)
         free(_buffers);
+	if (_pool != NULL)
+		FFGLPoolRelease(_pool);
+}
+
+- (void)finalize
+{
+	[self releaseNonGCResources];
+	[super finalize];
+}
+
+- (void)dealloc
+{
+	[self releaseNonGCResources];
     [super dealloc];
 }
 
@@ -77,7 +101,9 @@ static void FFGLCPURendererBufferRelease(const void *baseAddress, void* context)
 - (BOOL)_implementationRender
 {
     BOOL result;
-    _fcStruct.outputFrame = valloc(_bounds.size.width * _bpp * _bounds.size.height);
+	FFGLPoolObjectRef obj = FFGLPoolObjectCreate(_pool);
+    _fcStruct.outputFrame = (void *)FFGLPoolObjectGetData(obj);
+//	_fcStruct.outputFrame = FFGLCPURendererBufferCreate(&_bpb);
     if (_fcStruct.outputFrame == NULL) {
         return NO;
     }
@@ -98,8 +124,9 @@ static void FFGLCPURendererBufferRelease(const void *baseAddress, void* context)
                                          pixelsHigh:_bounds.size.height
                                         bytesPerRow:_bounds.size.width * _bpp
 											flipped:NO
-                                    releaseCallback:FFGLCPURendererBufferRelease
-                                        releaseInfo:NULL]autorelease];
+                                    releaseCallback:FFGLCPURendererPoolObjectRelease
+//									releaseCallback:FFGLCPURendererBufferRelease
+                                        releaseInfo:obj]autorelease];
 ;
     } else {
         free(_fcStruct.outputFrame);

@@ -11,13 +11,46 @@
 
 #import <OpenGL/CGLMacro.h>
 
-static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl_ctx, void *context) {
-//  NSLog(@"delete texture %u in renderer callback (created)", name);
+//struct FFGLGPURendererTexInfo {
+//	CGLContextObj context;
+//	GLenum target;
+//}
+
+// to pass to FFGLPool
+static const void *FFGLGPURendererTextureCreate(const void *userInfo)
+{
+	CGLContextObj cgl_ctx = (CGLContextObj)userInfo;
+	// This is only ever called (by FFGLPoolObjectCreate())
+	// in _implementationRender. GL context and state are
+	// already set up.
+	GLuint *texturePtr = malloc(sizeof(GLuint));
+	glGenTextures(1, texturePtr);
+	return texturePtr;
+}
+
+// to pass to FFGLPool
+static void FFGLGPURendererTextureRelease(const void *item, const void *userInfo)
+{
+	CGLContextObj cgl_ctx = (CGLContextObj)userInfo;
+	GLuint *name = (GLuint*)item;
+    CGLLockContext(cgl_ctx);
+    glDeleteTextures(1, name);
+    CGLUnlockContext(cgl_ctx);
+	free(name);
+}
+
+// to pass to FFGLImage
+static void FFGLGPURendererPoolObjectRelease(GLuint name, CGLContextObj cgl_ctx, void *object)
+{
+	FFGLPoolObjectRelease(object);
+}
+
+static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, void *object) // temporary while I play around with pools
+{
     CGLLockContext(cgl_ctx);
     glDeleteTextures(1, &name);
     CGLUnlockContext(cgl_ctx);
 }
-
 @implementation FFGLGPURenderer
 
 - (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint forBounds:(NSRect)bounds
@@ -27,29 +60,41 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
         // set up our _frameStruct
         NSUInteger numInputs = [plugin _maximumInputFrameCount];
         _frameStruct.inputTextureCount = numInputs;
-        if (numInputs > 0) {
+        if (numInputs > 0)
+		{
             _frameStruct.inputTextures = malloc(sizeof(void *) * numInputs);
-            if (_frameStruct.inputTextures == NULL) {
+            if (_frameStruct.inputTextures == NULL)
+			{
                 [self release];
                 return nil;
             }
-        } else {
+        } else
+		{
             _frameStruct.inputTextures = NULL;
         }
-
-	// set up our texture properties
-	if (_outputHint == FFGLRendererHintTextureRect)
-	{
-	    _textureTarget = GL_TEXTURE_RECTANGLE_ARB;
-	    _textureWidth = bounds.size.width;
-	    _textureHeight = bounds.size.height;
-	}
-	else
-	{
-	    _textureTarget = GL_TEXTURE_2D;
-	    _textureWidth = FFGLPOTDimension(bounds.size.width);
-	    _textureHeight = FFGLPOTDimension(bounds.size.height);
-	}
+		
+		// set up our texture properties
+		if (_outputHint == FFGLRendererHintTextureRect)
+		{
+			_textureTarget = GL_TEXTURE_RECTANGLE_ARB;
+			_textureWidth = bounds.size.width;
+			_textureHeight = bounds.size.height;
+		}
+		else
+		{
+			_textureTarget = GL_TEXTURE_2D;
+			_textureWidth = FFGLPOTDimension(bounds.size.width);
+			_textureHeight = FFGLPOTDimension(bounds.size.height);
+		}
+		
+		// set up our texture pool
+		FFGLPoolCallBacks callbacks = {FFGLGPURendererTextureCreate, FFGLGPURendererTextureRelease};
+		_pool = FFGLPoolCreate(&callbacks, 3, context);
+		if (_pool == NULL)
+		{
+			[self release];
+			return nil;
+		}
 	
 	CGLContextObj cgl_ctx = context;
         CGLLockContext(cgl_ctx);
@@ -66,11 +111,11 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &_previousDrawFBO);
 	
 	// our temporary texture attachment
-        GLuint rendererFBOTexture;
-        glEnable(_textureTarget);
-        glGenTextures(1, &rendererFBOTexture);	
-        glBindTexture(_textureTarget, rendererFBOTexture);
-        glTexImage2D(_textureTarget, 0, GL_RGBA8, _textureWidth, _textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	GLuint rendererFBOTexture;
+	glEnable(_textureTarget);
+	glGenTextures(1, &rendererFBOTexture);	
+	glBindTexture(_textureTarget, rendererFBOTexture);
+	glTexImage2D(_textureTarget, 0, GL_RGBA8, _textureWidth, _textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	
 	// new
 	glGenRenderbuffersEXT(1, &_rendererDepthBuffer);
@@ -125,6 +170,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 
 - (void)nonGCCleanup
 {
+	FFGLPoolRelease(_pool);
     CGLContextObj cgl_ctx = _context;
     CGLLockContext(cgl_ctx);
     
@@ -134,7 +180,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
     CGLUnlockContext(cgl_ctx);
     if (_frameStruct.inputTextures != NULL) {
         free(_frameStruct.inputTextures);
-    }    
+    }
 }
 
 - (void)dealloc
@@ -169,27 +215,28 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	// - vade: we will be using our _renderFBO texture associated with our FFGLGPURenderer
     
 	// state vars
-	GLint _previousFBO;	
-	GLint _previousRenderBuffer;	// probably dont need this each frame, only during init? hrm.
-	GLint _previousReadFBO;	
-	GLint _previousDrawFBO;
+	GLint previousFBO;	
+	GLint previousRenderBuffer;	// probably dont need this each frame, only during init? hrm.
+	GLint previousReadFBO;	
+	GLint previousDrawFBO;
 	
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &_previousFBO);
-	glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &_previousRenderBuffer);
-	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &_previousReadFBO);
-	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &_previousDrawFBO);
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &previousFBO);
+	glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &previousRenderBuffer);
+	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &previousReadFBO);
+	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &previousDrawFBO);
 	
 	// save our current GL state - 
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
-	
-	// create a new texture for this frame
-	GLuint _rendererFBOTexture;
-	
+		
 	// this texture is going to depend on whether or not we have a 2D or RECT texture.
 	glEnable(_textureTarget);
 	
-	glGenTextures(1, &_rendererFBOTexture);	
-	glBindTexture(_textureTarget, _rendererFBOTexture);
+	// create a new texture for this frame
+//	FFGLPoolObjectRef obj = FFGLPoolObjectCreate(_pool);
+//	GLuint rendererFBOTexture = *(GLuint *)FFGLPoolObjectGetData(obj);
+	GLuint rendererFBOTexture;
+	glGenTextures(1, &rendererFBOTexture);
+	glBindTexture(_textureTarget, rendererFBOTexture);
 
 //	NSLog(@"new implementationRender texture: %u", _rendererFBOTexture);
 	glTexImage2D(_textureTarget, 0, GL_RGBA8, _textureWidth, _textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -205,7 +252,7 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rendererFBO);
 	
 	// attach our new texture
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, _textureTarget, _rendererFBOTexture, 0);
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, _textureTarget, rendererFBOTexture, 0);
 	
 	// this was our fix. Disable texturing and now FFGL renders. 
 	glBindTexture(_textureTarget, 0);
@@ -259,10 +306,10 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	glFlushRenderAPPLE();
 
 	// return FBO state
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
-	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _previousRenderBuffer);
-	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, _previousReadFBO);
-	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previousFBO);
+	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, previousRenderBuffer);
+	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, previousReadFBO);
+	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, previousDrawFBO);
 		
 	
 //	NSLog(@"new FFGL image with texture: %u", _rendererFBOTexture);
@@ -271,26 +318,29 @@ static void FFGLGPURendererTextureReleaseCallback(GLuint name, CGLContextObj cgl
 	
 	if(_textureTarget == GL_TEXTURE_2D)
 	{
-		output = [[[FFGLImage alloc] initWithTexture2D:_rendererFBOTexture
+		output = [[[FFGLImage alloc] initWithTexture2D:rendererFBOTexture
 											CGLContext:cgl_ctx
 									   imagePixelsWide:_bounds.size.width
 									   imagePixelsHigh:_bounds.size.height
 									 texturePixelsWide:_textureWidth
 									 texturePixelsHigh:_textureHeight
 											   flipped:NO
-									   releaseCallback:FFGLGPURendererTextureReleaseCallback
-										   releaseInfo:NULL]
-							    autorelease];
+									   releaseCallback:FFGLGPURendererTextureDelete
+										   releaseInfo:NULL] autorelease];
+//									   releaseCallback:FFGLGPURendererPoolObjectRelease
+//											releaseInfo:obj]
 	}
 	else if(_textureTarget == GL_TEXTURE_RECTANGLE_ARB)
 	{
-		output = [[[FFGLImage alloc] initWithTextureRect:_rendererFBOTexture
+		output = [[[FFGLImage alloc] initWithTextureRect:rendererFBOTexture
 											  CGLContext:cgl_ctx 
 											  pixelsWide:_bounds.size.width
 											  pixelsHigh:_bounds.size.height
 												 flipped:NO
-										 releaseCallback:FFGLGPURendererTextureReleaseCallback
+										 releaseCallback:FFGLGPURendererTextureDelete
 											 releaseInfo:NULL] autorelease];
+//										 releaseCallback:FFGLGPURendererPoolObjectRelease
+//											releaseInfo:obj]
 						
 	}
 
