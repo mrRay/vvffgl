@@ -7,11 +7,11 @@
  *
  */
 
-/*
- 
- NOT THREAD-SAFE (YET)
- 
- */
+// FFGLPools and FFGLPoolObjects are thread-safe.
+// Your create/destroy callbacks must themselves be thread-safe
+// if you wish to maintain thread-safety (the destroy callback will
+// never be called for an object until its create callback has
+// returned).
 
 typedef struct FFGLPoolCallBacks {
     const void *(*create)(const void *);
