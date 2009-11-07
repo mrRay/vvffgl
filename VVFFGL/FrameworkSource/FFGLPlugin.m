@@ -524,27 +524,24 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
     }
 }
 
-- (void)_setValue:(id)value forNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance
+- (void)_setValue:(NSString *)value forStringParameterAtIndex:(NSUInteger)index ofInstance:(FFGLPluginInstance)instance
 {
-    NSDictionary *pattributes = [self attributesForParameterWithKey:key];
-    if (pattributes == nil) {
-        [NSException raise:@"FFGLPluginException" format:@"No such key: %@", key];
-        return;        
+    if (value == nil) {
+        value = @"";
     }
-    NSUInteger pindex = [[pattributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
     FFSetParameterStruct param;
-    param.ParameterNumber = pindex;
-    if ([[pattributes objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeString]) {
-        if (value == nil) {
-            value = @"";
-        }
-        param.NewParameterValue = (FFMixed)(void *)[(NSString *)value cStringUsingEncoding:NSASCIIStringEncoding];
-    } else {
-//        *((float *)(unsigned)&param.NewParameterValue) = [(NSNumber *)value floatValue]; // ? Check this...
+    param.ParameterNumber = index;
+    param.NewParameterValue = (FFMixed)(void *)[(NSString *)value cStringUsingEncoding:NSASCIIStringEncoding];
+    _pluginData->main(FF_SETPARAMETER, (FFMixed)(void *)&param, instance);
+}
+
+- (void)_setValue:(NSNumber *)value forNumberParameterAtIndex:(NSUInteger)index ofInstance:(FFGLPluginInstance)instance
+{
+    FFSetParameterStruct param;
+    param.ParameterNumber = index;
 	float f = [(NSNumber *)value floatValue];
 	param.NewParameterValue = (FFMixed)(uint32_t)*((uint32_t *)&f);
-    }
-    _pluginData->main(FF_SETPARAMETER, (FFMixed)(void *)&param, instance);
+    _pluginData->main(FF_SETPARAMETER, (FFMixed)(void *)&param, instance);    
 }
 
 - (void)_setTime:(NSTimeInterval)time ofInstance:(FFGLPluginInstance)instance

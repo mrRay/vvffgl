@@ -208,10 +208,12 @@
         [NSException raise:@"FFGLRendererException" format:@"No such key: %@"];
         return;
     }
+    NSUInteger index = [[attributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
+    NSString *type = [attributes objectForKey:FFGLParameterAttributeTypeKey];
     pthread_mutex_lock(&_lock);
-    if ([[attributes objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
+    if ([type isEqualToString:FFGLParameterTypeImage])
+    {
         // check our subclass can use the image
-        NSUInteger index = [[attributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
         if (value != nil) {
             _imageInputValidity[index] = [self _implementationSetImage:value forInputAtIndex:index];
             [_imageInputs setObject:value forKey:key];
@@ -220,8 +222,14 @@
             [_imageInputs removeObjectForKey:key];
         }
         _needsToCheckValidity = YES;
-    } else {
-        [_plugin _setValue:value forNonImageParameterKey:key ofInstance:_instance];
+    }
+    else if ([type isEqualToString:FFGLParameterTypeString])
+    {
+        [_plugin _setValue:value forStringParameterAtIndex:index ofInstance:_instance];
+    }
+    else
+    {
+        [_plugin _setValue:value forNumberParameterAtIndex:index ofInstance:_instance];
     }
     pthread_mutex_unlock(&_lock);
 }
@@ -258,17 +266,20 @@
     if (_needsToCheckValidity) {
         NSUInteger min = [_plugin _minimumInputFrameCount];
         NSUInteger max = [_plugin _maximumInputFrameCount];
+        NSUInteger got = 0; // fix in progress here, more to come...
         for (i = 0; i < min; i++) {
             if (_imageInputValidity[i] == NO) {
                 ready = NO;
                 break;
             }
+            got++;
         }
         for (; i < max; i++) {
             if ((_imageInputValidity[i] == NO) && [_plugin _imageInputAtIndex:i willBeUsedByInstance:_instance]) {
                 ready = NO;
                 break;
             }
+            got++;
         }
         if (ready == YES) {
             _needsToCheckValidity = NO;
