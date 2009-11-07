@@ -42,7 +42,7 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
     if (self = [super initWithPlugin:plugin context:context pixelFormat:format outputHint:hint forBounds:bounds]) {
         NSUInteger numBuffers = [plugin _maximumInputFrameCount];
         if (numBuffers > 0)
-	{
+        {
             _buffers = malloc(sizeof(void *) * numBuffers);
             if (_buffers == NULL)
 	    {
@@ -50,25 +50,25 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
                 return nil;
             }
         }
-	_frameCopies = [_plugin _prefersFrameCopy];
+        _frameCopies = [_plugin _prefersFrameCopy];
         _fcStruct.inputFrameCount = numBuffers;
         _fcStruct.inputFrames = _buffers;
 #if __BIG_ENDIAN__
-        if ([format isEqualToString:FFGLPixelFormatRGB565]) { _bpp = 2; }
-        else if ([format isEqualToString:FFGLPixelFormatRGB888]) { _bpp = 3; }
-        else if ([format isEqualToString:FFGLPixelFormatARGB8888]) { _bpp = 4; }
+        if ([format isEqualToString:FFGLPixelFormatRGB565]) { _bytesPerRow = 2 * _bounds.size.width; }
+        else if ([format isEqualToString:FFGLPixelFormatRGB888]) { _bytesPerRow = 3 * _bounds.size.width; }
+        else if ([format isEqualToString:FFGLPixelFormatARGB8888]) { _bytesPerRow = 4 * _bounds.size.width; }
 #else
-        if ([format isEqualToString:FFGLPixelFormatBGR565]) { _bpp = 2; }
-        else if ([format isEqualToString:FFGLPixelFormatBGR888]) { _bpp = 3; }
-        else if ([format isEqualToString:FFGLPixelFormatBGRA8888]) { _bpp = 4; }
+        if ([format isEqualToString:FFGLPixelFormatBGR565]) { _bytesPerRow = 2 * _bounds.size.width; }
+        else if ([format isEqualToString:FFGLPixelFormatBGR888]) { _bytesPerRow = 3 * _bounds.size.width; }
+        else if ([format isEqualToString:FFGLPixelFormatBGRA8888]) { _bytesPerRow = 4 * _bounds.size.width; }
 #endif
         else { // This should never happen, as it is checked in FFGLRenderer at init.
             [NSException raise:@"FFGLRendererException" format:@"Unexpected pixel format."];
         }
-	_bpb = _bounds.size.width * _bpp * _bounds.size.height;
+        _bytesPerBuffer = _bytesPerRow * _bounds.size.height;
 #if defined(FFGL_USE_BUFFER_POOLS)
-	FFGLPoolCallBacks callbacks = {FFGLCPURendererBufferCreate, FFGLCPURendererBufferDestroy};
-	_pool = FFGLPoolCreate(&callbacks, 3, &_bpb);
+        FFGLPoolCallBacks callbacks = {FFGLCPURendererBufferCreate, FFGLCPURendererBufferDestroy};
+        _pool = FFGLPoolCreate(&callbacks, 3, &_bytesPerBuffer);
 #endif /* FFGL_USE_BUFFER_POOLS */
     }
     return self;
@@ -130,7 +130,7 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
         result = [_plugin _processFrameCopy:&_fcStruct forInstance:_instance];
     } else {
         if (_fcStruct.inputFrameCount > 0) { // ie we are not a source
-            memcpy(_fcStruct.outputFrame, _buffers[0], _bpb);
+            memcpy(_fcStruct.outputFrame, _buffers[0], _bytesPerBuffer);
         }
         result = [_plugin _processFrameInPlace:_fcStruct.outputFrame forInstance:_instance];
     }
@@ -141,7 +141,7 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
                                         pixelFormat:_pixelFormat
                                          pixelsWide:_bounds.size.width
                                          pixelsHigh:_bounds.size.height
-                                        bytesPerRow:_bounds.size.width * _bpp
+                                        bytesPerRow:_bytesPerRow
 					    flipped:NO
 #if defined(FFGL_USE_BUFFER_POOLS)
                                     releaseCallback:FFGLCPURendererPoolObjectRelease
@@ -154,8 +154,8 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
 				    releaseCallback:FFGLCPURendererFree
 					releaseInfo:NULL] autorelease];
     } else {
-	free(_fcStruct.outputFrame);
-	output = nil;
+        free(_fcStruct.outputFrame);
+        output = nil;
     }
 #endif
     [self setOutputImage:output];

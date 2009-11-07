@@ -14,8 +14,8 @@
     void **_buffers;
     FFGLProcessFrameCopyStruct _fcStruct;
     BOOL _frameCopies;
-    NSUInteger _bpp;
-    size_t _bpb;
+    NSUInteger _bytesPerRow;
+    size_t _bytesPerBuffer;
     FFGLPoolRef _pool;
 }
 
