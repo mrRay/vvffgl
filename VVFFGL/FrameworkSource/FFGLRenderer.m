@@ -11,6 +11,12 @@
 #import "FFGLCPURenderer.h"
 #import "FFGLInternal.h"
 
+enum FFGLRendererReadyState {
+    FFGLRendererNeedsCheck,
+    FFGLRendererNotReady,
+    FFGLRendererReady
+};
+
 @interface FFGLRendererParametersBindable : NSObject
 {
     FFGLRenderer *_renderer;
@@ -65,7 +71,7 @@
             
 			NSUInteger maxInputs = [plugin _maximumInputFrameCount];
             _imageInputValidity = malloc(sizeof(BOOL) * maxInputs);
-            _needsToCheckValidity = YES;
+            _readyState = FFGLRendererNeedsCheck;
             
 			if (_imageInputValidity == NULL) 
 			{
@@ -101,7 +107,7 @@
                 return nil;
             }
 			_outputHint = hint;
-			_pLock = OS_SPINLOCK_INIT;
+			_paramsBindableCreationLock = OS_SPINLOCK_INIT;
         }
     }	
     return self;
@@ -214,34 +220,41 @@
     if ([type isEqualToString:FFGLParameterTypeImage])
     {
         // check our subclass can use the image
+        BOOL validity;
         if (value != nil) {
-            _imageInputValidity[index] = [self _implementationSetImage:value forInputAtIndex:index];
+            validity = [self _implementationSetImage:value forInputAtIndex:index];
             [_imageInputs setObject:value forKey:key];
         } else {
-            _imageInputValidity[index] = NO;
+            validity = NO;
             [_imageInputs removeObjectForKey:key];
         }
-        _needsToCheckValidity = YES;
+        if (_imageInputValidity[index] != validity)
+        {
+            _imageInputValidity[index] = validity;
+            _readyState = FFGLRendererNeedsCheck;
+        }
     }
     else if ([type isEqualToString:FFGLParameterTypeString])
     {
         [_plugin _setValue:value forStringParameterAtIndex:index ofInstance:_instance];
+        _readyState = FFGLRendererNeedsCheck;
     }
     else
     {
         [_plugin _setValue:value forNumberParameterAtIndex:index ofInstance:_instance];
+        _readyState = FFGLRendererNeedsCheck;
     }
     pthread_mutex_unlock(&_lock);
 }
 
 - (id)parameters
 {
-    OSSpinLockLock(&_pLock);
+    OSSpinLockLock(&_paramsBindableCreationLock);
     if (_params == nil)
     {
-	_params = [[FFGLRendererParametersBindable alloc] initWithRenderer:self]; // released in dealloc
+        _params = [[FFGLRendererParametersBindable alloc] initWithRenderer:self]; // released in dealloc
     }
-    OSSpinLockUnlock(&_pLock);
+    OSSpinLockUnlock(&_paramsBindableCreationLock);
     return _params;
 }
 
@@ -260,33 +273,32 @@
 
 - (BOOL)renderAtTime:(NSTimeInterval)time
 {
+    BOOL success;
     pthread_mutex_lock(&_lock);
-    BOOL ready = YES;
-    NSUInteger i;
-    if (_needsToCheckValidity) {
+    if (_readyState == FFGLRendererNeedsCheck)
+    {
+        NSUInteger i;
         NSUInteger min = [_plugin _minimumInputFrameCount];
         NSUInteger max = [_plugin _maximumInputFrameCount];
-        NSUInteger got = 0; // fix in progress here, more to come...
+        NSUInteger got = 0;
+        _readyState = FFGLRendererReady;
         for (i = 0; i < min; i++) {
             if (_imageInputValidity[i] == NO) {
-                ready = NO;
+                _readyState = FFGLRendererNotReady;
                 break;
             }
             got++;
         }
         for (; i < max; i++) {
             if ((_imageInputValidity[i] == NO) && [_plugin _imageInputAtIndex:i willBeUsedByInstance:_instance]) {
-                ready = NO;
+                _readyState = FFGLRendererNotReady;
                 break;
             }
             got++;
         }
-        if (ready == YES) {
-            _needsToCheckValidity = NO;
-        }
+        [self _implementationSetImageInputCount:got];
     }
-    BOOL success;
-    if (ready) {
+    if (_readyState == FFGLRendererReady) {
         if ([_plugin _supportsSetTime]) {
             [_plugin _setTime:time ofInstance:_instance];
         }

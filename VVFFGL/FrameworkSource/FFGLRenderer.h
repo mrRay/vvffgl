@@ -30,15 +30,15 @@ typedef NSUInteger FFGLRendererHint;
     CGLContextObj       _context;
     NSRect              _bounds;
     NSString            *_pixelFormat;
-    void		*_instance;
+    void                *_instance;
 @private
     NSMutableDictionary *_imageInputs;
-    BOOL                _needsToCheckValidity;
     BOOL                *_imageInputValidity;
+    NSInteger           _readyState;
     FFGLImage           *_output;
     id                  _params;
     pthread_mutex_t     _lock;
-    OSSpinLock		_pLock;
+    OSSpinLock          _paramsBindableCreationLock;
 }
 - (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint forBounds:(NSRect)bounds;
 - (FFGLPlugin *)plugin;

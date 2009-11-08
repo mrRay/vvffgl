@@ -213,7 +213,11 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
     }
 }
 
-// we may want to optionally ask the FFGLGPURenderer to let us output rect textures and save a conversion stage.
+- (void)_implementationSetImageInputCount:(NSUInteger)count
+{
+    _frameStruct.inputTextureCount = count;
+}
+
 - (BOOL)_implementationRender
 {
     CGLContextObj cgl_ctx = _context;

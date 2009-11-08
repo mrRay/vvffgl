@@ -51,7 +51,7 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
             }
         }
         _frameCopies = [_plugin _prefersFrameCopy];
-        _fcStruct.inputFrameCount = numBuffers;
+        _fcStruct.inputFrameCount = 0;
         _fcStruct.inputFrames = _buffers;
 #if __BIG_ENDIAN__
         if ([format isEqualToString:FFGLPixelFormatRGB565]) { _bytesPerRow = 2 * _bounds.size.width; }
@@ -112,6 +112,11 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
     } else {
         return NO;
     }
+}
+
+- (void)_implementationSetImageInputCount:(NSUInteger)count
+{
+    _fcStruct.inputFrameCount = count;
 }
 
 - (BOOL)_implementationRender

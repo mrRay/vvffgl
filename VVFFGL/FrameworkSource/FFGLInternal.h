@@ -71,6 +71,7 @@ static inline unsigned int FFGLPOTDimension(unsigned int dimension)
 @interface FFGLRenderer (Subclassing)
 
 /* Subclasses must implement these methods */
+- (void)_implementationSetImageInputCount:(NSUInteger)count;
 - (BOOL)_implementationSetImage:(FFGLImage *)image forInputAtIndex:(NSUInteger)index;
 - (BOOL)_implementationRender;
 
