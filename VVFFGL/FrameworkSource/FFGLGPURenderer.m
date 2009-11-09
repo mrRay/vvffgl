@@ -57,9 +57,9 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
 
 @implementation FFGLGPURenderer
 
-- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint forBounds:(NSRect)bounds
+- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint size:(NSSize)size
 {
-    if (self = [super initWithPlugin:plugin context:context pixelFormat:format outputHint:hint forBounds:bounds]) {
+    if (self = [super initWithPlugin:plugin context:context pixelFormat:format outputHint:hint size:size]) {
 	
         // set up our _frameStruct
         NSUInteger numInputs = [plugin _maximumInputFrameCount];
@@ -81,14 +81,14 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
 	if (_outputHint == FFGLRendererHintTextureRect)
 	{
 		_textureTarget = GL_TEXTURE_RECTANGLE_ARB;
-		_textureWidth = bounds.size.width;
-		_textureHeight = bounds.size.height;
+		_textureWidth = _size.width;
+		_textureHeight = _size.height;
 	}
 	else
 	{
 		_textureTarget = GL_TEXTURE_2D;
-		_textureWidth = FFGLPOTDimension(bounds.size.width);
-		_textureHeight = FFGLPOTDimension(bounds.size.height);
+		_textureWidth = FFGLPOTDimension(_size.width);
+		_textureHeight = FFGLPOTDimension(_size.height);
 	}
 
 #if defined(FFGL_USE_TEXTURE_POOLS)
@@ -106,15 +106,15 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
         CGLLockContext(cgl_ctx);
 	
 	// state vars
-	GLint _previousFBO;	
-	GLint _previousRenderBuffer;
-	GLint _previousReadFBO;	
-	GLint _previousDrawFBO;
+	GLint previousFBO;	
+	GLint previousRenderBuffer;
+	GLint previousReadFBO;	
+	GLint previousDrawFBO;
 	
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &_previousFBO);
-	glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &_previousRenderBuffer);
-	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &_previousReadFBO);
-	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &_previousDrawFBO);
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &previousFBO);
+	glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &previousRenderBuffer);
+	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &previousReadFBO);
+	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &previousDrawFBO);
 	
 	// our temporary texture attachment
 	GLuint rendererFBOTexture;
@@ -140,10 +140,10 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
         if(status != GL_FRAMEBUFFER_COMPLETE_EXT)
         {	
 	    // return FBO state
-	    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
-	    glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _previousRenderBuffer);
-	    glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, _previousReadFBO);
-	    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);
+	    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previousFBO);
+	    glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, previousRenderBuffer);
+	    glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, previousReadFBO);
+	    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, previousDrawFBO);
 	    
 	    // cleanup GL resources
 	    glDeleteFramebuffersEXT(1, &_rendererFBO);
@@ -160,10 +160,10 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
 	_frameStruct.hostFBO = _rendererFBO;
 
 	// return FBO state
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _previousFBO);
-	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _previousRenderBuffer);
-	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, _previousReadFBO);
-	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _previousDrawFBO);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previousFBO);
+	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, previousRenderBuffer);
+	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, previousReadFBO);
+	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, previousDrawFBO);
 	
         // delete our temporary texture 
         glDeleteTextures(1, &rendererFBOTexture);
@@ -278,7 +278,7 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
 	// set up viewport/projection matrices and coordinate system for FBO target.
     // Not sure if we want our own dimensions or _textureWidth, _textureHeight here?
     // Guessing this is right with our dimensions.
-	glViewport(_bounds.origin.x, _bounds.origin.y, _bounds.size.width, _bounds.size.height);
+	glViewport(0, 0, _size.width, _size.height);
 	
 	GLint matrixMode;
 	glGetIntegerv(GL_MATRIX_MODE, &matrixMode);
@@ -345,8 +345,8 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
 	{
 		output = [[[FFGLImage alloc] initWithTexture2D:rendererFBOTexture
 						    CGLContext:cgl_ctx
-					       imagePixelsWide:_bounds.size.width
-					       imagePixelsHigh:_bounds.size.height
+					       imagePixelsWide:_size.width
+					       imagePixelsHigh:_size.height
 					     texturePixelsWide:_textureWidth
 					     texturePixelsHigh:_textureHeight
 						       flipped:NO
@@ -357,8 +357,8 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
 	{
 		output = [[[FFGLImage alloc] initWithTextureRect:rendererFBOTexture
 						      CGLContext:cgl_ctx 
-						      pixelsWide:_bounds.size.width
-						      pixelsHigh:_bounds.size.height
+						      pixelsWide:_size.width
+						      pixelsHigh:_size.height
 							 flipped:NO
 						 releaseCallback:callback
 						     releaseInfo:info] autorelease];						

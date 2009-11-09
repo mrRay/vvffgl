@@ -468,10 +468,10 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 
 #pragma mark Instances
 
-- (FFGLPluginInstance)_newInstanceWithBounds:(NSRect)bounds pixelFormat:(NSString *)format
+- (FFGLPluginInstance)_newInstanceWithSize:(NSSize)size pixelFormat:(NSString *)format
 {
     if (_pluginData->mode == FFGLPluginModeGPU) {
-        FFGLViewportStruct viewport = {bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height};
+        FFGLViewportStruct viewport = {0, 0, size.width, size.height};
         return _pluginData->main(FF_INSTANTIATEGL, (FFMixed)(void *)&viewport, 0).PointerValue;
     } else if (_pluginData->mode == FFGLPluginModeCPU) {
         FFVideoInfoStruct videoInfo;
@@ -486,8 +486,8 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
             return 0;
         }
         videoInfo.Orientation = FF_ORIENTATION_TL; // I think ;) If it's upside down then FF_ORIENTATION_BL.
-        videoInfo.FrameHeight = bounds.size.height;
-        videoInfo.FrameWidth = bounds.size.width;
+        videoInfo.FrameHeight = size.height;
+        videoInfo.FrameWidth = size.width;
 		FFGLPluginInstance instance = _pluginData->main(FF_INSTANTIATE, (FFMixed)(void *)&videoInfo, 0).PointerValue;
 		if (instance == NULL) {
 			NSLog(@"instance zero, if we see this log, we need a rethink");

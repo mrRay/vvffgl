@@ -37,9 +37,9 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
 
 @implementation FFGLCPURenderer
 
-- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint forBounds:(NSRect)bounds
+- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint size:(NSSize)size
 {
-    if (self = [super initWithPlugin:plugin context:context pixelFormat:format outputHint:hint forBounds:bounds]) {
+    if (self = [super initWithPlugin:plugin context:context pixelFormat:format outputHint:hint size:size]) {
         NSUInteger numBuffers = [plugin _maximumInputFrameCount];
         if (numBuffers > 0)
         {
@@ -54,18 +54,18 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
         _fcStruct.inputFrameCount = 0;
         _fcStruct.inputFrames = _buffers;
 #if __BIG_ENDIAN__
-        if ([format isEqualToString:FFGLPixelFormatRGB565]) { _bytesPerRow = 2 * _bounds.size.width; }
-        else if ([format isEqualToString:FFGLPixelFormatRGB888]) { _bytesPerRow = 3 * _bounds.size.width; }
-        else if ([format isEqualToString:FFGLPixelFormatARGB8888]) { _bytesPerRow = 4 * _bounds.size.width; }
+        if ([format isEqualToString:FFGLPixelFormatRGB565]) { _bytesPerRow = 2 * _size.width; }
+        else if ([format isEqualToString:FFGLPixelFormatRGB888]) { _bytesPerRow = 3 * _size.width; }
+        else if ([format isEqualToString:FFGLPixelFormatARGB8888]) { _bytesPerRow = 4 * _size.width; }
 #else
-        if ([format isEqualToString:FFGLPixelFormatBGR565]) { _bytesPerRow = 2 * _bounds.size.width; }
-        else if ([format isEqualToString:FFGLPixelFormatBGR888]) { _bytesPerRow = 3 * _bounds.size.width; }
-        else if ([format isEqualToString:FFGLPixelFormatBGRA8888]) { _bytesPerRow = 4 * _bounds.size.width; }
+        if ([format isEqualToString:FFGLPixelFormatBGR565]) { _bytesPerRow = 2 * _size.width; }
+        else if ([format isEqualToString:FFGLPixelFormatBGR888]) { _bytesPerRow = 3 * _size.width; }
+        else if ([format isEqualToString:FFGLPixelFormatBGRA8888]) { _bytesPerRow = 4 * _size.width; }
 #endif
         else { // This should never happen, as it is checked in FFGLRenderer at init.
             [NSException raise:@"FFGLRendererException" format:@"Unexpected pixel format."];
         }
-        _bytesPerBuffer = _bytesPerRow * _bounds.size.height;
+        _bytesPerBuffer = _bytesPerRow * _size.height;
 #if defined(FFGL_USE_BUFFER_POOLS)
         FFGLPoolCallBacks callbacks = {FFGLCPURendererBufferCreate, FFGLCPURendererBufferDestroy};
         _pool = FFGLPoolCreate(&callbacks, 3, &_bytesPerBuffer);
@@ -98,7 +98,7 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
 - (BOOL)_implementationSetImage:(id)image forInputAtIndex:(NSUInteger)index
 {
     if ([image lockBufferRepresentationWithPixelFormat:_pixelFormat]) {
-        if (([image bufferPixelsHigh] != _bounds.size.height) || ([image bufferPixelsWide] != _bounds.size.width)
+        if (([image bufferPixelsHigh] != _size.height) || ([image bufferPixelsWide] != _size.width)
             || ([image bufferPixelFormat] != _pixelFormat)) {
             [image unlockBufferRepresentation];
             // Not sure what we do here - for now raise exception, could just return NO.
@@ -144,8 +144,8 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
         output = [[[FFGLImage alloc] initWithBuffer:_fcStruct.outputFrame
                                          CGLContext:_context
                                         pixelFormat:_pixelFormat
-                                         pixelsWide:_bounds.size.width
-                                         pixelsHigh:_bounds.size.height
+                                         pixelsWide:_size.width
+                                         pixelsHigh:_size.height
                                         bytesPerRow:_bytesPerRow
 					    flipped:NO
 #if defined(FFGL_USE_BUFFER_POOLS)

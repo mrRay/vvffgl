@@ -16,12 +16,12 @@
     return nil;
 }
 
-- (id)initWithOpenGLContext:(NSOpenGLContext *)context pixelFormat:(NSString *)pixelFormat forBounds:(NSRect)bounds
+- (id)initWithOpenGLContext:(NSOpenGLContext *)context pixelFormat:(NSString *)pixelFormat forDimensions:(NSSize)dimensions
 {
     if (self = [super init]) {
         _context = [context retain];
         _pixelFormat = [pixelFormat retain];
-        _bounds = bounds;
+        _dimensions = dimensions;
         _lock = [[NSLock alloc] init];
         _effects = [[NSMutableArray alloc] initWithCapacity:2];
     }
@@ -40,7 +40,7 @@
 
 @synthesize pixelFormat = _pixelFormat;
 @synthesize openGLContext = _context;
-@synthesize bounds = _bounds;
+@synthesize dimensions = _dimensions;
 @synthesize output = _output;
 
 - (FFGLRenderer *)source

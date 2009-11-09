@@ -28,7 +28,7 @@ typedef NSUInteger FFGLRendererHint;
     FFGLRendererHint	_outputHint;
     FFGLPlugin          *_plugin;
     CGLContextObj       _context;
-    NSRect              _bounds;
+    NSSize              _size;
     NSString            *_pixelFormat;
     void                *_instance;
 @private
@@ -40,11 +40,19 @@ typedef NSUInteger FFGLRendererHint;
     pthread_mutex_t     _lock;
     OSSpinLock          _paramsBindableCreationLock;
 }
-- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint forBounds:(NSRect)bounds;
+/*
+ - (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint size:(NSSize)size
+    Initializes a new renderer.
+    pixelFormat must be one of the pixel-formats supported by plugin. If plugin is a GPU plugin, pixelFormat may be nil.
+    hint is provided to the renderer to indicate your intentions for the output, and may be used to provide an FFGLImage optimized to suit.
+    If you are passing the output of a renderer into another renderer as input for an image parameter, use FFGLRendererHintNone.
+    size determines the dimensions of output frames. For CPU plugins, input frames must also match these dimensions.
+*/
+- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint size:(NSSize)size;
 - (FFGLPlugin *)plugin;
 - (CGLContextObj)context;
 - (NSString *)pixelFormat;
-- (NSRect)bounds;
+- (NSSize)size;
 - (FFGLRendererHint)outputHint;
 /*
  - (BOOL)willUseParameterKey:(NSString *)key

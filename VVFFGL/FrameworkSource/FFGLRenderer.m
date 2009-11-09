@@ -25,7 +25,6 @@ enum FFGLRendererReadyState {
 @end
 
 @interface FFGLRenderer (Private)
-- (id)_initWithPlugin:(FFGLPlugin *)plugin pixelFormat:(NSString *)format context:(CGLContextObj)context forBounds:(NSRect)bounds;
 - (void)_performSetValue:(id)value forParameterKey:(NSString *)key;
 @end
 @implementation FFGLRenderer
@@ -36,7 +35,7 @@ enum FFGLRendererReadyState {
     return nil;
 }
 
-- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint forBounds:(NSRect)bounds
+- (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint size:(NSSize)size
 {
     if (self = [super init])
 	{
@@ -45,11 +44,11 @@ enum FFGLRendererReadyState {
             [self release];
             if ([plugin mode] == FFGLPluginModeGPU)
 			{
-                return [[FFGLGPURenderer alloc] initWithPlugin:plugin context:context pixelFormat:format outputHint:hint forBounds:bounds];
+                return [[FFGLGPURenderer alloc] initWithPlugin:plugin context:context pixelFormat:format outputHint:hint size:size];
             }
 			else if ([plugin mode] == FFGLPluginModeCPU)
 			{
-                return [[FFGLCPURenderer alloc] initWithPlugin:plugin context:context pixelFormat:format outputHint:hint forBounds:bounds];
+                return [[FFGLCPURenderer alloc] initWithPlugin:plugin context:context pixelFormat:format outputHint:hint size:size];
             } 
 			else
 			{
@@ -84,7 +83,7 @@ enum FFGLRendererReadyState {
 			{
                 _imageInputValidity[i] = NO;
             }
-            _instance = [plugin _newInstanceWithBounds:bounds pixelFormat:format];
+            _instance = [plugin _newInstanceWithSize:size pixelFormat:format];
             
 			if (_instance == 0)
 			{
@@ -97,7 +96,7 @@ enum FFGLRendererReadyState {
 			{
                 _context = CGLRetainContext(context);                
             }
-            _bounds = bounds;
+            _size = size;
             _pixelFormat = [format retain];
             _imageInputs = [[NSMutableDictionary alloc] initWithCapacity:4];
 			
@@ -150,9 +149,9 @@ enum FFGLRendererReadyState {
     return _context;
 }
 
-- (NSRect)bounds
+- (NSSize)size
 {
-    return _bounds;
+    return _size;
 }
 
 - (NSString *)pixelFormat

@@ -14,7 +14,7 @@
 #define kFFPixelFormat FFGLPixelFormatBGRA8888
 #endif
 
-#define kRenderBounds NSMakeRect(0, 0, 640, 480)
+#define kRenderDimensions NSMakeSize(640, 480)
 
 @implementation TestAppController
 
@@ -33,7 +33,7 @@
     [_effectsTableView setTarget:self];
     [_effectsTableView setDoubleAction:@selector(addRendererFromTableView:)];
     [self willChangeValueForKey:@"renderChain"];
-    _chain = [[RenderChain alloc] initWithOpenGLContext:[_renderView openGLContext] pixelFormat:kFFPixelFormat forBounds:kRenderBounds];
+    _chain = [[RenderChain alloc] initWithOpenGLContext:[_renderView openGLContext] pixelFormat:kFFPixelFormat forDimensions:kRenderDimensions];
     [self didChangeValueForKey:@"renderChain"];
     [_renderView setRenderChain:_chain];
     if ([[[FFGLPluginManager sharedManager] sourcePlugins] count] == 0) {
@@ -121,10 +121,10 @@
         FFGLRenderer *renderer = nil;
         if ([plugin mode] == FFGLPluginModeCPU) {
             if ([[plugin supportedBufferPixelFormats] containsObject:kFFPixelFormat]) {
-                renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:[[_renderView openGLContext] CGLContextObj] pixelFormat:kFFPixelFormat outputHint:FFGLRendererHintNone forBounds:kRenderBounds] autorelease];
+                renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:[[_renderView openGLContext] CGLContextObj] pixelFormat:kFFPixelFormat outputHint:FFGLRendererHintNone size:kRenderDimensions] autorelease];
             }
         } else {
-            renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:[[_renderView openGLContext] CGLContextObj] pixelFormat:kFFPixelFormat outputHint:FFGLRendererHintTextureRect forBounds:kRenderBounds] autorelease];
+            renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:[[_renderView openGLContext] CGLContextObj] pixelFormat:kFFPixelFormat outputHint:FFGLRendererHintTextureRect size:kRenderDimensions] autorelease];
         }
         if (renderer == nil) {
             NSLog(@"Couldn't create plugin renderer.");

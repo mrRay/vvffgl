@@ -56,7 +56,7 @@ static inline unsigned int FFGLPOTDimension(unsigned int dimension)
 /*
  Instances
  */
-- (FFGLPluginInstance)_newInstanceWithBounds:(NSRect)bounds pixelFormat:(NSString *)format; // GPU renderers can pass in nil for pixelFormat
+- (FFGLPluginInstance)_newInstanceWithSize:(NSSize)dimensions pixelFormat:(NSString *)format; // GPU renderers can pass in nil for pixelFormat
 - (void)_disposeInstance:(FFGLPluginInstance)instance;
 - (id)_valueForNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance;
 - (void)_setValue:(NSString *)value forStringParameterAtIndex:(NSUInteger)index ofInstance:(FFGLPluginInstance)instance;
