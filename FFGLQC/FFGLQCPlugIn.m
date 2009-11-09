@@ -341,63 +341,68 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
             }
         }
     }
+    BOOL needsAllInputs;
     if (self.rendererNeedsRebuild)
     {
         [_renderer release];
-        NSRect bounds = NSMakeRect(0, 0, _dimensions.width, _dimensions.height);
 	// FFGLRendererHintTextureRect asks the renderer to output rect textures directly (if it can) and saves a 2D to Rect conversion stage.
-	_renderer = [[FFGLRenderer alloc] initWithPlugin:self.plugin context:cgl_ctx pixelFormat:ffPixelFormat outputHint:FFGLRendererHintTextureRect forBounds:bounds];			
+        _renderer = [[FFGLRenderer alloc] initWithPlugin:self.plugin context:cgl_ctx pixelFormat:ffPixelFormat outputHint:FFGLRendererHintTextureRect size:_dimensions];			
         self.rendererNeedsRebuild = NO;
+        needsAllInputs = YES;
+    }
+    else
+    {
+        needsAllInputs = NO;
     }
     
     NSString *key;
     for (key in keys)
     {
-	if ([self didValueForInputKeyChange:key])
-	{
-	    if ([[[plugin attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage])
-	    {
-		    id <QCPlugInInputImageSource> input = [self valueForInputKey:key];
-		    FFGLImage *image;
-		    // prep the QC images texture for being turned into a FFGL image.
-		    // our QCTexureRelease will unbind/unlock for us.
-		    if(input && [input lockTextureRepresentationWithColorSpace:_cspace forBounds:[input imageBounds]])
-		    {	
-			    
-			    //NSLog(@"have QCimage for key %@ and locked rep", key);
-			    // we may have flipping issues here, if the input QC Texture is flipped...
-			    // normalizeCoords: YES provides for a flipped texture matrix, but it also means
-			    // the texture coords are different than what swapTextureTargets will expect..
-			    
-			    // ANTON - annoyingly we need to pass textures into FFGL the right way up.
-			    // Flipping at the other end isn't a fix, as that turns FFGL's output upside down (try FFGLTime, Particles, etc.).
-			    // TODO: flip the texture
-			    [input bindTextureRepresentationToCGLContext:cgl_ctx textureUnit:GL_TEXTURE0 normalizeCoordinates:NO];
-			    
-			    //NSLog(@"new FFGL based on rect texture: %u", [input textureName]);
-			    
-			    image = [[FFGLImage alloc] initWithCopiedTextureRect:[input textureName]
-														  CGLContext:cgl_ctx
-														  pixelsWide:[input imageBounds].size.width
-														  pixelsHigh:[input imageBounds].size.height
-															 flipped:[input textureFlipped]];
-			     
-			    [image autorelease];
-			    
-			    [input unbindTextureRepresentationFromCGLContext:cgl_ctx textureUnit:GL_TEXTURE0];
-			    [input unlockTextureRepresentation];
-		    }
-		    else
-		    {
-			image = nil;
-		    }
-		    [_renderer setValue:image forParameterKey:key];
-	    }
-	    else 
-	    {
-		[_renderer setValue:[self valueForInputKey:key] forParameterKey:key];
-	    }
-	}
+        if (needsAllInputs || [self didValueForInputKeyChange:key])
+        {
+            if ([[[plugin attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage])
+            {
+                id <QCPlugInInputImageSource> input = [self valueForInputKey:key];
+                FFGLImage *image;
+                // prep the QC images texture for being turned into a FFGL image.
+                // our QCTexureRelease will unbind/unlock for us.
+                if(input && [input lockTextureRepresentationWithColorSpace:_cspace forBounds:[input imageBounds]])
+                {	
+                    
+                    //NSLog(@"have QCimage for key %@ and locked rep", key);
+                    // we may have flipping issues here, if the input QC Texture is flipped...
+                    // normalizeCoords: YES provides for a flipped texture matrix, but it also means
+                    // the texture coords are different than what swapTextureTargets will expect..
+                    
+                    // ANTON - annoyingly we need to pass textures into FFGL the right way up.
+                    // Flipping at the other end isn't a fix, as that turns FFGL's output upside down (try FFGLTime, Particles, etc.).
+                    // TODO: flip the texture
+                    [input bindTextureRepresentationToCGLContext:cgl_ctx textureUnit:GL_TEXTURE0 normalizeCoordinates:NO];
+                    
+                    //NSLog(@"new FFGL based on rect texture: %u", [input textureName]);
+                    
+                    image = [[FFGLImage alloc] initWithCopiedTextureRect:[input textureName]
+                                                              CGLContext:cgl_ctx
+                                                              pixelsWide:[input imageBounds].size.width
+                                                              pixelsHigh:[input imageBounds].size.height
+                                                                 flipped:[input textureFlipped]];
+                     
+                    [image autorelease];
+                    
+                    [input unbindTextureRepresentationFromCGLContext:cgl_ctx textureUnit:GL_TEXTURE0];
+                    [input unlockTextureRepresentation];
+                }
+                else
+                {
+                image = nil;
+                }
+                [_renderer setValue:image forParameterKey:key];
+            }
+            else 
+            {
+            [_renderer setValue:[self valueForInputKey:key] forParameterKey:key];
+            }
+        }
     }
 	
     BOOL result;
