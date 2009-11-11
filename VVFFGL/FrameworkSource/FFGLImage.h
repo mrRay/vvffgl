@@ -13,33 +13,15 @@
 typedef void (*FFGLImageTextureReleaseCallback)(GLuint name, CGLContextObj cgl_ctx, void *context);
 typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *context);
 
-/*
-TODO: we leak textures if inited with 0 for arguments at init - certainly in initWithCopiedTextureRect 
- 
- 
- */
-
 @interface FFGLImage : NSObject {
 @private
-    BOOL                            _hasBuffer;
-    BOOL                            _hasTexture2D;
-    BOOL                            _hasTextureRect;
-    NSUInteger                      _imageWidth;
-    NSUInteger                      _imageHeight;
-    CGLContextObj                   _context;
-    pthread_mutex_t                 _conversionLock;
-    void                            *_texture2DInfo;
-    FFGLImageTextureReleaseCallback _texture2DReleaseCallback;
-    void                            *_texture2DReleaseContext;
-    void                            *_textureRectInfo;
-    FFGLImageTextureReleaseCallback _textureRectReleaseCallback;
-    void                            *_textureRectReleaseContext;
-    const void                      *_buffer;
-    NSString                        *_bufferPixelFormat;
-    FFGLImageBufferReleaseCallback  _bufferReleaseCallback;
-    void                            *_bufferReleaseContext;
-	
-	BOOL				_flipped; // is our input texture marked as flipped?
+    NSUInteger          _imageWidth;
+    NSUInteger          _imageHeight;
+    CGLContextObj       _context;
+    pthread_mutex_t	_conversionLock;
+    void		*_texture2D;
+    void		*_textureRect;
+    void		*_buffer;
 }
 
 /*
@@ -50,10 +32,17 @@ TODO: we leak textures if inited with 0 for arguments at init - certainly in ini
  */
 
 /*
-
+ - (id)initWithTexture2D:(GLuint)texture CGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight flipped:(BOOL)isFlipped releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo
+    Creates a new FFGLImage with the provided texture. The texture should remain valid until the function at callback is called.
+    Note that in some circumstances the texture will be copied at init. In this case the function provided in callback will be called immediately.
+    To minimize the possibility of the texture copy stage, pass in a texture which is not flipped.
  */
 - (id)initWithTexture2D:(GLuint)texture CGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight flipped:(BOOL)isFlipped releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo;
 
+/*
+ - (id)initWithTextureRect:(GLuint)texture CGLContext:(CGLContextObj)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height flipped:(BOOL)isFlipped releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo
+    Creates a new FFGLImage with the provided texture. The texture should remain valid until the function at callback is called.
+ */
 - (id)initWithTextureRect:(GLuint)texture CGLContext:(CGLContextObj)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height flipped:(BOOL)isFlipped releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo;
 
 /*
@@ -71,30 +60,45 @@ TODO: we leak textures if inited with 0 for arguments at init - certainly in ini
  */
 - (id)initWithCopiedTextureRect:(GLuint)texture CGLContext:(CGLContextObj)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height flipped:(BOOL)isFlipped;
 
+/*
+ - (id)initWithCopiedTexture2D:(GLuint)texture CGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight flipped:(BOOL)isFlipped
+    Copies texture to a new texture.
+ */
+- (id)initWithCopiedTexture2D:(GLuint)texture CGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight flipped:(BOOL)isFlipped;
+//- (id)initWithCopiedBuffer:(const void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes flipped:(BOOL)isFlipped; // COMING
+
 - (NSUInteger)imagePixelsWide;
 - (NSUInteger)imagePixelsHigh;
 
 /*
  lockTexture2DRepresentation
     Creates a GL_TEXTURE_2D representation of the image if none already exists. This will remain valid until a call to unlockTexture2DRepresentation.
+    Returns YES if a texture representation exists or was created, NO otherwise. You should check the returned value before attempting to use the texture.
  */
 - (BOOL)lockTexture2DRepresentation;
 - (void)unlockTexture2DRepresentation;
 /*
- Do not call the following until a call to lockTexture2DRepresentation has returned
+ Do not call the following until a call to lockTexture2DRepresentation has returned YES
  */
 - (GLuint)texture2DName;
 - (NSUInteger)texture2DPixelsWide;
 - (NSUInteger)texture2DPixelsHigh;
+- (BOOL)texture2DIsFlipped;
 
+/*
+ -(BOOL)lockTextureRectRepresentation
+    Creates a GL_TEXTURE_RECTANGLE_ARB representation of the image if none already exists. This will remain valid until a call to unlockTextureRectRepresentation.
+    Returns YES if a texture representation exists or was created, NO otherwise. You should check the returned value before attempting to use the texture.
+ */
 - (BOOL)lockTextureRectRepresentation;
 - (void)unlockTextureRectRepresentation;
 /*
- Do not call the following until a call to lockTextureRectRepresentation has returned
+ Do not call the following until a call to lockTextureRectRepresentation has returned YES
  */
 - (GLuint)textureRectName;
 - (NSUInteger)textureRectPixelsWide;
 - (NSUInteger)textureRectPixelsHigh;
+- (BOOL)textureRectIsFlipped;
 
 /*
  - (BOOL)lockBufferRepresentationWithPixelFormat:(NSString *)format
@@ -107,12 +111,12 @@ TODO: we leak textures if inited with 0 for arguments at init - certainly in ini
 - (BOOL)lockBufferRepresentationWithPixelFormat:(NSString *)format;
 - (void)unlockBufferRepresentation;
 /*
- Do not call the following until a call to lockBufferRepresentationWithPixelFormat: has returned
+ Do not call the following until a call to lockBufferRepresentationWithPixelFormat: has returned YES
  */
 - (const void *)bufferBaseAddress;
 - (NSUInteger)bufferPixelsWide;
 - (NSUInteger)bufferPixelsHigh;
 - (NSUInteger)bufferBytesPerRow;
 - (NSString *)bufferPixelFormat;
-
+- (BOOL)bufferIsFlipped;
 @end
