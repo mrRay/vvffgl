@@ -84,7 +84,12 @@ static NSUInteger bytesPerPixelForPixelFormat(NSString *format) {
  */
 static FFGLImageRep *FFGLImageRepCreateFromTextureRep(CGLContextObj cgl_ctx, const FFGLImageRep *fromTextureRep, GLenum toTarget)
 {
-    if (cgl_ctx == NULL || fromTextureRep == NULL || (fromTextureRep->type != FFGLImageRepTypeTexture2D && fromTextureRep->type != FFGLImageRepTypeTextureRect))
+    if (cgl_ctx == NULL
+	|| fromTextureRep == NULL
+	|| (fromTextureRep->type != FFGLImageRepTypeTexture2D && fromTextureRep->type != FFGLImageRepTypeTextureRect)
+	|| fromTextureRep->repInfo.textureInfo.width == 0
+	|| fromTextureRep->repInfo.textureInfo.height == 0
+	)
     {
 	return NULL;
     }
@@ -311,6 +316,29 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
     return NULL;
 }
 
+static void *FFGLImageBufferCreateCopy(const void *source, NSUInteger width, NSUInteger height, NSUInteger rowBytes, NSUInteger bytesPerPixel, BOOL isFlipped)
+{
+    if (width == 0
+	|| height == 0
+	|| rowBytes == 0
+	|| bytesPerPixel == 0)
+	return NULL;
+    unsigned int i;
+    int newRowBytes = width * bytesPerPixel;
+    void *newBuffer = valloc(width * bytesPerPixel * height);
+    if (newBuffer) {
+	int soffset = 0;
+	int doffset = isFlipped ? newRowBytes * (height - 1) : 0;
+	int droller = isFlipped ? -newRowBytes : newRowBytes;
+	for (i = 0; i < height; i++) {
+	    memcpy(newBuffer + doffset, source + soffset, newRowBytes);
+	    soffset+=rowBytes;
+	    doffset+=droller;
+	}	
+    }
+    return newBuffer;
+}
+
 @interface FFGLImage (Private)
 - (id)initWithCGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight imageRep:(FFGLImageRep *)rep;
 - (void)releaseResources;
@@ -408,54 +436,44 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
 
 - (id)initWithBuffer:(const void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes flipped:(BOOL)isFlipped releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo
 {
-    // Check the pixel-format is valid
+    FFGLImageRep *rep;
     NSUInteger bpp = bytesPerPixelForPixelFormat(format);
-    if (bpp == 0) { 
-        [NSException raise:@"FFGLImageException" format:@"Invalid pixel-format."];
-        [self release];
-        return nil;
-    }
-    FFGLImageRep *rep = malloc(sizeof(FFGLImageRep));
-    if (rep != NULL)
+    // Check the pixel-format is valid
+    if (bpp != 0)
     {
-	if ((width * bpp) != rowBytes || isFlipped) {
-	    // FF plugins don't support pixel buffers where image width != row width.
-	    // We could just fiddle the reported image width, but this would give wrong results if the plugin takes borders into account.
-	    // We also flip buffers the right way up because we don't support upside down buffers - though FF plugins do...
-	    // In these cases we make a new buffer with no padding.
-	    void *newBuffer = valloc(width * bpp * height);
-	    if (newBuffer == NULL) {
-		free(rep);
-		[self release];
-		return nil;
+	rep = malloc(sizeof(FFGLImageRep));
+	if (rep != NULL)
+	{
+	    if ((width * bpp) != rowBytes || isFlipped) {
+		// FF plugins don't support pixel buffers where image width != row width.
+		// We could just fiddle the reported image width, but this would give wrong results if the plugin takes borders into account.
+		// We also flip buffers the right way up because we don't support upside down buffers - though FF plugins do...
+		// In these cases we make a new buffer with no padding.
+		void *newBuffer = FFGLImageBufferCreateCopy(buffer, width, height, rowBytes, bpp, isFlipped);
+		if (newBuffer == NULL) {
+		    free(rep);
+		    [self release];
+		    return nil;
+		}
+		if (callback)
+		    callback(buffer, userInfo);
+		buffer = newBuffer;
+		callback = FFGLImageBufferRelease;
+		userInfo = NULL;
 	    }
-	    NSUInteger i;
-	    size_t newRowBytes = width * bpp;
-	    size_t soffset = 0;
-	    size_t doffset = isFlipped ? newRowBytes * (height - 1) : 0;
-	    for (i = 0; i < height; i++) {
-		memcpy(newBuffer + doffset, buffer + soffset, newRowBytes);
-		soffset+= newRowBytes;
-		if (isFlipped)
-		    doffset-= newRowBytes;
-		else
-		    doffset+= newRowBytes;
-	    }
-	    if (callback != NULL) {
-		callback(buffer, context);
-	    }
-	    buffer = newBuffer;
-	    callback = FFGLImageBufferRelease;
-	    userInfo = NULL;
+	    rep->flipped = NO;
+	    rep->releaseCallback.bufferCallback = callback;
+	    rep->releaseContext = userInfo;
+	    rep->type = FFGLImageRepTypeBuffer;
+	    rep->repInfo.bufferInfo.buffer = buffer;
+	    rep->repInfo.bufferInfo.width = width;
+	    rep->repInfo.bufferInfo.height = height;
+	    rep->repInfo.bufferInfo.pixelFormat = [format retain];
 	}
-	rep->flipped = NO;
-	rep->releaseCallback.bufferCallback = callback;
-	rep->releaseContext = userInfo;
-	rep->type = FFGLImageRepTypeBuffer;
-	rep->repInfo.bufferInfo.buffer = buffer;
-	rep->repInfo.bufferInfo.width = width;
-	rep->repInfo.bufferInfo.height = height;
-	rep->repInfo.bufferInfo.pixelFormat = [format retain];
+    }
+    else
+    {
+	rep = NULL;
     }
     return [self initWithCGLContext:context imagePixelsWide:width imagePixelsHigh:height imageRep:rep];
 }
@@ -489,8 +507,32 @@ static FFGLTextureInfo *createTextureFromBuffer(CGLContextObj cgl_ctx, void *buf
 
 - (id)initWithCopiedBuffer:(const void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes flipped:(BOOL)isFlipped
 {
-    // TODO:
-    return nil;
+    // Check the pixel-format is valid
+    NSUInteger bpp = bytesPerPixelForPixelFormat(format);
+    if (bpp == 0 || buffer == NULL || width == 0 || height == 0 || rowBytes == 0) { 
+        [NSException raise:@"FFGLImageException" format:@"Invalid arguments in init."];
+        [self release];
+        return nil;
+    }
+    FFGLImageRep *rep = malloc(sizeof(FFGLImageRep));
+    if (rep != NULL)
+    {
+	void *newBuffer = FFGLImageBufferCreateCopy(buffer, width, height, rowBytes, bpp, isFlipped);
+	if (newBuffer == NULL) {
+	    free(rep);
+	    [self release];
+	    return nil;
+	}
+	rep->flipped = NO;
+	rep->releaseCallback.bufferCallback = FFGLImageBufferRelease;
+	rep->releaseContext = NULL;
+	rep->type = FFGLImageRepTypeBuffer;
+	rep->repInfo.bufferInfo.buffer = newBuffer;
+	rep->repInfo.bufferInfo.width = width;
+	rep->repInfo.bufferInfo.height = height;
+	rep->repInfo.bufferInfo.pixelFormat = [format retain];
+    }
+    return [self initWithCGLContext:context imagePixelsWide:width imagePixelsHigh:height imageRep:rep];
 }
 
 - (void)releaseResources 
