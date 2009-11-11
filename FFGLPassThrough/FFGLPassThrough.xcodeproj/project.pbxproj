@@ -42,21 +42,21 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = BD94DAF01099BD080008F720 /* VVFFGL.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 9606B14D101761EF00CC50B7 /* VVFFGL.framework */;
+			remoteGlobalIDString = 9606B14D101761EF00CC50B7;
 			remoteInfo = VVFFGL;
 		};
 		BD4A78B0109B92FB0018ABBD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BD94DAF01099BD080008F720 /* VVFFGL.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 9606B15C1017621200CC50B7 /* FFGLTestApp.app */;
+			remoteGlobalIDString = 9606B15C1017621200CC50B7;
 			remoteInfo = FFGLTestApp;
 		};
 		BD4A78B7109B930A0018ABBD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BD94DAF01099BD080008F720 /* VVFFGL.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 9606B14C101761EF00CC50B7 /* VVFFGL */;
+			remoteGlobalIDString = 9606B14C101761EF00CC50B7;
 			remoteInfo = VVFFGL;
 		};
 /* End PBXContainerItemProxy section */
@@ -84,6 +84,7 @@
 		8D5B49B6048680CD000E48DA /* FFGLPassThrough.plugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FFGLPassThrough.plugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BD94DAF01099BD080008F720 /* VVFFGL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = VVFFGL.xcodeproj; path = ../VVFFGL/VVFFGL.xcodeproj; sourceTree = SOURCE_ROOT; };
+		BDDF9ABD10AAD36A0073A29F /* FFGLPassThrough Test Composition.qtz */ = {isa = PBXFileReference; lastKnownFileType = "video.quartz-composer"; path = "FFGLPassThrough Test Composition.qtz"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,6 +106,7 @@
 			isa = PBXGroup;
 			children = (
 				BD94DAF01099BD080008F720 /* VVFFGL.xcodeproj */,
+				BDDF9ABD10AAD36A0073A29F /* FFGLPassThrough Test Composition.qtz */,
 				08FB77AFFE84173DC02AAC07 /* Classes */,
 				32C88E010371C26100C91783 /* Other Sources */,
 				089C167CFE841241C02AAC07 /* Resources */,

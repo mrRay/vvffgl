@@ -20,5 +20,7 @@ Declare here the Obj-C 2.0 properties to be used as input and output ports for t
 You can access their values in the appropriate plug-in methods using self.inputFoo or self.inputBar
 */
 @property (assign) id <QCPlugInInputImageSource> inputImage;
+@property (assign) NSUInteger inputMode;
+@property (assign) BOOL inputFlipped;
 @property (assign) id <QCPlugInOutputImageProvider> outputImage;
 @end
