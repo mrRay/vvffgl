@@ -9,7 +9,7 @@
 #import "TestAppController.h"
 
 #if __BIG_ENDIAN__
-#define kFFPixelFormat FFGLPixelFormatRGBA8888
+#define kFFPixelFormat FFGLPixelFormatARGB8888
 #else
 #define kFFPixelFormat FFGLPixelFormatBGRA8888
 #endif
