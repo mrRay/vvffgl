@@ -645,7 +645,7 @@ static void *FFGLImageBufferCreateCopy(const void *source, NSUInteger width, NSU
     }
     else if (_texture2D)
     {
-	_textureRect = FFGLImageRepCreateFromTextureRep(_context, _textureRect, GL_TEXTURE_RECTANGLE_ARB);
+	_textureRect = FFGLImageRepCreateFromTextureRep(_context, _texture2D, GL_TEXTURE_RECTANGLE_ARB);
 	if (_textureRect)
 	    result = YES;
     }
