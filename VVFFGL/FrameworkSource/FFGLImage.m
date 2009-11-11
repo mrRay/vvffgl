@@ -517,20 +517,20 @@ static void *FFGLImageBufferCreateCopy(const void *source, NSUInteger width, NSU
     FFGLImageRep *rep = malloc(sizeof(FFGLImageRep));
     if (rep != NULL)
     {
-	void *newBuffer = FFGLImageBufferCreateCopy(buffer, width, height, rowBytes, bpp, isFlipped);
-	if (newBuffer == NULL) {
-	    free(rep);
-	    [self release];
-	    return nil;
-	}
-	rep->flipped = NO;
-	rep->releaseCallback.bufferCallback = FFGLImageBufferRelease;
-	rep->releaseContext = NULL;
-	rep->type = FFGLImageRepTypeBuffer;
-	rep->repInfo.bufferInfo.buffer = newBuffer;
-	rep->repInfo.bufferInfo.width = width;
-	rep->repInfo.bufferInfo.height = height;
-	rep->repInfo.bufferInfo.pixelFormat = [format retain];
+		void *newBuffer = FFGLImageBufferCreateCopy(buffer, width, height, rowBytes, bpp, isFlipped);
+		if (newBuffer == NULL) {
+			free(rep);
+			[self release];
+			return nil;
+		}
+		rep->flipped = NO;
+		rep->releaseCallback.bufferCallback = FFGLImageBufferRelease;
+		rep->releaseContext = NULL;
+		rep->type = FFGLImageRepTypeBuffer;
+		rep->repInfo.bufferInfo.buffer = newBuffer;
+		rep->repInfo.bufferInfo.width = width;
+		rep->repInfo.bufferInfo.height = height;
+		rep->repInfo.bufferInfo.pixelFormat = [format retain];
     }
     return [self initWithCGLContext:context imagePixelsWide:width imagePixelsHigh:height imageRep:rep];
 }
@@ -539,22 +539,22 @@ static void *FFGLImageBufferCreateCopy(const void *source, NSUInteger width, NSU
 {
     if (_texture2D)
     {
-	if (((FFGLImageRep *)_texture2D)->releaseCallback.textureCallback != NULL)
-	    ((FFGLImageRep *)_texture2D)->releaseCallback.textureCallback(((FFGLImageRep *)_texture2D)->repInfo.textureInfo.texture, _context, ((FFGLImageRep *)_texture2D)->releaseContext);
-	free(_texture2D);
+		if (((FFGLImageRep *)_texture2D)->releaseCallback.textureCallback != NULL)
+			((FFGLImageRep *)_texture2D)->releaseCallback.textureCallback(((FFGLImageRep *)_texture2D)->repInfo.textureInfo.texture, _context, ((FFGLImageRep *)_texture2D)->releaseContext);
+		free(_texture2D);
     }
     if (_textureRect)
-    {
-	if (((FFGLImageRep *)_textureRect)->releaseCallback.textureCallback != NULL)
-	    ((FFGLImageRep *)_textureRect)->releaseCallback.textureCallback(((FFGLImageRep *)_textureRect)->repInfo.textureInfo.texture, _context, ((FFGLImageRep *)_textureRect)->releaseContext);
-	free(_textureRect);
+	{
+		if (((FFGLImageRep *)_textureRect)->releaseCallback.textureCallback != NULL)
+			((FFGLImageRep *)_textureRect)->releaseCallback.textureCallback(((FFGLImageRep *)_textureRect)->repInfo.textureInfo.texture, _context, ((FFGLImageRep *)_textureRect)->releaseContext);
+		free(_textureRect);
     }
     if (_buffer)
     {
-	[((FFGLImageRep *)_buffer)->repInfo.bufferInfo.pixelFormat release];
-	if (((FFGLImageRep *)_buffer)->releaseCallback.bufferCallback != NULL)
-	    ((FFGLImageRep *)_buffer)->releaseCallback.bufferCallback(((FFGLImageRep *)_buffer)->repInfo.bufferInfo.buffer, ((FFGLImageRep *)_buffer)->releaseContext);
-	free(_textureRect);
+		[((FFGLImageRep *)_buffer)->repInfo.bufferInfo.pixelFormat release];
+		if (((FFGLImageRep *)_buffer)->releaseCallback.bufferCallback != NULL)
+			((FFGLImageRep *)_buffer)->releaseCallback.bufferCallback(((FFGLImageRep *)_buffer)->repInfo.bufferInfo.buffer, ((FFGLImageRep *)_buffer)->releaseContext);
+		free(_buffer);
     }
     CGLReleaseContext(_context);
     pthread_mutex_destroy(&_conversionLock);
