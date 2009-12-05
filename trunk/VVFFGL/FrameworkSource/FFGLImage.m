@@ -96,209 +96,180 @@ static FFGLImageRep *FFGLImageRepCreateFromTextureRep(CGLContextObj cgl_ctx, con
     FFGLImageRep *toTextureRep = malloc(sizeof(FFGLImageRep));
     if (toTextureRep != NULL)
     {
-	// direct access to the FFGLTextureInfo and texture target of the source
-	const FFGLTextureInfo *fromTexture = &fromTextureRep->repInfo.textureInfo;
-	GLenum fromTarget = fromTextureRep->type == FFGLImageRepTypeTexture2D ? GL_TEXTURE_2D : GL_TEXTURE_RECTANGLE_ARB;
-	
-	// set up our new texture-rep.
-	toTextureRep->flipped = NO;
-	toTextureRep->releaseCallback.textureCallback = FFGLImageTextureRelease;
-	toTextureRep->releaseContext = NULL;
-	toTextureRep->type = toTarget == GL_TEXTURE_2D ? FFGLImageRepTypeTexture2D : FFGLImageRepTypeTextureRect;
-	
-	FFGLTextureInfo *toTexture = &toTextureRep->repInfo.textureInfo;
+		// direct access to the FFGLTextureInfo and texture target of the source
+		const FFGLTextureInfo *fromTexture = &fromTextureRep->repInfo.textureInfo;
+		GLenum fromTarget = fromTextureRep->type == FFGLImageRepTypeTexture2D ? GL_TEXTURE_2D : GL_TEXTURE_RECTANGLE_ARB;
+		
+		// set up our new texture-rep.
+		toTextureRep->flipped = NO;
+		toTextureRep->releaseCallback.textureCallback = FFGLImageTextureRelease;
+		toTextureRep->releaseContext = NULL;
+		toTextureRep->type = toTarget == GL_TEXTURE_2D ? FFGLImageRepTypeTexture2D : FFGLImageRepTypeTextureRect;
+		
+		FFGLTextureInfo *toTexture = &toTextureRep->repInfo.textureInfo;
 
-	// cache FBO state
-	GLint previousFBO, previousReadFBO, previousDrawFBO;
-	
-	// the FBO attachment texture we are going to render to.
-		    
-	GLsizei width, height;
-	// set up our destination target
-	if(fromTarget == GL_TEXTURE_RECTANGLE_ARB)
-	{
-	    width = toTexture->hardwareWidth = FFGLPOTDimension(fromTexture->width);
-	    height = toTexture->hardwareHeight = FFGLPOTDimension(fromTexture->height);
-	} 
-	else
-	{
-	    width = toTexture->hardwareWidth = fromTexture->width;
-	    height = toTexture->hardwareHeight = fromTexture->height;
-	}
-	toTexture->width = fromTexture->width;
-	toTexture->height = fromTexture->height;
-	
-	CGLLockContext(cgl_ctx);
-	
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &previousFBO);
-	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &previousReadFBO);
-	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &previousDrawFBO);
-	
-	// save as much state;
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-    
-	// new texture
-	GLuint newTex;
-	glGenTextures(1, &newTex);
-	
-	glEnable(toTarget);
-	
-	glBindTexture(toTarget, newTex);
-	glTexImage2D(toTarget, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		// cache FBO state
+		GLint previousFBO, previousReadFBO, previousDrawFBO;
+		
+		// the FBO attachment texture we are going to render to.
+				
+		GLsizei fboWidth, fboHeight;
+		// set up our destination target
+		if(toTarget == GL_TEXTURE_2D)
+		{
+			fboWidth = toTexture->hardwareWidth = FFGLPOTDimension(fromTexture->width);
+			fboHeight = toTexture->hardwareHeight = FFGLPOTDimension(fromTexture->height);
+		} 
+		else
+		{
+			fboWidth = toTexture->hardwareWidth = fromTexture->width;
+			fboHeight = toTexture->hardwareHeight = fromTexture->height;
+		}
+		toTexture->width = fromTexture->width;
+		toTexture->height = fromTexture->height;
+		
+		CGLLockContext(cgl_ctx);
+		
+		glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &previousFBO);
+		glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &previousReadFBO);
+		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &previousDrawFBO);
+		
+		// save as much state;
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
+		
+		// new texture
+		GLuint newTex;
+		glGenTextures(1, &newTex);
+		
+		glEnable(toTarget);
+		// here we're binding to previousFBO..? Can't we do it onto our FBO once?
+		glBindTexture(toTarget, newTex);
+		glTexImage2D(toTarget, 0, GL_RGBA8, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
-	// texture filtering and wrapping modes for FBO texture.
-	glTexParameteri(toTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(toTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(toTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(toTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	
-//	NSLog(@"new texture: %u, original texture: %u", newTex, fromTexture->texture);
-	toTexture->texture = newTex;
+		// texture filtering and wrapping modes for FBO texture.
+		glTexParameteri(toTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(toTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(toTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(toTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		
+	//	NSLog(@"new texture: %u, original texture: %u", newTex, fromTexture->texture);
+		toTexture->texture = newTex;
 
-	// make new FBO and attach.
-	GLuint fboID;
-	glGenFramebuffersEXT(1, &fboID);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboID);
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, toTarget, newTex, 0);
+		// make new FBO and attach.
+		GLuint fboID;
+		glGenFramebuffersEXT(1, &fboID);
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboID);
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, toTarget, newTex, 0);
 
-	// unbind texture
-	glBindTexture(toTarget, 0);
-	glDisable(toTarget);
+		// unbind texture
+		glBindTexture(toTarget, 0);
+		glDisable(toTarget);
 
-	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-	if(status != GL_FRAMEBUFFER_COMPLETE_EXT)
-	{
-	    glDeleteTextures(1, &newTex);
-	    free(toTextureRep);
-	    toTextureRep = NULL;
-	    NSLog(@"Cannot create FBO for swapTextureTarget: %u", status);
-	}
-	else // FBO creation worked, carry on
-	{	
-	    glViewport(0, 0, width, height);
-	    glMatrixMode(GL_PROJECTION);
-	    glPushMatrix();
-	    glLoadIdentity();
-	    
-	    // weirdo ortho
-	    glOrtho(0.0, width, 0.0, height, -1, 1);		
-	    
-	    glMatrixMode(GL_MODELVIEW);
-	    glPushMatrix();
-	    glLoadIdentity();
-	    
-	    // draw the texture.
-	    //texture->draw(0,0);
-	    
-	    glClearColor(0,0,0,0);
-	    glClear(GL_COLOR_BUFFER_BIT);
-	    
-	    glActiveTexture(GL_TEXTURE0);
-	    glEnable(fromTarget);
-	    glBindTexture(fromTarget, fromTexture->texture);
-	    
-	    if(fromTarget == GL_TEXTURE_RECTANGLE_ARB)
-	    {	
-		    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-		    
-		    if(fromTextureRep->flipped)
-		    {
-			    glBegin(GL_QUADS);
-			    glTexCoord2f(0, 0);
-			    glVertex2f(0, height);
-			    glTexCoord2f(0, height);
-			    glVertex2f(0, 0);
-			    glTexCoord2f(width, height);
-			    glVertex2f(width, 0);
-			    glTexCoord2f(width, 0);
-			    glVertex2f(width, height);
-			    glEnd();		
-		    }
-		    else
-		    {
-			    glBegin(GL_QUADS);
-			    glTexCoord2f(0, 0);
-			    glVertex2f(0, 0);
-			    glTexCoord2f(0, height);
-			    glVertex2f(0, height);
-			    glTexCoord2f(width, height);
-			    glVertex2f(width, height);
-			    glTexCoord2f(width, 0);
-			    glVertex2f(width, 0);
-			    glEnd();					
-		    }
-	    }
-	    else if(fromTarget == GL_TEXTURE_2D)
-	    {
-		    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-		    
-		    // since our image is NPOT but our texture is POT, we must 
-		    // deduce proper texture coords in normalized space
-		    GLfloat texWidth = (GLfloat) fromTexture->width / (GLfloat)fromTexture->hardwareWidth;
-		    GLfloat texHeight = (GLfloat)fromTexture->height / (GLfloat)fromTexture->hardwareHeight;
-		    
-		    if(fromTextureRep->flipped)
-		    {
-			    glBegin(GL_QUADS);
-			    glTexCoord2f(0, 0);
-			    glVertex2f(0, texHeight);
-			    glTexCoord2f(0, 0); 
-			    glVertex2f(0, height);
-			    glTexCoord2f(texWidth, texHeight);
-			    glVertex2f(width, 0);
-			    glTexCoord2f(texWidth, 0);
-			    glVertex2f(width, texHeight);
-			    glEnd();		
-			    
-		    }
-		    else
-		    {
-			    glBegin(GL_QUADS);
-			    glTexCoord2f(0, 0);
-			    glVertex2f(0, 0);
-			    glTexCoord2f(0, texHeight); 
-			    glVertex2f(0, height);
-			    glTexCoord2f(texWidth, texHeight);
-			    glVertex2f(width, height);
-			    glTexCoord2f(texWidth, 0);
-			    glVertex2f(width, 0);
-			    glEnd();		
-		    }	
-	    }
-	    else
-	    {
-		    // uh....
-	    }
-	}
-	glBindTexture(fromTarget, 0);
-	glDisable(fromTarget);
-	
-	// Restore OpenGL states 
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	
-	// restore states // assume this is balanced with above 
-	glPopAttrib();
-	
-	// pop back to old FBO
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previousFBO);	
-	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, previousReadFBO);
-	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, previousDrawFBO);
-	
-	glFlushRenderAPPLE();
-	
-	// delete our FBO so we dont leak.
-	glDeleteFramebuffersEXT(1, &fboID);
-	
-	CGLUnlockContext(cgl_ctx);
+		GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+		if(status != GL_FRAMEBUFFER_COMPLETE_EXT)
+		{
+			glDeleteTextures(1, &newTex);
+			free(toTextureRep);
+			toTextureRep = NULL;
+			NSLog(@"Cannot create FBO for swapTextureTarget: %u", status);
+		}
+		else // FBO creation worked, carry on
+		{	
+			glViewport(0, 0, fboWidth, fboHeight);
+			glMatrixMode(GL_PROJECTION);
+			glPushMatrix();
+			glLoadIdentity();
+			
+			// weirdo ortho
+			glOrtho(0.0, fboWidth, 0.0, fboHeight, -1, 1);		
+			
+			glMatrixMode(GL_MODELVIEW);
+			glPushMatrix();
+			glLoadIdentity();
+			
+			// draw the texture.
+			
+			glClearColor(0,0,0,0);
+			glClear(GL_COLOR_BUFFER_BIT);
+			
+			glActiveTexture(GL_TEXTURE0);
+			glEnable(fromTarget);
+			glBindTexture(fromTarget, fromTexture->texture);
+			
+			if(fromTarget == GL_TEXTURE_RECTANGLE_ARB || fromTarget == GL_TEXTURE_2D)
+			{	
+				glTexParameteri(fromTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(fromTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(fromTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+				glTexParameteri(fromTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);				
+			
+				// since our image is NPOT but our texture is POT, we must 
+				// deduce proper texture coords in normalized space
+				
+				GLfloat texImageWidth, texImageHeight;
+
+				texImageWidth = fromTarget == GL_TEXTURE_2D ? (GLfloat) fromTexture->width / (GLfloat)fromTexture->hardwareWidth : fromTexture->width;
+				texImageHeight = fromTarget == GL_TEXTURE_2D ? (GLfloat)fromTexture->height / (GLfloat)fromTexture->hardwareHeight : fromTexture->height;
+				GLfloat fboImageWidth, fboImageHeight;
+				fboImageWidth = toTexture->width;
+				fboImageHeight = toTexture->height;
+//				NSLog(@"%@ -> %@ flipped: %@ texWidth: %f texHeight: %f fboImageWidth: %d fboImageHeight: %d", fromTarget == GL_TEXTURE_2D ? @"2D" : @"Rect", toTarget == GL_TEXTURE_2D ? @"2D" : @"Rect", fromTextureRep->flipped ? @"YES" : @"NO", texWidth, texHeight, fboImageWidth, fboImageHeight);
+				if(fromTextureRep->flipped)
+				{
+					glBegin(GL_QUADS);
+					glTexCoord2f(0, 0);
+					glVertex2f(0, fboImageHeight);
+					glTexCoord2f(0, texImageHeight); 
+					glVertex2f(0, 0);
+					glTexCoord2f(texImageWidth, texImageHeight);
+					glVertex2f(fboImageWidth, 0);
+					glTexCoord2f(texImageWidth, 0);
+					glVertex2f(fboImageWidth, fboImageHeight);
+					glEnd();		
+					
+				}
+				else
+				{
+					glBegin(GL_QUADS);
+					glTexCoord2f(0, 0);
+					glVertex2f(0, 0);
+					glTexCoord2f(0, texImageHeight); 
+					glVertex2f(0, fboImageHeight);
+					glTexCoord2f(texImageWidth, texImageHeight);
+					glVertex2f(fboImageWidth, fboImageHeight);
+					glTexCoord2f(texImageWidth, 0);
+					glVertex2f(fboImageWidth, 0);
+					glEnd();		
+				}				
+			}
+			else
+			{
+				// uh....
+			}
+		}
+		glBindTexture(fromTarget, 0);
+		glDisable(fromTarget);
+		
+		// Restore OpenGL states 
+		glMatrixMode(GL_MODELVIEW);
+		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		
+		// restore states // assume this is balanced with above 
+		glPopAttrib();
+		
+		// pop back to old FBO
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previousFBO);	
+		glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, previousReadFBO);
+		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, previousDrawFBO);
+		
+		glFlushRenderAPPLE();
+		
+		// delete our FBO so we dont leak.
+		glDeleteFramebuffersEXT(1, &fboID);
+		
+		CGLUnlockContext(cgl_ctx);
     }
     return toTextureRep;
 }
