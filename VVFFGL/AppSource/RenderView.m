@@ -122,8 +122,8 @@
 	    
 	    [image unlockTextureRectRepresentation];
 	} 
-	
 	/*
+
 	if ([image lockTexture2DRepresentation])
 	{
 	    // draw it
@@ -166,21 +166,7 @@
 	    [image unlockTexture2DRepresentation];
 	} 
 	*/
-	else if ([image lockBufferRepresentationWithPixelFormat:FFGLPixelFormatBGRA8888]) { // This won't be needed once FFGLImage can convert buffers->textures
-//        NSUInteger bpr = [image bufferBytesPerRow];
-        GLint w = [image bufferPixelsWide];
-        GLint h = [image bufferPixelsHigh];
-		CGPoint at = CGPointMake(floorf((bounds.size.width / 2.0) - (w / 2.0)), floorf((bounds.size.height / 2.0) - ( h / 2.0)));
-		GLbyte *pImage = (void *)[image bufferBaseAddress];
-		// 1 byte aligned, assuming FFGLImage buffers will always be so
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		
-		glWindowPos2i(at.x, at.y);
-		// Draw the pixmap
-		if(pImage != NULL)
-			glDrawPixels(w, h, GL_BGRA_EXT, GL_UNSIGNED_BYTE, pImage);
-
-    } else if (image != nil) {
+	else if (image != nil) {
         NSLog(@"lockBufferRepresentationWithPixelFormat failed");
     }
  
