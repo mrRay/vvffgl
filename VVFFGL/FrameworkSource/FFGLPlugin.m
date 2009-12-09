@@ -488,7 +488,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         else if ([format isEqualToString:FFGLPixelFormatBGR888] || [format isEqualToString:FFGLPixelFormatRGB888])
             videoInfo.BitDepth = FF_CAP_24BITVIDEO;
         else if ([format isEqualToString:FFGLPixelFormatBGR565] || [format isEqualToString:FFGLPixelFormatRGB565])
-            videoInfo.BitDepth == FF_CAP_16BITVIDEO;
+            videoInfo.BitDepth = FF_CAP_16BITVIDEO;
         else {
             [NSException raise:@"FFGLPluginException" format:@"Unrecognized pixelFormat."];
             return 0;
