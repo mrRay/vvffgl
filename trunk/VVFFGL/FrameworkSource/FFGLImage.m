@@ -75,6 +75,113 @@ static NSUInteger bytesPerPixelForPixelFormat(NSString *format) {
     }
 }
 
+static BOOL ffglGLInfoForPixelFormat(NSString *ffglFormat, GLenum *format, GLenum *type)
+{
+	/*
+	 I can't spot a difference using 5_6_5_REV and 5_6_5, etc. Anyone explain it? T.
+	 */
+	if ([ffglFormat isEqualToString:FFGLPixelFormatRGB565])
+	{
+		*format = GL_RGB;
+		*type = GL_UNSIGNED_SHORT_5_6_5;
+	}
+	else if ([ffglFormat isEqualToString:FFGLPixelFormatRGB888])
+	{
+		*format = GL_RGB;
+		*type = GL_UNSIGNED_BYTE;
+	}
+	else if ([ffglFormat isEqualToString:FFGLPixelFormatARGB8888])
+	{ 
+		*format = GL_BGRA;
+		*type = GL_UNSIGNED_INT_8_8_8_8_REV;
+	}
+	else if ([ffglFormat isEqualToString:FFGLPixelFormatBGR565])
+	{
+		*format = GL_RGB;
+		*type = GL_UNSIGNED_SHORT_5_6_5;
+	}
+	else if ([ffglFormat isEqualToString:FFGLPixelFormatBGR888])
+	{
+		*format = GL_RGB;
+		*type = GL_UNSIGNED_BYTE;
+	}
+	else if ([ffglFormat isEqualToString:FFGLPixelFormatBGRA8888])
+	{ 
+		*format = GL_BGRA;
+		*type = GL_UNSIGNED_INT_8_8_8_8_REV;
+	}
+	else {
+		return NO;
+	}
+	return YES;
+}
+
+static FFGLImageRep *FFGLBufferRepCreateFromTextureRep(CGLContextObj cgl_ctx, const FFGLImageRep *fromTextureRep, NSString *pixelFormat)
+{
+	GLenum targetGL;
+	if (fromTextureRep->type == FFGLImageRepTypeTexture2D)
+	{
+		targetGL = GL_TEXTURE_2D;
+
+	}
+	else if (fromTextureRep->type == FFGLImageRepTypeTextureRect)
+	{
+		targetGL = GL_TEXTURE_RECTANGLE_ARB;
+	}
+	else
+	{
+		return NULL;
+	}
+
+	unsigned int w = fromTextureRep->repInfo.textureInfo.width;
+	unsigned int h = fromTextureRep->repInfo.textureInfo.height;
+	GLenum format, type;
+	if (ffglGLInfoForPixelFormat(pixelFormat, &format, &type) == NO)
+	{
+		return NULL;
+	}
+	FFGLImageRep *rep = malloc(sizeof(FFGLImageRep));
+	if (rep != NULL)
+	{
+		GLvoid *buffer = malloc(w * h * bytesPerPixelForPixelFormat(pixelFormat) * 2);
+		if (buffer == NULL)
+		{
+			free(rep);
+			return NULL;
+		}
+
+		CGLLockContext(cgl_ctx);
+		glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
+		/* Anton, am I leaving GL in the state I found it at the end of this? T. */
+		glPixelStorei(GL_PACK_ROW_LENGTH, w);
+		glPixelStorei(GL_PACK_IMAGE_HEIGHT, h);
+		glPixelStorei(GL_PACK_ALIGNMENT, 1);
+		glEnable(targetGL);
+		glBindTexture(targetGL, fromTextureRep->repInfo.textureInfo.texture);
+		glGetTexImage(targetGL, 0, format, type, buffer);
+		GLenum error = glGetError();
+		glPopAttrib();
+		CGLUnlockContext(cgl_ctx);
+
+		if (error != GL_NO_ERROR)
+		{
+			free(buffer);
+			free(rep);
+			return NULL;
+		}
+		
+		rep->flipped = fromTextureRep->flipped;
+		rep->releaseCallback.bufferCallback = FFGLImageBufferRelease;
+		rep->releaseContext = NULL;
+		rep->type = FFGLImageRepTypeBuffer;
+		rep->repInfo.bufferInfo.buffer = buffer;
+		rep->repInfo.bufferInfo.pixelFormat = [pixelFormat retain];
+		rep->repInfo.bufferInfo.width = w;
+		rep->repInfo.bufferInfo.height = h;
+	}
+	return rep;
+}
+
 static FFGLImageRep *FFGLTextureRepCreateFromBufferRep(CGLContextObj cgl_ctx, const FFGLImageRep *fromBufferRep, FFGLImageRepType toTarget)
 {
 	GLenum targetGL;
@@ -104,46 +211,14 @@ static FFGLImageRep *FFGLTextureRepCreateFromBufferRep(CGLContextObj cgl_ctx, co
 	}
 	else
 	{
-		return nil;
+		return NULL;
 	}
 	
 	GLenum format;
 	GLenum type;
-#if __BIG_ENDIAN__
-	if ([fromBufferRep->repInfo.bufferInfo.pixelFormat isEqualToString:FFGLPixelFormatRGB565])
+	if (ffglGLInfoForPixelFormat(fromBufferRep->repInfo.bufferInfo.pixelFormat, &format, &type) == NO)
 	{
-		format = GL_RGB;
-		type = GL_UNSIGNED_SHORT_5_6_5;
-	}
-	else if ([fromBufferRep->repInfo.bufferInfo.pixelFormat isEqualToString:FFGLPixelFormatRGB888])
-	{
-		format = GL_RGB;
-		type = GL_UNSIGNED_BYTE;
-	}
-	else if ([fromBufferRep->repInfo.bufferInfo.pixelFormat isEqualToString:FFGLPixelFormatARGB8888])
-	{ 
-		format = GL_BGRA;
-		type = GL_UNSIGNED_INT_8_8_8_8_REV;
-	}
-#else
-	if ([fromBufferRep->repInfo.bufferInfo.pixelFormat isEqualToString:FFGLPixelFormatBGR565])
-	{
-		format = GL_BGR;
-		type = GL_UNSIGNED_SHORT_5_6_5;
-	}
-	else if ([fromBufferRep->repInfo.bufferInfo.pixelFormat isEqualToString:FFGLPixelFormatBGR888])
-	{
-		format = GL_BGR;
-		type = GL_UNSIGNED_BYTE;
-	}
-	else if ([fromBufferRep->repInfo.bufferInfo.pixelFormat isEqualToString:FFGLPixelFormatBGRA8888])
-	{ 
-		format = GL_BGRA;
-		type = GL_UNSIGNED_INT_8_8_8_8_REV;
-	}
-#endif
-	else {
-		return nil;
+		return NULL;
 	}
 	FFGLImageRep *rep = malloc(sizeof(FFGLImageRep));
 	
@@ -775,19 +850,27 @@ static void *FFGLImageBufferCreateCopy(const void *source, NSUInteger width, NSU
     pthread_mutex_lock(&_conversionLock);
     if (_buffer)
     {
-	if (![format isEqualToString:((FFGLImageRep *)_buffer)->repInfo.bufferInfo.pixelFormat])
-	{
-	    // We don't support converting between different formats (yet?).
-	}
-	else
-	{
-	    result = YES;
-	}
+		if (![format isEqualToString:((FFGLImageRep *)_buffer)->repInfo.bufferInfo.pixelFormat])
+		{
+			// We don't support converting between different formats (yet?).
+		}
+		else
+		{
+			result = YES;
+		}
     }
-    else
+    else if (_textureRect)
     {
-	// TODO: Conversion from GL textures.
+		_buffer = FFGLBufferRepCreateFromTextureRep(_context, _textureRect, format);
+		if (_buffer)
+			result = YES;
     }
+	else if (_texture2D)
+	{
+		_buffer = FFGLBufferRepCreateFromTextureRep(_context, _texture2D, format);
+		if (_buffer)
+			result = YES;
+	}
     pthread_mutex_unlock(&_conversionLock);
     return result;
 }
