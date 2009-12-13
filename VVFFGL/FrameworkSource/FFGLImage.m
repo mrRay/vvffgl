@@ -184,6 +184,7 @@ static FFGLImageRep *FFGLBufferRepCreateFromTextureRep(CGLContextObj cgl_ctx, co
 
 static FFGLImageRep *FFGLTextureRepCreateFromBufferRep(CGLContextObj cgl_ctx, const FFGLImageRep *fromBufferRep, FFGLImageRepType toTarget)
 {
+//	NSLog(@"Buffer->Texture");
 	GLenum targetGL;
 	unsigned int texWidth, texHeight;
 	if (toTarget == FFGLImageRepTypeTexture2D)
@@ -252,9 +253,21 @@ static FFGLImageRep *FFGLTextureRepCreateFromBufferRep(CGLContextObj cgl_ctx, co
 		glTexParameteri(targetGL, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(targetGL, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexImage2D(targetGL, 0, GL_RGBA8, rep->repInfo.textureInfo.hardwareWidth, rep->repInfo.textureInfo.hardwareHeight, 0, format, type, fromBufferRep->repInfo.bufferInfo.buffer);
+		GLenum error = glGetError();		
+		if (error != GL_NO_ERROR)
+		{
+			glBindTexture(targetGL, 0);
+			glDeleteTextures(1, &tex);
+		}
 		glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_FALSE);
 		glPopAttrib();
 		CGLUnlockContext(cgl_ctx);
+		if (error != GL_NO_ERROR)
+		{
+//			NSLog(@"Error");
+			free(rep);
+			return NULL;
+		}
 		rep->repInfo.textureInfo.texture = tex;
 	}
 	return rep;
