@@ -143,7 +143,7 @@ static FFGLImageRep *FFGLBufferRepCreateFromTextureRep(CGLContextObj cgl_ctx, co
 	FFGLImageRep *rep = malloc(sizeof(FFGLImageRep));
 	if (rep != NULL)
 	{
-		GLvoid *buffer = malloc(w * h * ffglBytesPerPixelForPixelFormat(pixelFormat) * 2);
+		GLvoid *buffer = valloc(w * h * ffglBytesPerPixelForPixelFormat(pixelFormat) * 2);
 		if (buffer == NULL)
 		{
 			free(rep);
@@ -520,13 +520,13 @@ static FFGLImageRep *FFGLBufferRepCreateFromBuffer(const void *source, NSUIntege
 				free(rep);
 				return NULL;
 			}
-			int soffset = 0;
-			int doffset = isFlipped ? newRowBytes * (height - 1) : 0;
+			const void *s = source;
+			void *d = newBuffer + (isFlipped ? newRowBytes * (height - 1) : 0);
 			int droller = isFlipped ? -newRowBytes : newRowBytes;
 			for (i = 0; i < height; i++) {
-				memcpy(newBuffer + doffset, source + soffset, newRowBytes);
-				soffset+=rowBytes;
-				doffset+=droller;
+				memcpy(d, s, newRowBytes);
+				s+=rowBytes;
+				d+=droller;
 			}
 			if (callback)
 				callback(source, userInfo);
