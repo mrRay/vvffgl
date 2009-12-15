@@ -151,8 +151,13 @@ static FFGLImageRep *FFGLBufferRepCreateFromTextureRep(CGLContextObj cgl_ctx, co
 		}
 
 		CGLLockContext(cgl_ctx);
+		// Save state, including those things not caught by glPushAttrib()
 		glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
-		/* Anton, am I leaving GL in the state I found it at the end of this? T. */
+		GLint prevRowLength, prevAlignment, prevImageHeight;
+		glGetIntegerv(GL_PACK_ALIGNMENT, &prevAlignment);
+		glGetIntegerv(GL_PACK_ROW_LENGTH, &prevRowLength);
+		glGetIntegerv(GL_PACK_IMAGE_HEIGHT, &prevImageHeight);
+		
 		glPixelStorei(GL_PACK_ROW_LENGTH, w);
 		glPixelStorei(GL_PACK_IMAGE_HEIGHT, h);
 		glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -160,7 +165,13 @@ static FFGLImageRep *FFGLBufferRepCreateFromTextureRep(CGLContextObj cgl_ctx, co
 		glBindTexture(targetGL, fromTextureRep->repInfo.textureInfo.texture);
 		glGetTexImage(targetGL, 0, format, type, buffer);
 		GLenum error = glGetError();
+		
+		// Restore state.
+		glPixelStorei(GL_UNPACK_ALIGNMENT, prevAlignment);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, prevRowLength);
+		glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, prevImageHeight);
 		glPopAttrib();
+		
 		CGLUnlockContext(cgl_ctx);
 
 		if (error != GL_NO_ERROR)
@@ -235,9 +246,17 @@ static FFGLImageRep *FFGLTextureRepCreateFromBufferRep(CGLContextObj cgl_ctx, co
 		rep->repInfo.textureInfo.hardwareHeight = texHeight;
 
 		CGLLockContext(cgl_ctx);
+		
+		// Save state, including those things not caught by glPushAttrib()
 		glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
-		GLuint tex;
+		GLint prevRowLength, prevAlignment, prevImageHeight, prevClientStorage;
+		glGetIntegerv(GL_UNPACK_ALIGNMENT, &prevAlignment);
+		glGetIntegerv(GL_UNPACK_ROW_LENGTH, &prevRowLength);
+		glGetIntegerv(GL_UNPACK_IMAGE_HEIGHT, &prevImageHeight);
+		glGetIntegerv(GL_UNPACK_CLIENT_STORAGE_APPLE, &prevClientStorage);
+
 		glEnable(targetGL);
+		GLuint tex;
 		glGenTextures(1, &tex);
 		glBindTexture(targetGL, tex);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -252,34 +271,35 @@ static FFGLImageRep *FFGLTextureRepCreateFromBufferRep(CGLContextObj cgl_ctx, co
 		glTexParameteri(targetGL, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(targetGL, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(targetGL, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
 		glTexImage2D(targetGL, 0, GL_RGBA8, rep->repInfo.textureInfo.hardwareWidth, rep->repInfo.textureInfo.hardwareHeight, 0, format, type, fromBufferRep->repInfo.bufferInfo.buffer);
-		GLenum error = glGetError();		
-		if (error != GL_NO_ERROR)
-		{
-			glBindTexture(targetGL, 0);
-			glDeleteTextures(1, &tex);
-		}
-		glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_FALSE);
+		
+		GLenum error = glGetError();
+		// We get the error now but wait until we've popped attributes so our texture is unbound
+		// when we delete it.
+		
+		// restore state.
+		glPixelStorei(GL_UNPACK_ALIGNMENT, prevAlignment);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, prevRowLength);
+		glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, prevImageHeight);
+		glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, prevClientStorage);
 		glPopAttrib();
-		CGLUnlockContext(cgl_ctx);
+		
 		if (error != GL_NO_ERROR)
 		{
-//			NSLog(@"Error");
+			glDeleteTextures(1, &tex);
 			free(rep);
-			return NULL;
+			rep = NULL;
 		}
-		rep->repInfo.textureInfo.texture = tex;
+		else
+		{
+			rep->repInfo.textureInfo.texture = tex;
+		}
+		CGLUnlockContext(cgl_ctx);
 	}
 	return rep;
 }
 
-/*
- swapTextureTargets
- Takes pointers to two FFGLTextureInfo structures and performs the TEXTURE_2D <-> TEXTURE_RECTANGLE conversion
- of fromTexture.
- On return toTexture will be filled out with details of a new texture.
- You are responsible for deleting this texture (using glDeleteTextures).
- */
 static FFGLImageRep *FFGLTextureRepCreateFromTextureRep(CGLContextObj cgl_ctx, const FFGLImageRep *fromTextureRep, GLenum toTarget)
 {
     if (cgl_ctx == NULL
