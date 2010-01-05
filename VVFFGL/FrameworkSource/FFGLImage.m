@@ -12,6 +12,9 @@
 
 #import <OpenGL/CGLMacro.h>
 
+// This makes a noticable difference with large images. I'll ditch option at some stage... just here for testing
+#define FFGL_USE_TEXTURE_RANGE 1
+
 #pragma mark Private image representation types and storage
 
 typedef NSUInteger FFGLImageRepType;
@@ -250,10 +253,20 @@ static FFGLImageRep *FFGLTextureRepCreateFromBufferRep(CGLContextObj cgl_ctx, co
 		// Save state, including those things not caught by glPushAttrib()
 		glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
 		GLint prevRowLength, prevAlignment, prevImageHeight, prevClientStorage;
+		
 		glGetIntegerv(GL_UNPACK_ALIGNMENT, &prevAlignment);
 		glGetIntegerv(GL_UNPACK_ROW_LENGTH, &prevRowLength);
 		glGetIntegerv(GL_UNPACK_IMAGE_HEIGHT, &prevImageHeight);
 		glGetIntegerv(GL_UNPACK_CLIENT_STORAGE_APPLE, &prevClientStorage);
+		
+#if defined(FFGL_USE_TEXTURE_RANGE)
+		GLint prevTextureRangeLength;
+		GLint prevTextureStorageHint;
+		GLvoid *prevTextureRangePointer;
+		glGetTexParameteriv(targetGL, GL_TEXTURE_RANGE_LENGTH_APPLE, &prevTextureRangeLength);
+		glGetTexParameterPointervAPPLE(targetGL, GL_TEXTURE_RANGE_POINTER_APPLE, &prevTextureRangePointer);
+		glGetTexParameteriv(targetGL, GL_TEXTURE_STORAGE_HINT_APPLE, &prevTextureStorageHint);
+#endif
 
 		glEnable(targetGL);
 		GLuint tex;
@@ -264,16 +277,19 @@ static FFGLImageRep *FFGLTextureRepCreateFromBufferRep(CGLContextObj cgl_ctx, co
 		glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, fromBufferRep->repInfo.bufferInfo.height);
 		// GL_UNPACK_CLIENT_STORAGE_APPLE tells GL to use our buffer in memory if possible, to avoid a copy to the GPU.
 		glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_TRUE);
-		// Set storage hint. Can also use GL_STORAGE_CACHED_APPLE see docs.
-		// This seems to have a noticable negative impact on performance, so I've disabled it... Needs more investigation. Tom.
-		//			glTexParameteri(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_STORAGE_HINT_APPLE , GL_STORAGE_SHARED_APPLE);
+		
+		// Set storage hint GL_STORAGE_SHARED_APPLE to tell GL to share storage with main memory.
+#if defined(FFGL_USE_TEXTURE_RANGE)
+		glTexParameteri(targetGL, GL_TEXTURE_STORAGE_HINT_APPLE , GL_STORAGE_SHARED_APPLE);
+		glTextureRangeAPPLE(targetGL, fromBufferRep->repInfo.bufferInfo.width * fromBufferRep->repInfo.bufferInfo.height, fromBufferRep->repInfo.bufferInfo.buffer);
+#endif
 		glTexParameteri(targetGL, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(targetGL, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(targetGL, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(targetGL, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		glTexImage2D(targetGL, 0, GL_RGBA8, rep->repInfo.textureInfo.hardwareWidth, rep->repInfo.textureInfo.hardwareHeight, 0, format, type, fromBufferRep->repInfo.bufferInfo.buffer);
-		
+
 		GLenum error = glGetError();
 		// We get the error now but wait until we've popped attributes so our texture is unbound
 		// when we delete it.
@@ -283,6 +299,10 @@ static FFGLImageRep *FFGLTextureRepCreateFromBufferRep(CGLContextObj cgl_ctx, co
 		glPixelStorei(GL_UNPACK_ROW_LENGTH, prevRowLength);
 		glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, prevImageHeight);
 		glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, prevClientStorage);
+#if defined(FFGL_USE_TEXTURE_RANGE)
+		glTextureRangeAPPLE(targetGL, prevTextureRangeLength, prevTextureRangePointer);
+		glTexParameteri(targetGL, GL_TEXTURE_STORAGE_HINT_APPLE, prevTextureStorageHint);
+#endif
 		glPopAttrib();
 		
 		if (error != GL_NO_ERROR)
