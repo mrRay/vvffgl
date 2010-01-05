@@ -143,7 +143,7 @@ static FFGLImageRep *FFGLBufferRepCreateFromTextureRep(CGLContextObj cgl_ctx, co
 	FFGLImageRep *rep = malloc(sizeof(FFGLImageRep));
 	if (rep != NULL)
 	{
-		GLvoid *buffer = valloc(w * h * ffglBytesPerPixelForPixelFormat(pixelFormat) * 2);
+		GLvoid *buffer = valloc(w * h * ffglBytesPerPixelForPixelFormat(pixelFormat));
 		if (buffer == NULL)
 		{
 			free(rep);
