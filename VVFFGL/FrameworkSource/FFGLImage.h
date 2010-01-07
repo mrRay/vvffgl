@@ -22,6 +22,7 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *co
     void		*_texture2D;
     void		*_textureRect;
     void		*_buffer;
+	BOOL		_usePOT2D;
 }
 
 /*
