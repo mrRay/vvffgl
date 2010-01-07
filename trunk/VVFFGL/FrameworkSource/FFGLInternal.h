@@ -37,12 +37,16 @@ typedef struct FFGLProcessGLStruct {
 } FFGLProcessGLStruct; // According to FF standard, do not modify.
 
 #pragma mark Utility Functions
-static inline unsigned int FFGLPOTDimension(unsigned int dimension)
+static inline unsigned int ffglPOTDimension(unsigned int dimension)
 {
     unsigned int glSize = 1;
     while (glSize<dimension) glSize<<=1;    
     return glSize;
 }
+
+bool ffglOpenGLSupportsExtension(CGLContextObj cgl_ctx, const char *extension);
+
+#define FFGLLocalized(s) [[NSBundle bundleForClass:[self class]] localizedStringForKey:s value:s table:nil]
 
 @interface FFGLPlugin (Instances)
 /*
