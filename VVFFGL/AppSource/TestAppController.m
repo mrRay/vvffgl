@@ -124,7 +124,7 @@
                 renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:[[_renderView openGLContext] CGLContextObj] pixelFormat:kFFPixelFormat outputHint:FFGLRendererHintNone size:kRenderDimensions] autorelease];
             }
         } else {
-            renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:[[_renderView openGLContext] CGLContextObj] pixelFormat:kFFPixelFormat outputHint:FFGLRendererHintTextureRect size:kRenderDimensions] autorelease];
+            renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:[[_renderView openGLContext] CGLContextObj] pixelFormat:kFFPixelFormat outputHint:FFGLRendererHintTexture2D size:kRenderDimensions] autorelease];
         }
         if (renderer == nil) {
             NSLog(@"Couldn't create plugin renderer.");
