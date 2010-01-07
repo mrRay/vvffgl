@@ -88,9 +88,16 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
 	{
 		_textureTarget = GL_TEXTURE_2D;
 		// In 10.5 some GPUs don't support non-power-of-two textures
-		// We could check for support for GL_ARB_texture_non_power_of_two but meh...
-		_textureWidth = FFGLPOTDimension(_size.width);
-		_textureHeight = FFGLPOTDimension(_size.height);
+		if (ffglOpenGLSupportsExtension(context, "GL_ARB_texture_non_power_of_two"))
+		{
+			_textureWidth = _size.width;
+			_textureHeight = _size.height;
+		}
+		else
+		{
+			_textureWidth = ffglPOTDimension(_size.width);
+			_textureHeight = ffglPOTDimension(_size.height);
+		}
 	}
 
 #if defined(FFGL_USE_TEXTURE_POOLS)
