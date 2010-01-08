@@ -287,7 +287,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         result = _pluginData->main(FF_GETPLUGINCAPS, (FFMixed)FF_CAP_MAXIMUMINPUTFRAMES, 0);
         _pluginData->maxFrames = result.UIntValue;
         for (i = 0; i < _pluginData->minFrames; i++) {
-            pName = [NSString stringWithFormat:@"Image %u", i+1];
+            pName = [NSString stringWithFormat:@"%@ %u", FFGLLocalized(@"Image"), i+1];
             pAttributes = [NSDictionary dictionaryWithObjectsAndKeys:FFGLParameterTypeImage, FFGLParameterAttributeTypeKey,
                            pName, FFGLParameterAttributeNameKey, [NSNumber numberWithBool:YES], FFGLParameterAttributeRequiredKey, 
                            [NSNumber numberWithUnsignedInt:i], FFGLParameterAttributeIndexKey, nil];
@@ -295,7 +295,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 			[(NSMutableArray *)_pluginData->sortedParameterKeys addObject:pName];
         }
         for (; i < _pluginData->maxFrames; i++) {
-            pName = [NSString stringWithFormat:@"Image %u", i+1];
+            pName = [NSString stringWithFormat:@"%@ %u", FFGLLocalized(@"Image"), i+1];
             pAttributes = [NSDictionary dictionaryWithObjectsAndKeys:FFGLParameterTypeImage, FFGLParameterAttributeTypeKey,
                            pName, FFGLParameterAttributeNameKey, [NSNumber numberWithBool:NO], FFGLParameterAttributeRequiredKey,
                            [NSNumber numberWithUnsignedInt:i], FFGLParameterAttributeIndexKey, nil];
@@ -352,7 +352,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
                     [pAttributes setValue:[NSString stringWithFFPluginDubiousBytes:result.PointerValue nominalLength:16]
                                    forKey:FFGLParameterAttributeNameKey];
                 } else {
-                    [pAttributes setValue:@"Untitled Parameter" forKey:FFGLParameterAttributeNameKey];
+                    [pAttributes setValue:FFGLLocalized(@"Untitled Parameter") forKey:FFGLParameterAttributeNameKey];
                 }
                 [pAttributes setValue:[NSNumber numberWithBool:YES] forKey:FFGLParameterAttributeRequiredKey];
                 [pAttributes setValue:[NSNumber numberWithUnsignedInt:i] forKey:FFGLParameterAttributeIndexKey];
