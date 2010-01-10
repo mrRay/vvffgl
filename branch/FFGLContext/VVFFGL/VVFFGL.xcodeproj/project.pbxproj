@@ -1,0 +1,526 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1B07E19A10785E3B005479A1 /* TestAppController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B07E19710785E3B005479A1 /* TestAppController.m */; };
+		1BCF31B1101A5AEC00D50A21 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BCF31B0101A5AEC00D50A21 /* OpenGL.framework */; };
+		1BCF31B2101A5AEC00D50A21 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BCF31B0101A5AEC00D50A21 /* OpenGL.framework */; };
+		9606B16C1017624000CC50B7 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
+		9606B185101763A200CC50B7 /* VVFFGL.h in Headers */ = {isa = PBXBuildFile; fileRef = 9606B184101763A200CC50B7 /* VVFFGL.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		9606B18F101763C900CC50B7 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9606B18D101763C900CC50B7 /* MainMenu.xib */; };
+		9606B190101763C900CC50B7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 9606B18E101763C900CC50B7 /* main.m */; };
+		969166531017650F0078DF52 /* VVFFGL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9606B14D101761EF00CC50B7 /* VVFFGL.framework */; };
+		BD0F713810AC3F680092A8F9 /* FFGLContext.h in Headers */ = {isa = PBXBuildFile; fileRef = BD0F713610AC3F680092A8F9 /* FFGLContext.h */; };
+		BD0F713910AC3F680092A8F9 /* FFGLContext.m in Sources */ = {isa = PBXBuildFile; fileRef = BD0F713710AC3F680092A8F9 /* FFGLContext.m */; };
+		BD617C96107DE03100125336 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BD617C95107DE03100125336 /* QuartzCore.framework */; };
+		BD7410801080F81A00BF8285 /* ParametersView.m in Sources */ = {isa = PBXBuildFile; fileRef = BD74107F1080F81A00BF8285 /* ParametersView.m */; };
+		BD8E3C681030DBDB00152772 /* FFGLCPURenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = BD8E3C661030DBDB00152772 /* FFGLCPURenderer.h */; };
+		BD8E3C691030DBDB00152772 /* FFGLCPURenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = BD8E3C671030DBDB00152772 /* FFGLCPURenderer.m */; };
+		BD8E3C6C1030DC1800152772 /* FFGLGPURenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = BD8E3C6A1030DC1800152772 /* FFGLGPURenderer.h */; };
+		BD8E3C6D1030DC1800152772 /* FFGLGPURenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = BD8E3C6B1030DC1800152772 /* FFGLGPURenderer.m */; };
+		BD8E3CC21030ED2200152772 /* FFGLRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = BD93426D101A56F600C4B805 /* FFGLRenderer.m */; };
+		BD90FA841078EA6D009A6273 /* RenderView.m in Sources */ = {isa = PBXBuildFile; fileRef = BD90FA831078EA6D009A6273 /* RenderView.m */; };
+		BD90FABF1078FEB5009A6273 /* RenderChain.m in Sources */ = {isa = PBXBuildFile; fileRef = BD90FABE1078FEB5009A6273 /* RenderChain.m */; };
+		BD9132F8107D2D600095AA79 /* FFGLInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9132F7107D2D600095AA79 /* FFGLInternal.h */; };
+		BD923A0010837AC60036739C /* FFGLRenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = BD93426C101A56F600C4B805 /* FFGLRenderer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		BD9F49C11098D55F00E8A7C0 /* FFGLFreeFrame.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F49C01098D55F00E8A7C0 /* FFGLFreeFrame.h */; };
+		BD9F6C8E101945AE004D8CD9 /* FFGLPlugin.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6C8A101945AE004D8CD9 /* FFGLPlugin.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		BD9F6C8F101945AE004D8CD9 /* FFGLPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = BD9F6C8B101945AE004D8CD9 /* FFGLPlugin.m */; };
+		BD9F6C90101945AE004D8CD9 /* FFGLPluginManager.h in Headers */ = {isa = PBXBuildFile; fileRef = BD9F6C8C101945AE004D8CD9 /* FFGLPluginManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		BD9F6C91101945AE004D8CD9 /* FFGLPluginManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BD9F6C8D101945AE004D8CD9 /* FFGLPluginManager.m */; };
+		BDA25B51102B9030000BE743 /* VVFFGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9606B14D101761EF00CC50B7 /* VVFFGL.framework */; };
+		BDA64DA410A1006600E010AF /* FFGLPool.h in Headers */ = {isa = PBXBuildFile; fileRef = BDA64DA210A1006600E010AF /* FFGLPool.h */; };
+		BDA64DA510A1006600E010AF /* FFGLPool.c in Sources */ = {isa = PBXBuildFile; fileRef = BDA64DA310A1006600E010AF /* FFGLPool.c */; };
+		BDA64DE710A1186500E010AF /* VVFFGL_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = BDA64DE610A1186500E010AF /* VVFFGL_Prefix.pch */; };
+		BDAA2CCC107928A90053E947 /* FFGLImage.h in Headers */ = {isa = PBXBuildFile; fileRef = BDAA2CCA107928A90053E947 /* FFGLImage.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		BDAA2CCD107928A90053E947 /* FFGLImage.m in Sources */ = {isa = PBXBuildFile; fileRef = BDAA2CCB107928A90053E947 /* FFGLImage.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		9691666A101765230078DF52 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9606B14C101761EF00CC50B7;
+			remoteInfo = VVFFGL;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		969166811017653F0078DF52 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				969166531017650F0078DF52 /* VVFFGL.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		1B07E19610785E3B005479A1 /* TestAppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TestAppController.h; path = AppSource/TestAppController.h; sourceTree = "<group>"; };
+		1B07E19710785E3B005479A1 /* TestAppController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TestAppController.m; path = AppSource/TestAppController.m; sourceTree = "<group>"; };
+		1BCF31B0101A5AEC00D50A21 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
+		9606B14D101761EF00CC50B7 /* VVFFGL.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = VVFFGL.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9606B14E101761EF00CC50B7 /* VVFFGL-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "VVFFGL-Info.plist"; path = "FrameworkSource/VVFFGL-Info.plist"; sourceTree = "<group>"; };
+		9606B15C1017621200CC50B7 /* FFGLTestApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FFGLTestApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9606B15E1017621200CC50B7 /* FFGLTestApp-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "FFGLTestApp-Info.plist"; path = "AppSource/FFGLTestApp-Info.plist"; sourceTree = "<group>"; };
+		9606B184101763A200CC50B7 /* VVFFGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VVFFGL.h; path = FrameworkSource/VVFFGL.h; sourceTree = "<group>"; };
+		9606B18D101763C900CC50B7 /* MainMenu.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = MainMenu.xib; path = AppSource/MainMenu.xib; sourceTree = "<group>"; };
+		9606B18E101763C900CC50B7 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = AppSource/main.m; sourceTree = "<group>"; };
+		BD0F713610AC3F680092A8F9 /* FFGLContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLContext.h; path = FrameworkSource/FFGLContext.h; sourceTree = "<group>"; };
+		BD0F713710AC3F680092A8F9 /* FFGLContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLContext.m; path = FrameworkSource/FFGLContext.m; sourceTree = "<group>"; };
+		BD4A78FD109B94B80018ABBD /* TODO.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TODO.txt; sourceTree = "<group>"; };
+		BD617C95107DE03100125336 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		BD74107E1080F81900BF8285 /* ParametersView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ParametersView.h; path = AppSource/ParametersView.h; sourceTree = "<group>"; };
+		BD74107F1080F81A00BF8285 /* ParametersView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ParametersView.m; path = AppSource/ParametersView.m; sourceTree = "<group>"; };
+		BD8E3C661030DBDB00152772 /* FFGLCPURenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLCPURenderer.h; path = FrameworkSource/FFGLCPURenderer.h; sourceTree = "<group>"; };
+		BD8E3C671030DBDB00152772 /* FFGLCPURenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLCPURenderer.m; path = FrameworkSource/FFGLCPURenderer.m; sourceTree = "<group>"; };
+		BD8E3C6A1030DC1800152772 /* FFGLGPURenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLGPURenderer.h; path = FrameworkSource/FFGLGPURenderer.h; sourceTree = "<group>"; };
+		BD8E3C6B1030DC1800152772 /* FFGLGPURenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLGPURenderer.m; path = FrameworkSource/FFGLGPURenderer.m; sourceTree = "<group>"; };
+		BD90FA821078EA6D009A6273 /* RenderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RenderView.h; path = AppSource/RenderView.h; sourceTree = "<group>"; };
+		BD90FA831078EA6D009A6273 /* RenderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RenderView.m; path = AppSource/RenderView.m; sourceTree = "<group>"; };
+		BD90FABD1078FEB5009A6273 /* RenderChain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RenderChain.h; path = AppSource/RenderChain.h; sourceTree = "<group>"; };
+		BD90FABE1078FEB5009A6273 /* RenderChain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RenderChain.m; path = AppSource/RenderChain.m; sourceTree = "<group>"; };
+		BD9132F7107D2D600095AA79 /* FFGLInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLInternal.h; path = FrameworkSource/FFGLInternal.h; sourceTree = "<group>"; };
+		BD93426C101A56F600C4B805 /* FFGLRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLRenderer.h; path = FrameworkSource/FFGLRenderer.h; sourceTree = "<group>"; };
+		BD93426D101A56F600C4B805 /* FFGLRenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLRenderer.m; path = FrameworkSource/FFGLRenderer.m; sourceTree = "<group>"; };
+		BD9F49C01098D55F00E8A7C0 /* FFGLFreeFrame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLFreeFrame.h; path = FrameworkSource/FFGLFreeFrame.h; sourceTree = "<group>"; };
+		BD9F6C8A101945AE004D8CD9 /* FFGLPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLPlugin.h; path = FrameworkSource/FFGLPlugin.h; sourceTree = "<group>"; };
+		BD9F6C8B101945AE004D8CD9 /* FFGLPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLPlugin.m; path = FrameworkSource/FFGLPlugin.m; sourceTree = "<group>"; };
+		BD9F6C8C101945AE004D8CD9 /* FFGLPluginManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLPluginManager.h; path = FrameworkSource/FFGLPluginManager.h; sourceTree = "<group>"; };
+		BD9F6C8D101945AE004D8CD9 /* FFGLPluginManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLPluginManager.m; path = FrameworkSource/FFGLPluginManager.m; sourceTree = "<group>"; };
+		BDA64DA210A1006600E010AF /* FFGLPool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLPool.h; path = FrameworkSource/FFGLPool.h; sourceTree = "<group>"; };
+		BDA64DA310A1006600E010AF /* FFGLPool.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = FFGLPool.c; path = FrameworkSource/FFGLPool.c; sourceTree = "<group>"; };
+		BDA64DE610A1186500E010AF /* VVFFGL_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VVFFGL_Prefix.pch; sourceTree = "<group>"; };
+		BDAA2CCA107928A90053E947 /* FFGLImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLImage.h; path = FrameworkSource/FFGLImage.h; sourceTree = "<group>"; };
+		BDAA2CCB107928A90053E947 /* FFGLImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLImage.m; path = FrameworkSource/FFGLImage.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		9606B14B101761EF00CC50B7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9606B16C1017624000CC50B7 /* Cocoa.framework in Frameworks */,
+				1BCF31B1101A5AEC00D50A21 /* OpenGL.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9606B15A1017621200CC50B7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BDA25B51102B9030000BE743 /* VVFFGL.framework in Frameworks */,
+				1BCF31B2101A5AEC00D50A21 /* OpenGL.framework in Frameworks */,
+				BD617C96107DE03100125336 /* QuartzCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		034768DFFF38A50411DB9C8B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9606B14D101761EF00CC50B7 /* VVFFGL.framework */,
+				9606B15C1017621200CC50B7 /* FFGLTestApp.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0867D691FE84028FC02AAC07 /* VVOpenSource */ = {
+			isa = PBXGroup;
+			children = (
+				BD4A78FC109B949C0018ABBD /* Administrivia */,
+				9606B186101763A700CC50B7 /* Framework */,
+				9606B191101763CC00CC50B7 /* Test App */,
+				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
+				034768DFFF38A50411DB9C8B /* Products */,
+				BD617C95107DE03100125336 /* QuartzCore.framework */,
+			);
+			name = VVOpenSource;
+			sourceTree = "<group>";
+		};
+		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				1BCF31B0101A5AEC00D50A21 /* OpenGL.framework */,
+				1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */,
+			);
+			name = "External Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		9606B186101763A700CC50B7 /* Framework */ = {
+			isa = PBXGroup;
+			children = (
+				BD8E3C641030DB4100152772 /* Public Headers */,
+				BD8E3C651030DB4A00152772 /* Private */,
+				9606B14E101761EF00CC50B7 /* VVFFGL-Info.plist */,
+			);
+			name = Framework;
+			sourceTree = "<group>";
+		};
+		9606B191101763CC00CC50B7 /* Test App */ = {
+			isa = PBXGroup;
+			children = (
+				9606B15E1017621200CC50B7 /* FFGLTestApp-Info.plist */,
+				9606B18D101763C900CC50B7 /* MainMenu.xib */,
+				9606B18E101763C900CC50B7 /* main.m */,
+				BD74107E1080F81900BF8285 /* ParametersView.h */,
+				BD74107F1080F81A00BF8285 /* ParametersView.m */,
+				1B07E19610785E3B005479A1 /* TestAppController.h */,
+				1B07E19710785E3B005479A1 /* TestAppController.m */,
+				BD90FA821078EA6D009A6273 /* RenderView.h */,
+				BD90FA831078EA6D009A6273 /* RenderView.m */,
+				BD90FABD1078FEB5009A6273 /* RenderChain.h */,
+				BD90FABE1078FEB5009A6273 /* RenderChain.m */,
+			);
+			name = "Test App";
+			sourceTree = "<group>";
+		};
+		BD4A78FC109B949C0018ABBD /* Administrivia */ = {
+			isa = PBXGroup;
+			children = (
+				BD4A78FD109B94B80018ABBD /* TODO.txt */,
+			);
+			name = Administrivia;
+			sourceTree = "<group>";
+		};
+		BD8E3C641030DB4100152772 /* Public Headers */ = {
+			isa = PBXGroup;
+			children = (
+				BD9F6C8A101945AE004D8CD9 /* FFGLPlugin.h */,
+				BD9F6C8C101945AE004D8CD9 /* FFGLPluginManager.h */,
+				BD0F713610AC3F680092A8F9 /* FFGLContext.h */,
+				BD93426C101A56F600C4B805 /* FFGLRenderer.h */,
+				BDAA2CCA107928A90053E947 /* FFGLImage.h */,
+				9606B184101763A200CC50B7 /* VVFFGL.h */,
+			);
+			name = "Public Headers";
+			sourceTree = "<group>";
+		};
+		BD8E3C651030DB4A00152772 /* Private */ = {
+			isa = PBXGroup;
+			children = (
+				BD9F49C01098D55F00E8A7C0 /* FFGLFreeFrame.h */,
+				BD9132F7107D2D600095AA79 /* FFGLInternal.h */,
+				BD9F6C8B101945AE004D8CD9 /* FFGLPlugin.m */,
+				BD9F6C8D101945AE004D8CD9 /* FFGLPluginManager.m */,
+				BD93426D101A56F600C4B805 /* FFGLRenderer.m */,
+				BD8E3C661030DBDB00152772 /* FFGLCPURenderer.h */,
+				BD8E3C671030DBDB00152772 /* FFGLCPURenderer.m */,
+				BD8E3C6A1030DC1800152772 /* FFGLGPURenderer.h */,
+				BD8E3C6B1030DC1800152772 /* FFGLGPURenderer.m */,
+				BDAA2CCB107928A90053E947 /* FFGLImage.m */,
+				BD0F713710AC3F680092A8F9 /* FFGLContext.m */,
+				BDA64DA210A1006600E010AF /* FFGLPool.h */,
+				BDA64DA310A1006600E010AF /* FFGLPool.c */,
+				BDA64DE610A1186500E010AF /* VVFFGL_Prefix.pch */,
+			);
+			name = Private;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		9606B148101761EF00CC50B7 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BD923A0010837AC60036739C /* FFGLRenderer.h in Headers */,
+				9606B185101763A200CC50B7 /* VVFFGL.h in Headers */,
+				BD9F6C8E101945AE004D8CD9 /* FFGLPlugin.h in Headers */,
+				BD9F6C90101945AE004D8CD9 /* FFGLPluginManager.h in Headers */,
+				BD8E3C681030DBDB00152772 /* FFGLCPURenderer.h in Headers */,
+				BD8E3C6C1030DC1800152772 /* FFGLGPURenderer.h in Headers */,
+				BDAA2CCC107928A90053E947 /* FFGLImage.h in Headers */,
+				BD9132F8107D2D600095AA79 /* FFGLInternal.h in Headers */,
+				BD9F49C11098D55F00E8A7C0 /* FFGLFreeFrame.h in Headers */,
+				BDA64DA410A1006600E010AF /* FFGLPool.h in Headers */,
+				BDA64DE710A1186500E010AF /* VVFFGL_Prefix.pch in Headers */,
+				BD0F713810AC3F680092A8F9 /* FFGLContext.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		9606B14C101761EF00CC50B7 /* VVFFGL */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9606B151101761F000CC50B7 /* Build configuration list for PBXNativeTarget "VVFFGL" */;
+			buildPhases = (
+				9606B148101761EF00CC50B7 /* Headers */,
+				9606B149101761EF00CC50B7 /* Resources */,
+				9606B14A101761EF00CC50B7 /* Sources */,
+				9606B14B101761EF00CC50B7 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VVFFGL;
+			productName = VVFFGL;
+			productReference = 9606B14D101761EF00CC50B7 /* VVFFGL.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		9606B15B1017621200CC50B7 /* FFGLTestApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9606B1611017621200CC50B7 /* Build configuration list for PBXNativeTarget "FFGLTestApp" */;
+			buildPhases = (
+				969166811017653F0078DF52 /* CopyFiles */,
+				9606B1581017621200CC50B7 /* Resources */,
+				9606B1591017621200CC50B7 /* Sources */,
+				9606B15A1017621200CC50B7 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9691666B101765230078DF52 /* PBXTargetDependency */,
+			);
+			name = FFGLTestApp;
+			productName = FFGLTestApp;
+			productReference = 9606B15C1017621200CC50B7 /* FFGLTestApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0867D690FE84028FC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "VVFFGL" */;
+			compatibilityVersion = "Xcode 3.1";
+			hasScannedForEncodings = 1;
+			mainGroup = 0867D691FE84028FC02AAC07 /* VVOpenSource */;
+			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				9606B14C101761EF00CC50B7 /* VVFFGL */,
+				9606B15B1017621200CC50B7 /* FFGLTestApp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		9606B149101761EF00CC50B7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9606B1581017621200CC50B7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9606B18F101763C900CC50B7 /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9606B14A101761EF00CC50B7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BD9F6C8F101945AE004D8CD9 /* FFGLPlugin.m in Sources */,
+				BD9F6C91101945AE004D8CD9 /* FFGLPluginManager.m in Sources */,
+				BD8E3C691030DBDB00152772 /* FFGLCPURenderer.m in Sources */,
+				BD8E3C6D1030DC1800152772 /* FFGLGPURenderer.m in Sources */,
+				BD8E3CC21030ED2200152772 /* FFGLRenderer.m in Sources */,
+				BDAA2CCD107928A90053E947 /* FFGLImage.m in Sources */,
+				BDA64DA510A1006600E010AF /* FFGLPool.c in Sources */,
+				BD0F713910AC3F680092A8F9 /* FFGLContext.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9606B1591017621200CC50B7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9606B190101763C900CC50B7 /* main.m in Sources */,
+				1B07E19A10785E3B005479A1 /* TestAppController.m in Sources */,
+				BD90FA841078EA6D009A6273 /* RenderView.m in Sources */,
+				BD90FABF1078FEB5009A6273 /* RenderChain.m in Sources */,
+				BD7410801080F81A00BF8285 /* ParametersView.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9691666B101765230078DF52 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9606B14C101761EF00CC50B7 /* VVFFGL */;
+			targetProxy = 9691666A101765230078DF52 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB91B208733DA50010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_ENABLE_SYMBOL_SEPARATION = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PREBINDING = NO;
+				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = NO;
+				SDKROOT = macosx10.5;
+			};
+			name = Debug;
+		};
+		1DEB91B308733DA50010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx10.5;
+			};
+			name = Release;
+		};
+		9606B14F101761F000CC50B7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COPY_PHASE_STRIP = NO;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_ENABLE_SYMBOL_SEPARATION = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = VVFFGL_Prefix.pch;
+				INFOPLIST_FILE = "./FrameworkSource/VVFFGL-Info.plist";
+				INSTALL_PATH = "@loader_path/../Frameworks";
+				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = YES;
+				PRODUCT_NAME = VVFFGL;
+			};
+			name = Debug;
+		};
+		9606B150101761F000CC50B7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = VVFFGL_Prefix.pch;
+				INFOPLIST_FILE = "./FrameworkSource/VVFFGL-Info.plist";
+				INSTALL_PATH = "@loader_path/../Frameworks";
+				PRODUCT_NAME = VVFFGL;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		9606B15F1017621200CC50B7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INFOPLIST_FILE = "./AppSource/FFGLTestApp-Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = FFGLTestApp;
+			};
+			name = Debug;
+		};
+		9606B1601017621200CC50B7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INFOPLIST_FILE = "./AppSource/FFGLTestApp-Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = FFGLTestApp;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "VVFFGL" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB91B208733DA50010E9CD /* Debug */,
+				1DEB91B308733DA50010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9606B151101761F000CC50B7 /* Build configuration list for PBXNativeTarget "VVFFGL" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9606B14F101761F000CC50B7 /* Debug */,
+				9606B150101761F000CC50B7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9606B1611017621200CC50B7 /* Build configuration list for PBXNativeTarget "FFGLTestApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9606B15F1017621200CC50B7 /* Debug */,
+				9606B1601017621200CC50B7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0867D690FE84028FC02AAC07 /* Project object */;
+}
