@@ -20,7 +20,9 @@
     GLuint _rendererDepthBuffer;	// depth buffer
     NSUInteger _textureWidth;
     NSUInteger _textureHeight;
+#if defined(FFGL_USE_TEXTURE_POOLS)
     FFGLPoolRef _pool;
+#endif
 	//	GLuint _rendererFBOTexture;	// COLOR_ATTACHMENT_0 for our above FBO
 }
 

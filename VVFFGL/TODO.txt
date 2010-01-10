@@ -1,14 +1,16 @@
 Yo, add to this, mark things done, reasign, comment, whateverrrrr.
 
-1. Buffer <-> texture conversion in FFGLImage - Anton?
+1. Buffer <-> texture conversion in FFGLImage - Anton? DONE by Tom
 
 2. Documentation in headers (and elsewhere?) - whoever
 2.1 - Copyright/Credits in headers - check with VV.
 
 3. 64-bit: continue interaction with FF list to get a standard agreed so we can release with it. - Tom
 
-4. Check we always restore GL state - Anton
+4. Check we always restore GL state - Anton... in progress by Tom
 
-5. Possibly exception handling for plugins - Tom
+5. Possibly exception handling for plugins - Tom no
 
 6. Continue interaction with FF list on other matters (TEXTURE_RECT, multithreading, whatever else).
+
+7. Play with FFGLContext

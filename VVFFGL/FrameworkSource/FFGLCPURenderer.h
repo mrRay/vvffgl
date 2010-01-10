@@ -16,7 +16,9 @@
     BOOL _frameCopies;
     NSUInteger _bytesPerRow;
     size_t _bytesPerBuffer;
+#if defined(FFGL_USE_BUFFER_POOLS)
     FFGLPoolRef _pool;
+#endif
 }
 
 @end

@@ -9,8 +9,6 @@
 #import "FFGLImage.h"
 #import <QuartzCore/QuartzCore.h>
 
-#define FFGL_USE_BUFFER_POOLS 1
-
 #if defined(FFGL_USE_BUFFER_POOLS)
 
 static const void *FFGLCPURendererBufferCreate(const void *userInfo)
