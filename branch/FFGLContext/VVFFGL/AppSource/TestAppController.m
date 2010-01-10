@@ -129,7 +129,7 @@
                 renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:_context outputHint:FFGLRendererHintNone] autorelease];
             }
         } else {
-            renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:_context outputHint:FFGLRendererHintTextureRect] autorelease];
+            renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:_context outputHint:FFGLRendererHintTexture2D] autorelease];
         }
         if (renderer == nil) {
             NSLog(@"Couldn't create plugin renderer.");

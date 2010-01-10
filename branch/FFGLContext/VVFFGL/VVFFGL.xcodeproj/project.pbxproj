@@ -15,10 +15,9 @@
 		9606B18F101763C900CC50B7 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9606B18D101763C900CC50B7 /* MainMenu.xib */; };
 		9606B190101763C900CC50B7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 9606B18E101763C900CC50B7 /* main.m */; };
 		969166531017650F0078DF52 /* VVFFGL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9606B14D101761EF00CC50B7 /* VVFFGL.framework */; };
-		BD0F713810AC3F680092A8F9 /* FFGLContext.h in Headers */ = {isa = PBXBuildFile; fileRef = BD0F713610AC3F680092A8F9 /* FFGLContext.h */; };
-		BD0F713910AC3F680092A8F9 /* FFGLContext.m in Sources */ = {isa = PBXBuildFile; fileRef = BD0F713710AC3F680092A8F9 /* FFGLContext.m */; };
-		BD617C96107DE03100125336 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BD617C95107DE03100125336 /* QuartzCore.framework */; };
+		BD5A42E110ECA82800C02884 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = BD5A42E010ECA82800C02884 /* Localizable.strings */; };
 		BD7410801080F81A00BF8285 /* ParametersView.m in Sources */ = {isa = PBXBuildFile; fileRef = BD74107F1080F81A00BF8285 /* ParametersView.m */; };
+		BD7A934610F6A2E1009A3D98 /* FFGLUtilityFunctions.c in Sources */ = {isa = PBXBuildFile; fileRef = BD7A934510F6A2E1009A3D98 /* FFGLUtilityFunctions.c */; };
 		BD8E3C681030DBDB00152772 /* FFGLCPURenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = BD8E3C661030DBDB00152772 /* FFGLCPURenderer.h */; };
 		BD8E3C691030DBDB00152772 /* FFGLCPURenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = BD8E3C671030DBDB00152772 /* FFGLCPURenderer.m */; };
 		BD8E3C6C1030DC1800152772 /* FFGLGPURenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = BD8E3C6A1030DC1800152772 /* FFGLGPURenderer.h */; };
@@ -39,6 +38,7 @@
 		BDA64DE710A1186500E010AF /* VVFFGL_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = BDA64DE610A1186500E010AF /* VVFFGL_Prefix.pch */; };
 		BDAA2CCC107928A90053E947 /* FFGLImage.h in Headers */ = {isa = PBXBuildFile; fileRef = BDAA2CCA107928A90053E947 /* FFGLImage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BDAA2CCD107928A90053E947 /* FFGLImage.m in Sources */ = {isa = PBXBuildFile; fileRef = BDAA2CCB107928A90053E947 /* FFGLImage.m */; };
+		BDD80C5E10FA8B51004C6A1B /* FFGLContext.m in Sources */ = {isa = PBXBuildFile; fileRef = BD0F713710AC3F680092A8F9 /* FFGLContext.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,9 +79,10 @@
 		BD0F713610AC3F680092A8F9 /* FFGLContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLContext.h; path = FrameworkSource/FFGLContext.h; sourceTree = "<group>"; };
 		BD0F713710AC3F680092A8F9 /* FFGLContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLContext.m; path = FrameworkSource/FFGLContext.m; sourceTree = "<group>"; };
 		BD4A78FD109B94B80018ABBD /* TODO.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TODO.txt; sourceTree = "<group>"; };
-		BD617C95107DE03100125336 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		BD5A42C310ECA65E00C02884 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = FrameworkSource/English.lproj/Localizable.strings; sourceTree = "<group>"; };
 		BD74107E1080F81900BF8285 /* ParametersView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ParametersView.h; path = AppSource/ParametersView.h; sourceTree = "<group>"; };
 		BD74107F1080F81A00BF8285 /* ParametersView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ParametersView.m; path = AppSource/ParametersView.m; sourceTree = "<group>"; };
+		BD7A934510F6A2E1009A3D98 /* FFGLUtilityFunctions.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = FFGLUtilityFunctions.c; path = FrameworkSource/FFGLUtilityFunctions.c; sourceTree = "<group>"; };
 		BD8E3C661030DBDB00152772 /* FFGLCPURenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLCPURenderer.h; path = FrameworkSource/FFGLCPURenderer.h; sourceTree = "<group>"; };
 		BD8E3C671030DBDB00152772 /* FFGLCPURenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLCPURenderer.m; path = FrameworkSource/FFGLCPURenderer.m; sourceTree = "<group>"; };
 		BD8E3C6A1030DC1800152772 /* FFGLGPURenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLGPURenderer.h; path = FrameworkSource/FFGLGPURenderer.h; sourceTree = "<group>"; };
@@ -121,7 +122,6 @@
 			files = (
 				BDA25B51102B9030000BE743 /* VVFFGL.framework in Frameworks */,
 				1BCF31B2101A5AEC00D50A21 /* OpenGL.framework in Frameworks */,
-				BD617C96107DE03100125336 /* QuartzCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -145,7 +145,6 @@
 				9606B191101763CC00CC50B7 /* Test App */,
 				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
 				034768DFFF38A50411DB9C8B /* Products */,
-				BD617C95107DE03100125336 /* QuartzCore.framework */,
 			);
 			name = VVOpenSource;
 			sourceTree = "<group>";
@@ -164,6 +163,7 @@
 			children = (
 				BD8E3C641030DB4100152772 /* Public Headers */,
 				BD8E3C651030DB4A00152772 /* Private */,
+				BD5A42CD10ECA74C00C02884 /* Resources */,
 				9606B14E101761EF00CC50B7 /* VVFFGL-Info.plist */,
 			);
 			name = Framework;
@@ -195,6 +195,14 @@
 			name = Administrivia;
 			sourceTree = "<group>";
 		};
+		BD5A42CD10ECA74C00C02884 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				BD5A42E010ECA82800C02884 /* Localizable.strings */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
 		BD8E3C641030DB4100152772 /* Public Headers */ = {
 			isa = PBXGroup;
 			children = (
@@ -224,6 +232,7 @@
 				BD0F713710AC3F680092A8F9 /* FFGLContext.m */,
 				BDA64DA210A1006600E010AF /* FFGLPool.h */,
 				BDA64DA310A1006600E010AF /* FFGLPool.c */,
+				BD7A934510F6A2E1009A3D98 /* FFGLUtilityFunctions.c */,
 				BDA64DE610A1186500E010AF /* VVFFGL_Prefix.pch */,
 			);
 			name = Private;
@@ -247,7 +256,6 @@
 				BD9F49C11098D55F00E8A7C0 /* FFGLFreeFrame.h in Headers */,
 				BDA64DA410A1006600E010AF /* FFGLPool.h in Headers */,
 				BDA64DE710A1186500E010AF /* VVFFGL_Prefix.pch in Headers */,
-				BD0F713810AC3F680092A8F9 /* FFGLContext.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -315,6 +323,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BD5A42E110ECA82800C02884 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -340,7 +349,8 @@
 				BD8E3CC21030ED2200152772 /* FFGLRenderer.m in Sources */,
 				BDAA2CCD107928A90053E947 /* FFGLImage.m in Sources */,
 				BDA64DA510A1006600E010AF /* FFGLPool.c in Sources */,
-				BD0F713910AC3F680092A8F9 /* FFGLContext.m in Sources */,
+				BD7A934610F6A2E1009A3D98 /* FFGLUtilityFunctions.c in Sources */,
+				BDD80C5E10FA8B51004C6A1B /* FFGLContext.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -365,6 +375,17 @@
 			targetProxy = 9691666A101765230078DF52 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		BD5A42E010ECA82800C02884 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BD5A42C310ECA65E00C02884 /* English */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		1DEB91B208733DA50010E9CD /* Debug */ = {

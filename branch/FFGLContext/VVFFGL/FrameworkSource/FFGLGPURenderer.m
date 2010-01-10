@@ -31,10 +31,13 @@ static const void *FFGLGPURendererTextureCreate(const void *userInfo)
 static void FFGLGPURendererTextureDelete(const void *item, const void *userInfo)
 {
     CGLContextObj cgl_ctx = (CGLContextObj)userInfo;
+	CGLContextObj previousContext = CGLGetCurrentContext();
     GLuint *name = (GLuint*)item;
+	CGLSetCurrentContext(cgl_ctx);
     CGLLockContext(cgl_ctx);
     glDeleteTextures(1, name);
     CGLUnlockContext(cgl_ctx);
+	CGLSetCurrentContext(previousContext);
     free(name);
 }
 
@@ -48,19 +51,111 @@ static void FFGLGPURendererPoolObjectRelease(GLuint name, CGLContextObj cgl_ctx,
 
 static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, void *object)
 {
+	CGLContextObj previousContext = CGLGetCurrentContext();
+	CGLSetCurrentContext(cgl_ctx);
     CGLLockContext(cgl_ctx);
     glDeleteTextures(1, &name);
     CGLUnlockContext(cgl_ctx);
+	CGLSetCurrentContext(previousContext);
 }
 
 #endif /* FFGL_USE_TEXTURE_POOLS */
 
-@implementation FFGLGPURenderer
 
+static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget, GLuint textureWidth, GLuint textureHeight, GLuint *fbo, GLuint *depthBuffer)
+{
+	CGLContextObj previousContext = CGLGetCurrentContext();
+	CGLSetCurrentContext(cgl_ctx);
+	CGLLockContext(cgl_ctx);
+	// state vars
+	GLint previousFBO;
+	GLint previousRenderBuffer;
+	GLint previousReadFBO;	
+	GLint previousDrawFBO;
+	
+	// Save FBO state
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &previousFBO);
+	glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &previousRenderBuffer);
+	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &previousReadFBO);
+	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &previousDrawFBO);
+	
+	glPushAttrib(GL_ENABLE_BIT | GL_TEXTURE_BIT);
+	// our temporary texture attachment
+	GLuint rendererFBOTexture;
+	glEnable(textureTarget);
+	glGenTextures(1, &rendererFBOTexture);
+	// TODO: here we are unbinding any previously bound texture. we need to push/pop attributes to catch that,
+	// or do it once we have bound our FBO if possible
+	glBindTexture(textureTarget, rendererFBOTexture);
+	glTexImage2D(textureTarget, 0, GL_RGBA8, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	
+	// texture filtering and wrapping modes for FBO texture.
+	
+	// Set these now because FBO-creation fails on some older ATI cards with non-clamped NPOT textures
+	glTexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+	// Some plugins require a depth buffer
+	glGenRenderbuffersEXT(1, depthBuffer);
+	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, *depthBuffer);
+	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, textureWidth, textureHeight);		
+	
+	// bind our FBO
+	glGenFramebuffersEXT(1, fbo);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, *fbo);
+	
+	// set our new renderbuffer depth attachment
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, textureTarget, rendererFBOTexture, 0);
+	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, *depthBuffer);
+	
+	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+	
+	// return FBO state
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previousFBO);
+	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, previousRenderBuffer);
+	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, previousReadFBO);
+	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, previousDrawFBO);
+	
+	// delete our temporary texture 
+	glDeleteTextures(1, &rendererFBOTexture);
+	
+	BOOL result;
+	
+	if(status != GL_FRAMEBUFFER_COMPLETE_EXT)
+	{	
+	    // cleanup GL resources
+	    glDeleteFramebuffersEXT(1, fbo);
+	    glDeleteRenderbuffersEXT(1, depthBuffer);
+	    
+	    NSLog(@"Cannot create FBO for FFGLGPURenderer: %u", status);
+		result = NO;
+	}
+	else
+	{
+		result = YES;
+	}
+
+	glPopAttrib();
+	
+	CGLUnlockContext(cgl_ctx);
+	CGLSetCurrentContext(previousContext);
+	return result;
+}
+
+@implementation FFGLGPURenderer
 - (id)initWithPlugin:(FFGLPlugin *)plugin context:(FFGLContext *)context outputHint:(FFGLRendererHint)hint
 {
-    if (self = [super initWithPlugin:plugin context:context outputHint:hint]) {
-	
+	if (self = [super initWithPlugin:plugin context:context outputHint:hint]) {
+		
+		CGLContextObj cgl_ctx = [context CGLContextObj];
+		
+		CGLContextObj previousContext = CGLGetCurrentContext();
+		CGLSetCurrentContext(cgl_ctx);
+		
+		
+		
         // set up our _frameStruct
         NSUInteger numInputs = [plugin _maximumInputFrameCount];
         _frameStruct.inputTextureCount = numInputs;
@@ -72,105 +167,72 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
                 [self release];
                 return nil;
             }
-        } else
-	{
+        }
+		else
+		{
             _frameStruct.inputTextures = NULL;
         }
 		
-	// set up our texture properties
-	if (_outputHint == FFGLRendererHintTextureRect)
-	{
-		_textureTarget = GL_TEXTURE_RECTANGLE_ARB;
-		_textureWidth = [context size].width;
-		_textureHeight = [context size].height;
-	}
-	else
-	{
-		_textureTarget = GL_TEXTURE_2D;
-		_textureWidth = FFGLPOTDimension([context size].width);
-		_textureHeight = FFGLPOTDimension([context size].height);
-	}
-	CGLContextObj cgl_ctx = [context CGLContextObj];
-
+		// set up our texture properties
+//		BOOL tryNPOT2D = NO;
+		if (_outputHint == FFGLRendererHintTextureRect)
+		{
+			_textureTarget = GL_TEXTURE_RECTANGLE_ARB;
+			_textureWidth = [context size].width;
+			_textureHeight = [context size].height;
+		}
+		else
+		{
+			_textureTarget = GL_TEXTURE_2D;
+			// In 10.5 some GPUs don't support non-power-of-two textures
+			if (ffglOpenGLSupportsExtension(cgl_ctx, "GL_ARB_texture_non_power_of_two"))
+			{
+				_textureWidth = [context size].width;
+				_textureHeight = [context size].height;
+//				tryNPOT2D = YES;
+			}
+			else
+			{
+				_textureWidth = ffglPOTDimension([context size].width);
+				_textureHeight = ffglPOTDimension([context size].height);
+			}
+		}
+		
 #if defined(FFGL_USE_TEXTURE_POOLS)
-	// set up our texture pool
-	FFGLPoolCallBacks callbacks = {FFGLGPURendererTextureCreate, FFGLGPURendererTextureDelete};
-	_pool = FFGLPoolCreate(&callbacks, 3, cgl_ctx);
-	if (_pool == NULL)
-	{
-		[self release];
-		return nil;
-	}
+		// set up our texture pool
+		FFGLPoolCallBacks callbacks = {FFGLGPURendererTextureCreate, FFGLGPURendererTextureDelete};
+		_pool = FFGLPoolCreate(&callbacks, 3, cgl_ctx);
+		if (_pool == NULL)
+		{
+			[self release];
+			return nil;
+		}
 #endif
-	CGLContextObj previousContext = CGLGetCurrentContext();
-		CGLSetCurrentContext(cgl_ctx);
-	CGLLockContext(cgl_ctx);
-	
-	// state vars
-	GLint previousFBO;	
-	GLint previousRenderBuffer;
-	GLint previousReadFBO;	
-	GLint previousDrawFBO;
-	
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &previousFBO);
-	glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &previousRenderBuffer);
-	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &previousReadFBO);
-	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &previousDrawFBO);
-	
-	// our temporary texture attachment
-	GLuint rendererFBOTexture;
-	glEnable(_textureTarget);
-	glGenTextures(1, &rendererFBOTexture);	
-	glBindTexture(_textureTarget, rendererFBOTexture);
-	glTexImage2D(_textureTarget, 0, GL_RGBA8, _textureWidth, _textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	
-	// new
-	glGenRenderbuffersEXT(1, &_rendererDepthBuffer);
-	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _rendererDepthBuffer);
-	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, _textureWidth, _textureHeight);		
-	
-	// bind our FBO
-	glGenFramebuffersEXT(1, &_rendererFBO);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rendererFBO);
-	
-	// set our new renderbuffer depth attachment
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, _textureTarget, rendererFBOTexture, 0);
-	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, _rendererDepthBuffer);
-	
-	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-        if(status != GL_FRAMEBUFFER_COMPLETE_EXT)
+		
+		BOOL success = FFGLGPURendererSetupFBO(cgl_ctx, _textureTarget, _textureWidth, _textureHeight, &_rendererFBO, &_rendererDepthBuffer);
+		/*
+		 
+		 // The following will go unless any other setups have problems, problem with ATI cards is dealt with
+		 // in FFGLGPURendererSetupFBO()
+		if (!success && tryNPOT2D)
+		{
+			NSLog(@"Trying POT fallback");
+			// Some older ATI cards report support for GL_ARB_texture_non_power_of_two, but cannot handle NPOT FBOs.
+			// Rather than check for those cards, we guess that may have been a problem and try again, with POT dimensions.
+			_textureWidth = ffglPOTDimension(_textureWidth);
+			_textureHeight = ffglPOTDimension(_textureHeight);
+			success = FFGLGPURendererSetupFBO(context, _textureTarget, _textureWidth, _textureHeight, &_rendererFBO, &_rendererDepthBuffer);
+		}
+		 */
+        if(!success)
         {	
-	    // return FBO state
-	    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previousFBO);
-	    glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, previousRenderBuffer);
-	    glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, previousReadFBO);
-	    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, previousDrawFBO);
-	    
-	    // cleanup GL resources
-	    glDeleteFramebuffersEXT(1, &_rendererFBO);
-	    glDeleteRenderbuffersEXT(1, &_rendererDepthBuffer);
-	    glDeleteTextures(1, &rendererFBOTexture);
-	    
-	    CGLUnlockContext(cgl_ctx);
-	    NSLog(@"Cannot create FBO for FFGLGPURenderer: %u", status);
-	    
-	    [self release];
-	    return nil;
+			[self release];
+			return nil;
         }	
-	
-	_frameStruct.hostFBO = _rendererFBO;
-
-	// return FBO state
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previousFBO);
-	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, previousRenderBuffer);
-	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, previousReadFBO);
-	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, previousDrawFBO);
-	
-        // delete our temporary texture 
-        glDeleteTextures(1, &rendererFBOTexture);
-	glDisable(_textureTarget);
-	
-        CGLUnlockContext(cgl_ctx);
+		
+		_frameStruct.hostFBO = _rendererFBO;
+		
+		
 		CGLSetCurrentContext(previousContext);
     }
     return self;
@@ -182,12 +244,15 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
     FFGLPoolRelease(_pool);
 #endif
     CGLContextObj cgl_ctx = [_context CGLContextObj];
+	CGLContextObj previousContext = CGLGetCurrentContext();
+	CGLSetCurrentContext(cgl_ctx);
     CGLLockContext(cgl_ctx);
     
     glDeleteFramebuffersEXT(1, &_rendererFBO);
     glDeleteRenderbuffersEXT(1, &_rendererDepthBuffer);
 	
     CGLUnlockContext(cgl_ctx);
+	CGLSetCurrentContext(previousContext);
     if (_frameStruct.inputTextures != NULL) {
         free(_frameStruct.inputTextures);
     }
@@ -282,7 +347,7 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
 	// set up viewport/projection matrices and coordinate system for FBO target.
     // Not sure if we want our own dimensions or _textureWidth, _textureHeight here?
     // Guessing this is right with our dimensions.
-//	glViewport(0, 0, _context.size.width, _context.size.height);
+	glViewport(0, 0, _context.size.width, _context.size.height);
 	
 	GLint matrixMode;
 	glGetIntegerv(GL_MATRIX_MODE, &matrixMode);

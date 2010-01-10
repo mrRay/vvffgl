@@ -35,6 +35,7 @@ struct FFGLPluginData {
     BOOL supportsSetTime;
     NSArray *bufferPixelFormats;
     NSDictionary *parameters;
+	NSArray *sortedParameterKeys;
     NSDictionary *attributes;
 };
 
@@ -127,6 +128,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         _pluginData->bufferPixelFormats = nil;
         _pluginData->parameters = nil;
         _pluginData->attributes = nil;
+		_pluginData->sortedParameterKeys = nil;
 	_pluginData->main = NULL;
         
 	NSString *loadableName = [[path lastPathComponent] stringByDeletingPathExtension];
@@ -169,7 +171,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         // Get basic plugin info, and check we are a type (source or effect) we know about.
         result = _pluginData->main(FF_GETINFO, (FFMixed)0U, 0);
         FFPluginInfoStruct *info = (FFPluginInfoStruct *)result.PointerValue;
-	if (info == NULL) {
+		if (info == NULL) {
             pthread_mutex_unlock(&_FFGLPluginInstancesLock);
             [self release];
             return nil;
@@ -274,6 +276,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         
         // Discover our parameters, which include the plugin's parameters plus video inputs.
         _pluginData->parameters = [[NSMutableDictionary alloc] initWithCapacity:4];
+		_pluginData->sortedParameterKeys = [[NSMutableArray alloc] initWithCapacity:4];
         uint32_t i = 0;
         NSDictionary *pAttributes;
         NSString *pName;
@@ -284,18 +287,20 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         result = _pluginData->main(FF_GETPLUGINCAPS, (FFMixed)FF_CAP_MAXIMUMINPUTFRAMES, 0);
         _pluginData->maxFrames = result.UIntValue;
         for (i = 0; i < _pluginData->minFrames; i++) {
-            pName = [NSString stringWithFormat:@"Image %u", i+1];
+            pName = [NSString stringWithFormat:@"%@ %u", FFGLLocalized(@"Image"), i+1];
             pAttributes = [NSDictionary dictionaryWithObjectsAndKeys:FFGLParameterTypeImage, FFGLParameterAttributeTypeKey,
                            pName, FFGLParameterAttributeNameKey, [NSNumber numberWithBool:YES], FFGLParameterAttributeRequiredKey, 
                            [NSNumber numberWithUnsignedInt:i], FFGLParameterAttributeIndexKey, nil];
             [(NSMutableDictionary *)_pluginData->parameters setObject:pAttributes forKey:pName];
+			[(NSMutableArray *)_pluginData->sortedParameterKeys addObject:pName];
         }
         for (; i < _pluginData->maxFrames; i++) {
-            pName = [NSString stringWithFormat:@"Image %u", i+1];
+            pName = [NSString stringWithFormat:@"%@ %u", FFGLLocalized(@"Image"), i+1];
             pAttributes = [NSDictionary dictionaryWithObjectsAndKeys:FFGLParameterTypeImage, FFGLParameterAttributeTypeKey,
                            pName, FFGLParameterAttributeNameKey, [NSNumber numberWithBool:NO], FFGLParameterAttributeRequiredKey,
                            [NSNumber numberWithUnsignedInt:i], FFGLParameterAttributeIndexKey, nil];
             [(NSMutableDictionary *)_pluginData->parameters setObject:pAttributes forKey:pName];
+			[(NSMutableArray *)_pluginData->sortedParameterKeys addObject:pName];
         }        
         // Non-image parameters
 	
@@ -347,11 +352,13 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
                     [pAttributes setValue:[NSString stringWithFFPluginDubiousBytes:result.PointerValue nominalLength:16]
                                    forKey:FFGLParameterAttributeNameKey];
                 } else {
-                    [pAttributes setValue:@"Untitled Parameter" forKey:FFGLParameterAttributeNameKey];
+                    [pAttributes setValue:FFGLLocalized(@"Untitled Parameter") forKey:FFGLParameterAttributeNameKey];
                 }
                 [pAttributes setValue:[NSNumber numberWithBool:YES] forKey:FFGLParameterAttributeRequiredKey];
                 [pAttributes setValue:[NSNumber numberWithUnsignedInt:i] forKey:FFGLParameterAttributeIndexKey];
-                [(NSMutableDictionary *)_pluginData->parameters setObject:pAttributes forKey:[NSString stringWithFormat:@"non-image-parameter-%u", i]];
+				NSString *parameterKey = [NSString stringWithFormat:@"non-image-parameter-%u", i];
+                [(NSMutableDictionary *)_pluginData->parameters setObject:pAttributes forKey:parameterKey];
+				[(NSMutableArray *)_pluginData->sortedParameterKeys addObject:parameterKey];
             }
         }
         
@@ -378,6 +385,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         [_pluginData->bufferPixelFormats release];
         [_pluginData->parameters release];
         [_pluginData->attributes release];
+		[_pluginData->sortedParameterKeys release];
         free(_pluginData);
     }    
 }
@@ -436,7 +444,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 
 - (NSArray *)parameterKeys
 {
-    return [_pluginData->parameters allKeys];
+    return _pluginData->sortedParameterKeys;
 }
 
 - (NSDictionary *)attributesForParameterWithKey:(NSString *)key
@@ -480,7 +488,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
         else if ([format isEqualToString:FFGLPixelFormatBGR888] || [format isEqualToString:FFGLPixelFormatRGB888])
             videoInfo.BitDepth = FF_CAP_24BITVIDEO;
         else if ([format isEqualToString:FFGLPixelFormatBGR565] || [format isEqualToString:FFGLPixelFormatRGB565])
-            videoInfo.BitDepth == FF_CAP_16BITVIDEO;
+            videoInfo.BitDepth = FF_CAP_16BITVIDEO;
         else {
             [NSException raise:@"FFGLPluginException" format:@"Unrecognized pixelFormat."];
             return 0;
