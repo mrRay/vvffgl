@@ -31,13 +31,17 @@ static const void *FFGLGPURendererTextureCreate(const void *userInfo)
 static void FFGLGPURendererTextureDelete(const void *item, const void *userInfo)
 {
     CGLContextObj cgl_ctx = (CGLContextObj)userInfo;
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 	CGLContextObj previousContext = CGLGetCurrentContext();
-    GLuint *name = (GLuint*)item;
 	CGLSetCurrentContext(cgl_ctx);
+#endif
     CGLLockContext(cgl_ctx);
+	GLuint *name = (GLuint*)item;
     glDeleteTextures(1, name);
     CGLUnlockContext(cgl_ctx);
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 	CGLSetCurrentContext(previousContext);
+#endif
     free(name);
 }
 
@@ -51,12 +55,16 @@ static void FFGLGPURendererPoolObjectRelease(GLuint name, CGLContextObj cgl_ctx,
 
 static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, void *object)
 {
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 	CGLContextObj previousContext = CGLGetCurrentContext();
 	CGLSetCurrentContext(cgl_ctx);
+#endif
     CGLLockContext(cgl_ctx);
     glDeleteTextures(1, &name);
     CGLUnlockContext(cgl_ctx);
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 	CGLSetCurrentContext(previousContext);
+#endif
 }
 
 #endif /* FFGL_USE_TEXTURE_POOLS */
@@ -64,8 +72,10 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
 
 static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget, GLuint textureWidth, GLuint textureHeight, GLuint *fbo, GLuint *depthBuffer)
 {
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 	CGLContextObj previousContext = CGLGetCurrentContext();
 	CGLSetCurrentContext(cgl_ctx);
+#endif
 	CGLLockContext(cgl_ctx);
 	// state vars
 	GLint previousFBO;
@@ -140,7 +150,9 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	glPopAttrib();
 	
 	CGLUnlockContext(cgl_ctx);
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 	CGLSetCurrentContext(previousContext);
+#endif
 	return result;
 }
 
@@ -150,11 +162,6 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	if (self = [super initWithPlugin:plugin context:context outputHint:hint]) {
 		
 		CGLContextObj cgl_ctx = [context CGLContextObj];
-		
-		CGLContextObj previousContext = CGLGetCurrentContext();
-		CGLSetCurrentContext(cgl_ctx);
-		
-		
 		
         // set up our _frameStruct
         NSUInteger numInputs = [plugin _maximumInputFrameCount];
@@ -232,9 +239,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 		
 		_frameStruct.hostFBO = _rendererFBO;
 		
-		
-		CGLSetCurrentContext(previousContext);
-    }
+	}
     return self;
 }
 
@@ -244,15 +249,19 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
     FFGLPoolRelease(_pool);
 #endif
     CGLContextObj cgl_ctx = [_context CGLContextObj];
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 	CGLContextObj previousContext = CGLGetCurrentContext();
 	CGLSetCurrentContext(cgl_ctx);
+#endif
     CGLLockContext(cgl_ctx);
     
     glDeleteFramebuffersEXT(1, &_rendererFBO);
     glDeleteRenderbuffersEXT(1, &_rendererDepthBuffer);
 	
     CGLUnlockContext(cgl_ctx);
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 	CGLSetCurrentContext(previousContext);
+#endif
     if (_frameStruct.inputTextures != NULL) {
         free(_frameStruct.inputTextures);
     }
@@ -288,8 +297,10 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 - (BOOL)_implementationRender
 {
     CGLContextObj cgl_ctx = [_context CGLContextObj];
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 	CGLContextObj previousContext = CGLGetCurrentContext();
 	CGLSetCurrentContext(cgl_ctx);
+#endif
     CGLLockContext(cgl_ctx);
 	
     // TODO: need to set output, bind FBO so we render in output's texture, register FBO in _frameStruct, then do this:	
@@ -347,7 +358,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	// set up viewport/projection matrices and coordinate system for FBO target.
     // Not sure if we want our own dimensions or _textureWidth, _textureHeight here?
     // Guessing this is right with our dimensions.
-	glViewport(0, 0, _context.size.width, _context.size.height);
+//	glViewport(0, 0, _context.size.width, _context.size.height);
 	
 	GLint matrixMode;
 	glGetIntegerv(GL_MATRIX_MODE, &matrixMode);
@@ -434,7 +445,9 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	}
 
     CGLUnlockContext(cgl_ctx);
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
     CGLSetCurrentContext(previousContext);
+#endif
     [self setOutputImage:output];
      
     return result;

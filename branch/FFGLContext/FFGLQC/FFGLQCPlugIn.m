@@ -189,26 +189,7 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
 									[NSNumber numberWithUnsignedInt:480], QCPortAttributeDefaultValueKey, nil]];
     }
     keys = [_plugin parameterKeys];
-	
-	// We now do a two pass key scanning/ port adding so we can put images on top - Anton
-	
-	// images first
-	for(key in keys)
-	{
-		NSDictionary *attributes = [_plugin attributesForParameterWithKey:key];
-        NSMutableDictionary *portAttributes = [NSMutableDictionary dictionaryWithCapacity:3];
-        NSString *type = [attributes objectForKey:FFGLParameterAttributeTypeKey];
-        NSString *name = [attributes objectForKey:FFGLParameterAttributeNameKey];
-
-		if ([type isEqualToString:FFGLParameterTypeImage])
-		{
-			[portAttributes setObject:name forKey:QCPortAttributeNameKey];
-			[self addInputPortWithType:QCPortTypeImage forKey:key
-						withAttributes:portAttributes];
-		}
-	}
-	
-	// everyone else	
+		
     for (key in keys)
 	{
         NSDictionary *attributes = [_plugin attributesForParameterWithKey:key];
@@ -220,6 +201,12 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
         if (defaultValue != nil) {
             [portAttributes setObject:defaultValue forKey:QCPortAttributeDefaultValueKey];
         }
+		if ([type isEqualToString:FFGLParameterTypeImage])
+		{
+			[portAttributes setObject:name forKey:QCPortAttributeNameKey];
+			[self addInputPortWithType:QCPortTypeImage forKey:key
+						withAttributes:portAttributes];
+		}
 		
 		if ([type isEqualToString:FFGLParameterTypeBoolean] || [type isEqualToString:FFGLParameterTypeEvent]) {
             [self addInputPortWithType:QCPortTypeBoolean forKey:key

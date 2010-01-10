@@ -64,12 +64,16 @@ static void FFGLImageBufferRelease(const void *baseAddress, void* context) {
 }
 
 static void FFGLImageTextureRelease(GLuint name, CGLContextObj cgl_ctx, void *context) {
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 	CGLContextObj previousContext = CGLGetCurrentContext();
 	CGLSetCurrentContext(cgl_ctx);
+#endif
     CGLLockContext(cgl_ctx);
     glDeleteTextures(1, &name);
     CGLUnlockContext(cgl_ctx);
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 	CGLSetCurrentContext(previousContext);
+#endif
 }
 
 #pragma mark Private Utility
@@ -169,9 +173,10 @@ static FFGLImageRep *FFGLBufferRepCreateFromTextureRep(CGLContextObj cgl_ctx, co
 	{
 		return NULL;
 	}
-
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 	CGLContextObj previousContext = CGLGetCurrentContext();
 	CGLSetCurrentContext(cgl_ctx);
+#endif
 	CGLLockContext(cgl_ctx);
 
 	// Save state
@@ -202,8 +207,9 @@ static FFGLImageRep *FFGLBufferRepCreateFromTextureRep(CGLContextObj cgl_ctx, co
 	glPopAttrib();
 
 	CGLUnlockContext(cgl_ctx);
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 	CGLSetCurrentContext(previousContext);
-
+#endif
 	if (error != GL_NO_ERROR)
 	{
 		free(buffer);
@@ -267,8 +273,10 @@ static FFGLImageRep *FFGLTextureRepCreateFromBufferRep(CGLContextObj cgl_ctx, co
 		rep->repInfo.textureInfo.hardwareWidth = texWidth;
 		rep->repInfo.textureInfo.hardwareHeight = texHeight;
 		
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 		CGLContextObj previousContext = CGLGetCurrentContext();
 		CGLSetCurrentContext(cgl_ctx);
+#endif
 		CGLLockContext(cgl_ctx);
 		
 		// Save state
@@ -328,7 +336,9 @@ static FFGLImageRep *FFGLTextureRepCreateFromBufferRep(CGLContextObj cgl_ctx, co
 			rep->repInfo.textureInfo.texture = tex;
 		}
 		CGLUnlockContext(cgl_ctx);
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 		CGLSetCurrentContext(previousContext);
+#endif
 	}
 	return rep;
 }
@@ -387,8 +397,10 @@ static FFGLImageRep *FFGLTextureRepCreateFromTextureRep(CGLContextObj cgl_ctx, c
 		toTexture->width = fromTexture->width;
 		toTexture->height = fromTexture->height;
 		
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 		CGLContextObj previousContext = CGLGetCurrentContext();
 		CGLSetCurrentContext(cgl_ctx);
+#endif
 		CGLLockContext(cgl_ctx);
 		
 		glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &previousFBO);
@@ -531,7 +543,9 @@ static FFGLImageRep *FFGLTextureRepCreateFromTextureRep(CGLContextObj cgl_ctx, c
 		glDeleteFramebuffersEXT(1, &fboID);
 		
 		CGLUnlockContext(cgl_ctx);
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 		CGLSetCurrentContext(previousContext);
+#endif
     }
     return toTextureRep;
 }

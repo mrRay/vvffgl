@@ -15,7 +15,7 @@
 #import "FFGLPool.h"
 
 #define FFGL_USE_BUFFER_POOLS 1
-
+#define FFGL_USE_PRIVATE_CONTEXT 1
 extern NSString * const FFGLParameterAttributeIndexKey;
 
 typedef void *FFGLPluginInstance; // According to FF standard, do not modify.

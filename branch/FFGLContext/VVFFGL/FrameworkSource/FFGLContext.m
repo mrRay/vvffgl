@@ -43,11 +43,16 @@ struct FFGLContextPrivate
         _priv = malloc(sizeof(FFGLContextPrivate));
 		if (_priv)
 		{
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 			CGLContextObj cgl_ctx;
 			CGLCreateContext(CGLGetPixelFormat(context), context, &cgl_ctx);
 			GLint paramValue = 1;
 			CGLSetParameter(cgl_ctx, kCGLCPSwapInterval, &paramValue);
+			_priv->context = cgl_ctx;
+#else
+			CGLRetainContext(context);
 			_priv->context = context;
+#endif
 			_priv->pixelFormat = [pixelFormat retain];
 			_priv->size.width = size.width;
 			_priv->size.height = size.height;
@@ -58,6 +63,7 @@ struct FFGLContextPrivate
 				[self release];
 				return nil;
 			}
+#if defined(FFGL_USE_PRIVATE_CONTEXT)
 			CGLContextObj previousContext = CGLGetCurrentContext();
 			CGLSetCurrentContext(cgl_ctx);
 			CGLLockContext(cgl_ctx);
@@ -67,6 +73,7 @@ struct FFGLContextPrivate
 			glViewport(0, 0, size.width, size.height);
 			CGLUnlockContext(cgl_ctx);
 			CGLSetCurrentContext(previousContext);
+#endif
 		}
 		else
 		{
