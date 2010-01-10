@@ -11,8 +11,6 @@
 
 #import <OpenGL/CGLMacro.h>
 
-//#define FFGL_USE_TEXTURE_POOLS 1
-
 #if defined(FFGL_USE_TEXTURE_POOLS)
 
 // to pass to FFGLPool
