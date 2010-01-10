@@ -14,8 +14,14 @@
 #import "FFGLRenderer.h"
 #import "FFGLPool.h"
 
-#define FFGL_USE_BUFFER_POOLS 1
+
 #define FFGL_USE_PRIVATE_CONTEXT 1
+
+// Texture creation/destruction is too cheap to make this worthwhile, leave this disabled.
+//#define FFGL_USE_TEXTURE_POOLS 1
+// Buffer allocation from memory is costly, leave this defined to recycle buffers.
+#define FFGL_USE_BUFFER_POOLS 1
+
 extern NSString * const FFGLParameterAttributeIndexKey;
 
 typedef void *FFGLPluginInstance; // According to FF standard, do not modify.
