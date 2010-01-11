@@ -17,7 +17,6 @@
 		969166531017650F0078DF52 /* VVFFGL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9606B14D101761EF00CC50B7 /* VVFFGL.framework */; };
 		BD5A42E110ECA82800C02884 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = BD5A42E010ECA82800C02884 /* Localizable.strings */; };
 		BD7410801080F81A00BF8285 /* ParametersView.m in Sources */ = {isa = PBXBuildFile; fileRef = BD74107F1080F81A00BF8285 /* ParametersView.m */; };
-		BD7A934610F6A2E1009A3D98 /* FFGLUtilityFunctions.c in Sources */ = {isa = PBXBuildFile; fileRef = BD7A934510F6A2E1009A3D98 /* FFGLUtilityFunctions.c */; };
 		BD8E3C681030DBDB00152772 /* FFGLCPURenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = BD8E3C661030DBDB00152772 /* FFGLCPURenderer.h */; };
 		BD8E3C691030DBDB00152772 /* FFGLCPURenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = BD8E3C671030DBDB00152772 /* FFGLCPURenderer.m */; };
 		BD8E3C6C1030DC1800152772 /* FFGLGPURenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = BD8E3C6A1030DC1800152772 /* FFGLGPURenderer.h */; };
@@ -82,7 +81,6 @@
 		BD5A42C310ECA65E00C02884 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = FrameworkSource/English.lproj/Localizable.strings; sourceTree = "<group>"; };
 		BD74107E1080F81900BF8285 /* ParametersView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ParametersView.h; path = AppSource/ParametersView.h; sourceTree = "<group>"; };
 		BD74107F1080F81A00BF8285 /* ParametersView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ParametersView.m; path = AppSource/ParametersView.m; sourceTree = "<group>"; };
-		BD7A934510F6A2E1009A3D98 /* FFGLUtilityFunctions.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = FFGLUtilityFunctions.c; path = FrameworkSource/FFGLUtilityFunctions.c; sourceTree = "<group>"; };
 		BD8E3C661030DBDB00152772 /* FFGLCPURenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLCPURenderer.h; path = FrameworkSource/FFGLCPURenderer.h; sourceTree = "<group>"; };
 		BD8E3C671030DBDB00152772 /* FFGLCPURenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLCPURenderer.m; path = FrameworkSource/FFGLCPURenderer.m; sourceTree = "<group>"; };
 		BD8E3C6A1030DC1800152772 /* FFGLGPURenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLGPURenderer.h; path = FrameworkSource/FFGLGPURenderer.h; sourceTree = "<group>"; };
@@ -232,7 +230,6 @@
 				BD0F713710AC3F680092A8F9 /* FFGLContext.m */,
 				BDA64DA210A1006600E010AF /* FFGLPool.h */,
 				BDA64DA310A1006600E010AF /* FFGLPool.c */,
-				BD7A934510F6A2E1009A3D98 /* FFGLUtilityFunctions.c */,
 				BDA64DE610A1186500E010AF /* VVFFGL_Prefix.pch */,
 			);
 			name = Private;
@@ -349,7 +346,6 @@
 				BD8E3CC21030ED2200152772 /* FFGLRenderer.m in Sources */,
 				BDAA2CCD107928A90053E947 /* FFGLImage.m in Sources */,
 				BDA64DA510A1006600E010AF /* FFGLPool.c in Sources */,
-				BD7A934610F6A2E1009A3D98 /* FFGLUtilityFunctions.c in Sources */,
 				BDD80C5E10FA8B51004C6A1B /* FFGLContext.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

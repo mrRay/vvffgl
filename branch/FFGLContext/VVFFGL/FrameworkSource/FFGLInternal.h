@@ -54,8 +54,6 @@ static inline unsigned int ffglPOTDimension(unsigned int dimension)
     return glSize;
 }
 
-bool ffglOpenGLSupportsExtension(CGLContextObj cgl_ctx, const char *extension);
-
 #define FFGLLocalized(s) [[NSBundle bundleForClass:[self class]] localizedStringForKey:s value:s table:nil]
 
 @interface FFGLPlugin (Instances)
@@ -82,9 +80,10 @@ bool ffglOpenGLSupportsExtension(CGLContextObj cgl_ctx, const char *extension);
 - (BOOL)_processFrameGL:(FFGLProcessGLStruct *)frameInfo forInstance:(FFGLPluginInstance)instance;
 @end
 
-@interface FFGLContext (Renderers)
+@interface FFGLContext (Internal)
 #if defined(FFGL_USE_BUFFER_POOLS)
 - (FFGLPoolRef)_bufferPool;
+- (BOOL)_supportsNPOT;
 #endif
 @end
 

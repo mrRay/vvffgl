@@ -8,6 +8,7 @@
 
 #import "FFGLImage.h"
 #import "FFGLPlugin.h"
+#import "FFGLContext.h"
 #import "FFGLInternal.h"
 
 #import <OpenGL/CGLMacro.h>
@@ -620,7 +621,7 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
 }
 
 @interface FFGLImage (Private)
-- (id)initWithCGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight imageRep:(FFGLImageRep *)rep usePOT2D:(BOOL)POT;
+- (id)initWithContext:(FFGLContext *)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight imageRep:(FFGLImageRep *)rep;
 - (void)releaseResources;
 @end
 
@@ -630,17 +631,16 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
  Our private designated initializer
  */
 
-- (id)initWithCGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight imageRep:(FFGLImageRep *)rep usePOT2D:(BOOL)POT
+- (id)initWithContext:(FFGLContext *)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight imageRep:(FFGLImageRep *)rep
 {
     if (self = [super init]) {
         if (imageWidth == 0 || imageHeight == 0 || rep == NULL || pthread_mutex_init(&_conversionLock, NULL) != 0) {
             [self release];
             return nil;
         }
-        _context = CGLRetainContext(context);
+        _context = [context retain];
         _imageWidth = imageWidth;
         _imageHeight = imageHeight;
-		_usePOT2D = POT;
 		
 		if (rep->type == FFGLImageRepTypeTexture2D)
 			_texture2D = rep;
@@ -657,7 +657,7 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
     return self;
 }
            
-- (id)initWithTexture2D:(GLuint)texture CGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight flipped:(BOOL)isFlipped releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo
+- (id)initWithTexture2D:(GLuint)texture context:(FFGLContext *)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight flipped:(BOOL)isFlipped releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo
 {
     FFGLImageRep *rep = malloc(sizeof(FFGLImageRep));
 	if (rep != NULL)
@@ -672,10 +672,10 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
 	    rep->repInfo.textureInfo.hardwareHeight = textureHeight;
 	    rep->flipped = isFlipped;
 	}
-    return [self initWithCGLContext:context imagePixelsWide:imageWidth imagePixelsHigh:imageHeight imageRep:rep usePOT2D:!ffglOpenGLSupportsExtension(context, "GL_ARB_texture_non_power_of_two")];
+    return [self initWithContext:context imagePixelsWide:imageWidth imagePixelsHigh:imageHeight imageRep:rep];
 }
 
-- (id)initWithTextureRect:(GLuint)texture CGLContext:(CGLContextObj)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height flipped:(BOOL)isFlipped releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo
+- (id)initWithTextureRect:(GLuint)texture context:(FFGLContext *)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height flipped:(BOOL)isFlipped releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo
 {
     FFGLImageRep *rep = malloc(sizeof(FFGLImageRep));
     if (rep != NULL)
@@ -688,16 +688,16 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
 	rep->repInfo.textureInfo.height = rep->repInfo.textureInfo.hardwareHeight = height;
 	rep->flipped = isFlipped;
     }
-    return [self initWithCGLContext:context imagePixelsWide:width imagePixelsHigh:height imageRep:rep usePOT2D:!ffglOpenGLSupportsExtension(context, "GL_ARB_texture_non_power_of_two")];
+    return [self initWithContext:context imagePixelsWide:width imagePixelsHigh:height imageRep:rep];
 }
 
-- (id)initWithBuffer:(const void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes flipped:(BOOL)isFlipped releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo
+- (id)initWithBuffer:(const void *)buffer context:(FFGLContext *)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes flipped:(BOOL)isFlipped releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo
 {
     FFGLImageRep *rep = FFGLBufferRepCreateFromBuffer(buffer, width, height, rowBytes, format, isFlipped, callback, userInfo, NO);
-    return [self initWithCGLContext:context imagePixelsWide:width imagePixelsHigh:height imageRep:rep usePOT2D:!ffglOpenGLSupportsExtension(context, "GL_ARB_texture_non_power_of_two")];
+    return [self initWithContext:context imagePixelsWide:width imagePixelsHigh:height imageRep:rep];
 }
 
-- (id)initWithCopiedTextureRect:(GLuint)texture CGLContext:(CGLContextObj)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height flipped:(BOOL)isFlipped
+- (id)initWithCopiedTextureRect:(GLuint)texture context:(FFGLContext *)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height flipped:(BOOL)isFlipped
 {
     FFGLImageRep source;
     source.type = FFGLImageRepTypeTextureRect;
@@ -705,13 +705,12 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
     source.repInfo.textureInfo.texture = texture;
     source.repInfo.textureInfo.hardwareWidth = source.repInfo.textureInfo.width = width;
     source.repInfo.textureInfo.hardwareHeight = source.repInfo.textureInfo.height = height;
-	BOOL usePOT = !ffglOpenGLSupportsExtension(context, "GL_ARB_texture_non_power_of_two");
     // copy to 2D to save doing it when images get used by a renderer.
-    FFGLImageRep *new = FFGLTextureRepCreateFromTextureRep(context, &source, GL_TEXTURE_2D, usePOT);
-    return [self initWithCGLContext:context imagePixelsWide:width imagePixelsHigh:height imageRep:new usePOT2D:usePOT];
+    FFGLImageRep *new = FFGLTextureRepCreateFromTextureRep([context CGLContextObj], &source, GL_TEXTURE_2D, ![context _supportsNPOT]);
+    return [self initWithContext:context imagePixelsWide:width imagePixelsHigh:height imageRep:new];
 }
 
-- (id)initWithCopiedTexture2D:(GLuint)texture CGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight flipped:(BOOL)isFlipped
+- (id)initWithCopiedTexture2D:(GLuint)texture context:(FFGLContext *)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight flipped:(BOOL)isFlipped
 {
     FFGLImageRep source;
     source.type = FFGLImageRepTypeTexture2D;
@@ -721,31 +720,30 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
     source.repInfo.textureInfo.width = imageWidth;
     source.repInfo.textureInfo.hardwareHeight = textureHeight;
     source.repInfo.textureInfo.height = imageHeight;
-	BOOL usePOT = !ffglOpenGLSupportsExtension(context, "GL_ARB_texture_non_power_of_two");
-    FFGLImageRep *new = FFGLTextureRepCreateFromTextureRep(context, &source, GL_TEXTURE_2D, usePOT);
-    return [self initWithCGLContext:context imagePixelsWide:imageWidth imagePixelsHigh:imageHeight imageRep:new usePOT2D:usePOT];
+    FFGLImageRep *new = FFGLTextureRepCreateFromTextureRep([context CGLContextObj], &source, GL_TEXTURE_2D, ![context _supportsNPOT]);
+    return [self initWithContext:context imagePixelsWide:imageWidth imagePixelsHigh:imageHeight imageRep:new];
 }
 
-- (id)initWithCopiedBuffer:(const void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes flipped:(BOOL)isFlipped
+- (id)initWithCopiedBuffer:(const void *)buffer context:(FFGLContext *)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes flipped:(BOOL)isFlipped
 {
     FFGLImageRep *rep = FFGLBufferRepCreateFromBuffer(buffer, width, height, rowBytes, format, isFlipped, NULL, NULL, YES);
-    return [self initWithCGLContext:context imagePixelsWide:width imagePixelsHigh:height imageRep:rep usePOT2D:!ffglOpenGLSupportsExtension(context, "GL_ARB_texture_non_power_of_two")];
+    return [self initWithContext:context imagePixelsWide:width imagePixelsHigh:height imageRep:rep];
 }
 
 - (void)releaseResources 
 {
     if (_texture2D)
-		FFGLImageRepDestroy(_context, (FFGLImageRep *)_texture2D);
+		FFGLImageRepDestroy([_context CGLContextObj], (FFGLImageRep *)_texture2D);
 	if (_textureRect)
-		FFGLImageRepDestroy(_context, (FFGLImageRep *)_textureRect);
+		FFGLImageRepDestroy([_context CGLContextObj], (FFGLImageRep *)_textureRect);
     if (_buffer)
-		FFGLImageRepDestroy(_context, (FFGLImageRep *)_buffer);
-	CGLReleaseContext(_context);
+		FFGLImageRepDestroy([_context CGLContextObj], (FFGLImageRep *)_buffer);
     pthread_mutex_destroy(&_conversionLock);
 }
 
 - (void)dealloc {
     [self releaseResources];
+	[_context release];
     [super dealloc];
 }
 
@@ -773,10 +771,10 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
 		{
 			// An FFGLImage may be initted with a flipped texture, but we always lock with it not flipped
 			// as plugins don't support flipping
-			FFGLImageRep *rep = FFGLTextureRepCreateFromTextureRep(_context, _texture2D, GL_TEXTURE_2D, _usePOT2D);
+			FFGLImageRep *rep = FFGLTextureRepCreateFromTextureRep([_context CGLContextObj], _texture2D, GL_TEXTURE_2D, ![_context _supportsNPOT]);
 			if (rep != NULL)
 			{
-				FFGLImageRepDestroy(_context, _texture2D);
+				FFGLImageRepDestroy([_context CGLContextObj], _texture2D);
 				_texture2D = rep;
 				result = YES;
 			}
@@ -790,20 +788,20 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
     {
 		if (_textureRect)
 		{
-			_texture2D = FFGLTextureRepCreateFromTextureRep(_context, _textureRect, GL_TEXTURE_2D, _usePOT2D);
+			_texture2D = FFGLTextureRepCreateFromTextureRep([_context CGLContextObj], _textureRect, GL_TEXTURE_2D, ![_context _supportsNPOT]);
 			if (_texture2D)
 				result = YES;
 		}
 		else if (_buffer)
 		{
-			_texture2D = FFGLTextureRepCreateFromBufferRep(_context, _buffer, FFGLImageRepTypeTexture2D, _usePOT2D);
+			_texture2D = FFGLTextureRepCreateFromBufferRep([_context CGLContextObj], _buffer, FFGLImageRepTypeTexture2D, ![_context _supportsNPOT]);
 			if (_texture2D == NULL)
 			{
 				// Buffer->2D creation will fail in some cases, so try buffer->rect->2D
-				_textureRect = FFGLTextureRepCreateFromBufferRep(_context, _buffer, FFGLImageRepTypeTextureRect, _usePOT2D);
+				_textureRect = FFGLTextureRepCreateFromBufferRep([_context CGLContextObj], _buffer, FFGLImageRepTypeTextureRect, ![_context _supportsNPOT]);
 				if (_textureRect)
 				{
-					_texture2D = FFGLTextureRepCreateFromTextureRep(_context, _textureRect, GL_TEXTURE_2D, _usePOT2D);
+					_texture2D = FFGLTextureRepCreateFromTextureRep([_context CGLContextObj], _textureRect, GL_TEXTURE_2D, ![_context _supportsNPOT]);
 				}
 			}
 			if (_texture2D)
@@ -857,13 +855,13 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
     }
     else if (_texture2D)
     {
-		_textureRect = FFGLTextureRepCreateFromTextureRep(_context, _texture2D, GL_TEXTURE_RECTANGLE_ARB, _usePOT2D);
+		_textureRect = FFGLTextureRepCreateFromTextureRep([_context CGLContextObj], _texture2D, GL_TEXTURE_RECTANGLE_ARB, ![_context _supportsNPOT]);
 		if (_textureRect)
 			result = YES;
     }
     else if (_buffer)
     {
-		_textureRect = FFGLTextureRepCreateFromBufferRep(_context, _buffer, FFGLImageRepTypeTextureRect, _usePOT2D);
+		_textureRect = FFGLTextureRepCreateFromBufferRep([_context CGLContextObj], _buffer, FFGLImageRepTypeTextureRect, ![_context _supportsNPOT]);
 		if (_textureRect)
 			result = YES;
     }	
@@ -914,21 +912,21 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
     }
     else if (_textureRect)
     {
-		_buffer = FFGLBufferRepCreateFromTextureRep(_context, _textureRect, format);
+		_buffer = FFGLBufferRepCreateFromTextureRep([_context CGLContextObj], _textureRect, format);
 		if (_buffer)
 			result = YES;
     }
 	else if (_texture2D)
 	{
-		_buffer = FFGLBufferRepCreateFromTextureRep(_context, _texture2D, format);
+		_buffer = FFGLBufferRepCreateFromTextureRep([_context CGLContextObj], _texture2D, format);
 		if (_buffer == NULL)
 		{
 			// Buffer creation from 2D textures fails if it would involve a buffer copy stage.
 			// In such cases, create a rect texture, then create the buffer from that.
-			_textureRect = FFGLTextureRepCreateFromTextureRep(_context, _texture2D, GL_TEXTURE_RECTANGLE_ARB, _usePOT2D);
+			_textureRect = FFGLTextureRepCreateFromTextureRep([_context CGLContextObj], _texture2D, GL_TEXTURE_RECTANGLE_ARB, ![_context _supportsNPOT]);
 			if (_textureRect)
 			{
-				_buffer = FFGLBufferRepCreateFromTextureRep(_context, _textureRect, format);
+				_buffer = FFGLBufferRepCreateFromTextureRep([_context CGLContextObj], _textureRect, format);
 			}
 		}
 		if (_buffer)

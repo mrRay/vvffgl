@@ -129,7 +129,7 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
     FFGLImage *output;
     if (result) {
         output = [[[FFGLImage alloc] initWithBuffer:_fcStruct.outputFrame
-                                         CGLContext:[_context CGLContextObj]
+											context:_context
                                         pixelFormat:[_context pixelFormat]
                                          pixelsWide:[_context size].width
                                          pixelsHigh:[_context size].height

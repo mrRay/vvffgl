@@ -190,7 +190,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 		{
 			_textureTarget = GL_TEXTURE_2D;
 			// In 10.5 some GPUs don't support non-power-of-two textures
-			if (ffglOpenGLSupportsExtension(cgl_ctx, "GL_ARB_texture_non_power_of_two"))
+			if ([context _supportsNPOT])
 			{
 				_textureWidth = [context size].width;
 				_textureHeight = [context size].height;
@@ -422,7 +422,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	if(_textureTarget == GL_TEXTURE_2D)
 	{
 		output = [[[FFGLImage alloc] initWithTexture2D:rendererFBOTexture
-						    CGLContext:cgl_ctx
+											   context:_context
 					       imagePixelsWide:[_context size].width
 					       imagePixelsHigh:[_context size].height
 					     texturePixelsWide:_textureWidth
@@ -434,7 +434,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	else if(_textureTarget == GL_TEXTURE_RECTANGLE_ARB)
 	{
 		output = [[[FFGLImage alloc] initWithTextureRect:rendererFBOTexture
-						      CGLContext:cgl_ctx 
+												 context:_context
 						      pixelsWide:[_context size].width
 						      pixelsHigh:[_context size].height
 							 flipped:NO

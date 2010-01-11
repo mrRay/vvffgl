@@ -25,6 +25,44 @@ static void FFGLContextBufferDestroy(const void *baseAddress, const void* contex
 
 #endif
 
+static bool ffglOpenGLSupportsExtension(CGLContextObj cgl_ctx, const char *extension)
+
+{
+	// Adapted from http://www.opengl.org/resources/features/OGLextensions/
+	
+	const GLubyte *extensions = NULL;
+	const GLubyte *start;
+	GLubyte *where, *terminator;
+	
+	// Check for illegal spaces in extension name
+	where = (GLubyte *) strchr(extension, ' ');
+	if (where || *extension == '\0')
+		return false;
+	CGLContextObj previousContext = CGLGetCurrentContext();
+	CGLSetCurrentContext(cgl_ctx);
+	CGLLockContext(cgl_ctx);
+	extensions = glGetString(GL_EXTENSIONS);
+	CGLUnlockContext(cgl_ctx);
+	CGLSetCurrentContext(previousContext);
+	start = extensions;
+	for (;;) {
+		
+		where = (GLubyte *) strstr((const char *) start, extension);
+		
+		if (!where)
+			break;
+		
+		terminator = where + strlen(extension);
+		
+		if (where == start || *(where - 1) == ' ')
+			if (*terminator == ' ' || *terminator == '\0')
+				return true;
+		
+		start = terminator;
+	}
+	return false;
+}
+
 struct FFGLContextPrivate
 {
 	CGLContextObj	context;
@@ -33,6 +71,7 @@ struct FFGLContextPrivate
 	size_t			bytesPerBuffer;
 	FFGLPoolRef		pool;
 	OSSpinLock		poolLock;
+	BOOL			canNPOT;
 };
 
 @implementation FFGLContext
@@ -63,6 +102,8 @@ struct FFGLContextPrivate
 				[self release];
 				return nil;
 			}
+			
+			_priv->canNPOT = ffglOpenGLSupportsExtension(_priv->context, "GL_ARB_texture_non_power_of_two");
 #if defined(FFGL_USE_PRIVATE_CONTEXT)
 			CGLContextObj previousContext = CGLGetCurrentContext();
 			CGLSetCurrentContext(cgl_ctx);
@@ -147,5 +188,10 @@ struct FFGLContextPrivate
 - (NSSize)size
 {
 	return _priv->size;
+}
+
+- (BOOL)_supportsNPOT
+{
+	return _priv->canNPOT;
 }
 @end
