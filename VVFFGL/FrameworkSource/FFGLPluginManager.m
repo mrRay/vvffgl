@@ -95,12 +95,19 @@ static NSInteger FFGLPluginManagerSortPlugins(FFGLPlugin *first, FFGLPlugin *sec
 
 - (void)loadLibraryPlugins
 {
-    NSArray *libraryDirectories = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSAllDomainsMask - NSSystemDomainMask, YES);
-    NSMutableArray *directories = [NSMutableArray arrayWithCapacity:2];
+	NSMutableArray *directories = [NSMutableArray arrayWithCapacity:4];
+    NSArray *graphicsDirectories = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSAllDomainsMask, YES);
     NSString *path;
-    for (path in libraryDirectories) {
-        // TODO: Decide where the common plug-in location should be.
+    for (path in graphicsDirectories) {
+        // TODO: Decide where the common plug-in location should be. Probably not the following, think I made it up?
         [directories addObject:[path stringByAppendingPathComponent:@"Graphics/Free Frame Plug-Ins"]];
+		// modul8 uses "FreeFrame Plug-Ins", as did the old Apple QC PlugIn example.
+		[directories addObject:[path stringByAppendingPathComponent:@"Graphics/FreeFrame Plug-Ins"]];
+    }
+	NSArray *appSupportDirectories = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSAllDomainsMask, YES);
+	for (path in appSupportDirectories) {
+		// modul8 also uses "FreeFrame" in "Application Support"
+		[directories addObject:[path stringByAppendingPathComponent:@"FreeFrame"]];
     }
     @synchronized(self) {
         if (_libraryLoaded == NO) {
