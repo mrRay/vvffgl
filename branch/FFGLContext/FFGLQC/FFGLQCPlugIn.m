@@ -333,7 +333,10 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
     {
         [_renderer release];
 	// FFGLRendererHintTextureRect asks the renderer to output rect textures directly (if it can) and saves a 2D to Rect conversion stage.
-        _renderer = [[FFGLRenderer alloc] initWithPlugin:self.plugin context:cgl_ctx pixelFormat:ffPixelFormat outputHint:FFGLRendererHintTextureRect size:_dimensions];			
+		if (self.plugin && cgl_ctx)
+		{
+			_renderer = [[FFGLRenderer alloc] initWithPlugin:self.plugin context:cgl_ctx pixelFormat:ffPixelFormat outputHint:FFGLRendererHintTextureRect size:_dimensions];
+		}
         self.rendererNeedsRebuild = NO;
         needsAllInputs = YES;
     }
