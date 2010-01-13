@@ -15,14 +15,14 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *co
 
 @interface FFGLImage : NSObject {
 @private
-    NSUInteger          _imageWidth;
-    NSUInteger          _imageHeight;
-    CGLContextObj       _context;
+    NSUInteger      _imageWidth;
+    NSUInteger      _imageHeight;
+    CGLContextObj   _context;
     pthread_mutex_t	_conversionLock;
-    void		*_texture2D;
-    void		*_textureRect;
-    void		*_buffer;
-	BOOL		_usePOT2D;
+    void			*_texture2D;
+    void			*_textureRect;
+    void			*_buffer;
+	NSUInteger		_NPOTRule;
 }
 
 /*
