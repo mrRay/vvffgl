@@ -3,17 +3,17 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">10C540</string>
-		<string key="IBDocument.InterfaceBuilderVersion">732</string>
+		<string key="IBDocument.InterfaceBuilderVersion">740</string>
 		<string key="IBDocument.AppKitVersion">1038.25</string>
 		<string key="IBDocument.HIToolboxVersion">458.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">732</string>
+			<string key="NS.object.0">740</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="368"/>
 			<integer value="452"/>
+			<integer value="368"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1087,7 +1087,7 @@
 				<int key="NSWindowStyleMask">15</int>
 				<int key="NSWindowBacking">2</int>
 				<string key="NSWindowRect">{{404, 333}, {909, 357}}</string>
-				<int key="NSWTFlags">603979776</int>
+				<int key="NSWTFlags">1677721600</int>
 				<string key="NSWindowTitle">VVFFGL</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
@@ -1383,7 +1383,7 @@
 				<int key="NSWindowStyleMask">15</int>
 				<int key="NSWindowBacking">2</int>
 				<string key="NSWindowRect">{{196, 149}, {567, 361}}</string>
-				<int key="NSWTFlags">603979776</int>
+				<int key="NSWTFlags">1677721600</int>
 				<string key="NSWindowTitle">Plugins</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
@@ -1403,7 +1403,7 @@
 								<object class="NSTabViewItem" id="36106101">
 									<string key="NSIdentifier">1</string>
 									<object class="NSView" key="NSView" id="1055275406">
-										<reference key="NSNextResponder" ref="855860773"/>
+										<nil key="NSNextResponder"/>
 										<int key="NSvFlags">256</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1726,7 +1726,6 @@
 											</object>
 										</object>
 										<string key="NSFrame">{{10, 33}, {521, 299}}</string>
-										<reference key="NSSuperview" ref="855860773"/>
 									</object>
 									<string key="NSLabel">Sources</string>
 									<reference key="NSColor" ref="775673247"/>
@@ -1735,7 +1734,7 @@
 								<object class="NSTabViewItem" id="893833310">
 									<string key="NSIdentifier">2</string>
 									<object class="NSView" key="NSView" id="951225431">
-										<nil key="NSNextResponder"/>
+										<reference key="NSNextResponder" ref="855860773"/>
 										<int key="NSvFlags">274</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2050,20 +2049,21 @@
 											</object>
 										</object>
 										<string key="NSFrame">{{10, 33}, {521, 299}}</string>
+										<reference key="NSSuperview" ref="855860773"/>
 									</object>
 									<string key="NSLabel">Effects</string>
 									<reference key="NSColor" ref="775673247"/>
 									<reference key="NSTabView" ref="855860773"/>
 								</object>
 							</object>
-							<reference key="NSSelectedTabViewItem" ref="36106101"/>
+							<reference key="NSSelectedTabViewItem" ref="893833310"/>
 							<reference key="NSFont" ref="1052143821"/>
 							<int key="NSTvFlags">0</int>
 							<bool key="NSAllowTruncatedLabels">YES</bool>
 							<bool key="NSDrawsBackground">YES</bool>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
-								<reference ref="1055275406"/>
+								<reference ref="951225431"/>
 							</object>
 						</object>
 					</object>
@@ -4927,7 +4927,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{447, 673}, {197, 73}}</string>
+					<string>{{447, 663}, {194, 73}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{525, 802}, {197, 73}}</string>
@@ -5151,7 +5151,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">780</int>
+			<int key="maxID">785</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
