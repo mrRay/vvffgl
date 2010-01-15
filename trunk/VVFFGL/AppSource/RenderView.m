@@ -81,6 +81,7 @@
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	
+	/*
 	if ([image lockTextureRectRepresentation])
 	{
 	// draw it
@@ -122,7 +123,7 @@
 	    
 	    [image unlockTextureRectRepresentation];
 	} 
-	/*
+	*/
 
 	if ([image lockTexture2DRepresentation])
 	{
@@ -165,7 +166,7 @@
 	    glDisable(GL_TEXTURE_2D);
 	    [image unlockTexture2DRepresentation];
 	} 
-	*/
+	
 	else if (image != nil) {
         NSLog(@"lockBufferRepresentationWithPixelFormat failed");
     }
