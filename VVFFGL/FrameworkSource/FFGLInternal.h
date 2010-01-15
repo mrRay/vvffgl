@@ -12,7 +12,7 @@
 #import "FFGLPlugin.h"
 #import "FFGLRenderer.h"
 
-// Texture creation/destruction is too cheap to make this worthwhile, leave this disabled.
+// This needs some more exploration... helps (a lot) or hinders (a bit), depending on circumstances
 //#define FFGL_USE_TEXTURE_POOLS 1
 // Buffer allocation from memory is costly, leave this defined to recycle buffers.
 #define FFGL_USE_BUFFER_POOLS 1
