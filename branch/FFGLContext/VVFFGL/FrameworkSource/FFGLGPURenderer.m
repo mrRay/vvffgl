@@ -13,34 +13,53 @@
 
 #if defined(FFGL_USE_TEXTURE_POOLS)
 
+typedef struct FFGLGPURPoolObjectData FFGLGPURPoolObjectData;
+struct FFGLGPURPoolObjectData {
+	CGLContextObj	context;
+	GLuint			texture;
+};
+
+@interface FFGLGPURenderer (Private)
+- (GLenum)textureTarget;
+- (NSSize)textureSize;
+@end
+
 // to pass to FFGLPool
 static const void *FFGLGPURendererTextureCreate(const void *userInfo)
 {
-    CGLContextObj cgl_ctx = (CGLContextObj)userInfo;
+	FFGLGPURenderer *renderer = (FFGLGPURenderer *)userInfo;
+    CGLContextObj cgl_ctx = [renderer context];
+	CGLRetainContext(cgl_ctx);
+	GLenum target = [renderer textureTarget];
+	NSSize dimensions = [renderer textureSize];
     // This is only ever called (by FFGLPoolObjectCreate())
     // in _implementationRender. GL context and state are
     // already set up.
-    GLuint *texturePtr = malloc(sizeof(GLuint));
-    glGenTextures(1, texturePtr);
-    return texturePtr;
+	FFGLGPURPoolObjectData *data = malloc(sizeof(FFGLGPURPoolObjectData));
+	data->context = cgl_ctx;
+    glGenTextures(1, &data->texture);
+	glBindTexture(target, data->texture);
+	glTexImage2D(target, 0, GL_RGBA8, dimensions.width, dimensions.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    return data;
 }
 
 // to pass to FFGLPool
 static void FFGLGPURendererTextureDelete(const void *item, const void *userInfo)
 {
-    CGLContextObj cgl_ctx = (CGLContextObj)userInfo;
+	FFGLGPURPoolObjectData *data = (FFGLGPURPoolObjectData *)item;
+    CGLContextObj cgl_ctx = data->context;
 #if defined(FFGL_USE_PRIVATE_CONTEXT)
 	CGLContextObj previousContext = CGLGetCurrentContext();
 	CGLSetCurrentContext(cgl_ctx);
 #endif
     CGLLockContext(cgl_ctx);
-	GLuint *name = (GLuint*)item;
-    glDeleteTextures(1, name);
+    glDeleteTextures(1, &data->texture);
     CGLUnlockContext(cgl_ctx);
 #if defined(FFGL_USE_PRIVATE_CONTEXT)
 	CGLSetCurrentContext(previousContext);
 #endif
-    free(name);
+	CGLReleaseContext(data->context);
+    free(data);
 }
 
 // to pass to FFGLImage
@@ -206,7 +225,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 #if defined(FFGL_USE_TEXTURE_POOLS)
 		// set up our texture pool
 		FFGLPoolCallBacks callbacks = {FFGLGPURendererTextureCreate, FFGLGPURendererTextureDelete};
-		_pool = FFGLPoolCreate(&callbacks, 3, cgl_ctx);
+		_pool = FFGLPoolCreate(&callbacks, 3, self);
 		if (_pool == NULL)
 		{
 			[self release];
@@ -277,6 +296,19 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
     [super finalize];
 }
 
+#if defined(FFGL_USE_TEXTURE_POOLS)
+
+- (GLenum)textureTarget
+{
+	return _textureTarget;
+}
+
+- (NSSize)textureSize
+{
+	return NSMakeSize(_textureWidth, _textureHeight);
+}
+#endif
+
 - (BOOL)_implementationSetImage:(FFGLImage *)image forInputAtIndex:(NSUInteger)index
 {
     if ([image lockTexture2DRepresentation]) {
@@ -300,10 +332,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	CGLSetCurrentContext(cgl_ctx);
 #endif
     CGLLockContext(cgl_ctx);
-	
-    // TODO: need to set output, bind FBO so we render in output's texture, register FBO in _frameStruct, then do this:	
-	// - vade: we will be using our _renderFBO texture associated with our FFGLGPURenderer
-    
+	    
 	// state vars
 	GLint previousFBO;	
 	GLint previousRenderBuffer;	// probably dont need this each frame, only during init? hrm.
@@ -323,18 +352,17 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	
 	// create a new texture for this frame
 #if defined(FFGL_USE_TEXTURE_POOLS)
-
 	FFGLPoolObjectRef obj = FFGLPoolObjectCreate(_pool);
-	GLuint rendererFBOTexture = *(GLuint *)FFGLPoolObjectGetData(obj);
+	FFGLGPURPoolObjectData *textureData = (FFGLGPURPoolObjectData *)FFGLPoolObjectGetData(obj);
+	GLuint rendererFBOTexture = textureData->texture;
+	glBindTexture(_textureTarget, rendererFBOTexture);
 #else
-    
 	GLuint rendererFBOTexture;
 	glGenTextures(1, &rendererFBOTexture);
-#endif
 	glBindTexture(_textureTarget, rendererFBOTexture);
-
-//	NSLog(@"new implementationRender texture: %u", _rendererFBOTexture);
+	//	NSLog(@"new implementationRender texture: %u", _rendererFBOTexture);
 	glTexImage2D(_textureTarget, 0, GL_RGBA8, _textureWidth, _textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+#endif
 	
 	// texture filtering and wrapping modes. Do we actually want to fuck with this here? Hrm.
 	glTexParameteri(_textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -349,13 +377,11 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	// attach our new texture
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, _textureTarget, rendererFBOTexture, 0);
 	
-	// this was our fix. Disable texturing and now FFGL renders. 
+	// disable texturing
 	glBindTexture(_textureTarget, 0);
 	glDisable(_textureTarget);
 	
 	// set up viewport/projection matrices and coordinate system for FBO target.
-    // Not sure if we want our own dimensions or _textureWidth, _textureHeight here?
-    // Guessing this is right with our dimensions.
 //	glViewport(0, 0, _context.size.width, _context.size.height);
 	
 	GLint matrixMode;
@@ -368,24 +394,14 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-		
-	// dont fucking change the ortho view, AT FUCKING ALL. Duh.
-	//glOrtho(0.0, self.bounds.size.width,  0.0,  self.bounds.size.height, -1, 1);		
-	//glOrtho(0.0, 1.0, 0.0, 1.0, 1, -1);
-	//glOrtho(self.bounds.origin.x, self.bounds.size.width,  self.bounds.origin.y,  self.bounds.size.height, -1, 1);		
 	
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
-		
-	glClearColor(0.0, 0.0, 0.0, 0.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	// render our plugin to our FBO
 	BOOL result = [_plugin _processFrameGL:&_frameStruct forInstance:_instance];
-	
-	//BOOL result = YES;
-	
+		
 	// Restore OpenGL states 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
@@ -398,14 +414,17 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	
 	// restore states // assume this is balanced with above 
 	glPopAttrib();
-	glFlushRenderAPPLE();
+	
+	// This doesn't seem to be necessary...?
+//	glFlushRenderAPPLE();
 
 	// return FBO state
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previousFBO);
 	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, previousRenderBuffer);
 	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, previousReadFBO);
 	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, previousDrawFBO);
-		
+	
+	CGLUnlockContext(cgl_ctx);
 	
 //	NSLog(@"new FFGL image with texture: %u", _rendererFBOTexture);
 	
@@ -441,8 +460,6 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 						 releaseCallback:callback
 						     releaseInfo:info] autorelease];						
 	}
-
-    CGLUnlockContext(cgl_ctx);
 #if defined(FFGL_USE_PRIVATE_CONTEXT)
     CGLSetCurrentContext(previousContext);
 #endif
