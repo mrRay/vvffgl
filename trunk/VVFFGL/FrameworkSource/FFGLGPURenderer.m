@@ -383,8 +383,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	// restore states // assume this is balanced with above 
 	glPopAttrib();
 	
-	// This doesn't seem to be necessary...?
-//	glFlushRenderAPPLE();
+	glFlushRenderAPPLE();
 
 	// return FBO state
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previousFBO);
