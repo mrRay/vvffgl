@@ -392,7 +392,7 @@ static FFGLImageRep *FFGLTextureRepCreateFromTextureRep(CGLContextObj cgl_ctx, c
 		glGenTextures(1, &newTex);
 		
 		glEnable(toGLTarget);
-		// here we're binding to previousFBO..? Can't we do it onto our FBO once?
+
 		glBindTexture(toGLTarget, newTex);
 		glTexImage2D(toGLTarget, 0, GL_RGBA8, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
@@ -438,9 +438,6 @@ static FFGLImageRep *FFGLTextureRepCreateFromTextureRep(CGLContextObj cgl_ctx, c
 			glLoadIdentity();
 			
 			// draw the texture.
-			
-			glClearColor(0,0,0,0);
-			glClear(GL_COLOR_BUFFER_BIT);
 			
 			glActiveTexture(GL_TEXTURE0);
 			glEnable(fromGLTarget);
