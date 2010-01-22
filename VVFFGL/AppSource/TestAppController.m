@@ -32,6 +32,20 @@
     [_sourcesTableView setDoubleAction:@selector(addRendererFromTableView:)];
     [_effectsTableView setTarget:self];
     [_effectsTableView setDoubleAction:@selector(addRendererFromTableView:)];
+	
+	CGLContextObj cgl_ctx = [[_renderView openGLContext] CGLContextObj];
+	
+	CGLError err = 0;
+	
+	// Enable the multi-threading
+	err =  CGLEnable(cgl_ctx, kCGLCEMPEngine);
+	
+	if (err != kCGLNoError )
+	{
+		// Multi-threaded execution is possibly not available
+		// Insert your code to take appropriate action
+		NSLog(@"Couldn't enable multi-threaded GL");
+	} 
     [self willChangeValueForKey:@"renderChain"];
     _chain = [[RenderChain alloc] initWithOpenGLContext:[_renderView openGLContext] pixelFormat:kFFPixelFormat forDimensions:kRenderDimensions];
     [self didChangeValueForKey:@"renderChain"];
