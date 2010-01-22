@@ -94,6 +94,19 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
     }
 }
 
+__attribute__((destructor))
+static void finalizer()
+{
+	if (_FFGLPluginInstances != nil)
+	{
+		CFRelease(_FFGLPluginInstances);
+		_FFGLPluginInstances = nil; // just in case this is called twice
+		// _FFGLPluginInstances will only be non-nil if this lock was succesfully created,
+		// so no need for any other check.
+		pthread_mutex_destroy(&_FFGLPluginInstancesLock);
+	}
+}
+
 - (id)init
 {
     [self doesNotRecognizeSelector:_cmd];
