@@ -1,0 +1,20 @@
+# Unexported Symbols.exp
+# VVFFGL
+#
+# Created by Tom on 22/01/2010.
+# Copyright 2010 Tom Butterworth. All rights reserved.
+
+
+.objc_category_name_NSString_FFGLPluginExtensions
+.objc_class_name_FFGLCPURenderer
+.objc_class_name_FFGLGPURenderer
+.objc_class_name_FFGLRendererParametersBindable
+_FFGLParameterAttributeIndexKey
+_FFGLPoolCreate
+_FFGLPoolObjectCreate
+_FFGLPoolObjectGetData
+_FFGLPoolObjectRelease
+_FFGLPoolObjectRetain
+_FFGLPoolRelease
+_FFGLPoolRetain
+_ffglOpenGLSupportsExtension
