@@ -76,6 +76,7 @@
 		9606B18D101763C900CC50B7 /* MainMenu.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = MainMenu.xib; path = AppSource/MainMenu.xib; sourceTree = "<group>"; };
 		9606B18E101763C900CC50B7 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = AppSource/main.m; sourceTree = "<group>"; };
 		BD4A78FD109B94B80018ABBD /* TODO.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TODO.txt; sourceTree = "<group>"; };
+		BD4C6AEA11092C4500274217 /* Unexported_Symbols.exp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.exports; name = Unexported_Symbols.exp; path = FrameworkSource/Unexported_Symbols.exp; sourceTree = "<group>"; };
 		BD5A42C310ECA65E00C02884 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = FrameworkSource/English.lproj/Localizable.strings; sourceTree = "<group>"; };
 		BD74107E1080F81900BF8285 /* ParametersView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ParametersView.h; path = AppSource/ParametersView.h; sourceTree = "<group>"; };
 		BD74107F1080F81A00BF8285 /* ParametersView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ParametersView.m; path = AppSource/ParametersView.m; sourceTree = "<group>"; };
@@ -98,7 +99,7 @@
 		BD9F6C8D101945AE004D8CD9 /* FFGLPluginManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLPluginManager.m; path = FrameworkSource/FFGLPluginManager.m; sourceTree = "<group>"; };
 		BDA64DA210A1006600E010AF /* FFGLPool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLPool.h; path = FrameworkSource/FFGLPool.h; sourceTree = "<group>"; };
 		BDA64DA310A1006600E010AF /* FFGLPool.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = FFGLPool.c; path = FrameworkSource/FFGLPool.c; sourceTree = "<group>"; };
-		BDA64DE610A1186500E010AF /* VVFFGL_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VVFFGL_Prefix.pch; sourceTree = "<group>"; };
+		BDA64DE610A1186500E010AF /* VVFFGL_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VVFFGL_Prefix.pch; path = FrameworkSource/VVFFGL_Prefix.pch; sourceTree = "<group>"; };
 		BDAA2CCA107928A90053E947 /* FFGLImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLImage.h; path = FrameworkSource/FFGLImage.h; sourceTree = "<group>"; };
 		BDAA2CCB107928A90053E947 /* FFGLImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLImage.m; path = FrameworkSource/FFGLImage.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -195,6 +196,7 @@
 		BD5A42CD10ECA74C00C02884 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				BD4C6AEA11092C4500274217 /* Unexported_Symbols.exp */,
 				BD5A42E010ECA82800C02884 /* Localizable.strings */,
 			);
 			name = Resources;
@@ -215,6 +217,7 @@
 		BD8E3C651030DB4A00152772 /* Private */ = {
 			isa = PBXGroup;
 			children = (
+				BDA64DE610A1186500E010AF /* VVFFGL_Prefix.pch */,
 				BD9F49C01098D55F00E8A7C0 /* FFGLFreeFrame.h */,
 				BD9132F7107D2D600095AA79 /* FFGLInternal.h */,
 				BD9F6C8B101945AE004D8CD9 /* FFGLPlugin.m */,
@@ -228,7 +231,6 @@
 				BDA64DA210A1006600E010AF /* FFGLPool.h */,
 				BDA64DA310A1006600E010AF /* FFGLPool.c */,
 				BD7A934510F6A2E1009A3D98 /* FFGLUtilityFunctions.c */,
-				BDA64DE610A1186500E010AF /* VVFFGL_Prefix.pch */,
 			);
 			name = Private;
 			sourceTree = "<group>";
@@ -425,11 +427,12 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = VVFFGL_Prefix.pch;
+				GCC_PREFIX_HEADER = FrameworkSource/VVFFGL_Prefix.pch;
 				INFOPLIST_FILE = "./FrameworkSource/VVFFGL-Info.plist";
 				INSTALL_PATH = "@loader_path/../Frameworks";
 				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = YES;
 				PRODUCT_NAME = VVFFGL;
+				UNEXPORTED_SYMBOLS_FILE = FrameworkSource/Unexported_Symbols.exp;
 			};
 			name = Debug;
 		};
@@ -446,10 +449,11 @@
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = VVFFGL_Prefix.pch;
+				GCC_PREFIX_HEADER = FrameworkSource/VVFFGL_Prefix.pch;
 				INFOPLIST_FILE = "./FrameworkSource/VVFFGL-Info.plist";
 				INSTALL_PATH = "@loader_path/../Frameworks";
 				PRODUCT_NAME = VVFFGL;
+				UNEXPORTED_SYMBOLS_FILE = FrameworkSource/Unexported_Symbols.exp;
 				ZERO_LINK = NO;
 			};
 			name = Release;
