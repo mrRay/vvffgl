@@ -297,14 +297,22 @@ enum FFGLRendererReadyState {
         }
         [self _implementationSetImageInputCount:got];
     }
-    if (_readyState == FFGLRendererReady) {
-        if ([_plugin _supportsSetTime]) {
+    if (_readyState == FFGLRendererReady)
+	{
+        if ([_plugin _supportsSetTime])
+		{
             [_plugin _setTime:time ofInstance:_instance];
         }
         success = [self _implementationRender];        
-    } else {
+    }
+	else 
+	{
         success = NO;
     }
+	if (success == NO)
+	{
+		[self setOutputImage:nil];
+	}
     pthread_mutex_unlock(&_lock);
     return success;
 }
