@@ -15,12 +15,12 @@
 /*
  
  LOCKING
-    Currently no locking occurs around calls to plugins, except that which occurs in FFGLRenderer.
-    This means plugins instances are accessed serially, but plugMain is assumed to be thread-safe.
-    Discussion on the FF list suggests this might work, but we should
-        a) discuss with the list if this is an acceptable policy
-        b) request that a future FF standard makes explicit the locking requirements of plugins and clients
-        c) experiment like crazy, see if we can crash some plugins doing it this way
+ Currently no locking occurs around calls to plugins, except that which occurs in FFGLRenderer.
+ This means plugins instances are accessed serially, but plugMain is assumed to be thread-safe.
+ Discussion on the FF list suggests this might work, but we should
+ a) discuss with the list if this is an acceptable policy
+ b) request that a future FF standard makes explicit the locking requirements of plugins and clients
+ c) experiment like crazy, see if we can crash some plugins doing it this way
  */
 
 struct FFGLPluginData {
@@ -116,13 +116,13 @@ static void finalizer()
 - (id)initWithPath:(NSString *)path
 {
     if (self = [super init]) {
-	if (path == nil) {
+		if (path == nil) {
             [self release];
             return nil;
         }
         pthread_mutex_lock(&_FFGLPluginInstancesLock);
-	// check if we already have an instance of this plugin
-	FFGLPlugin *p;
+		// check if we already have an instance of this plugin
+		FFGLPlugin *p;
         p = [_FFGLPluginInstances objectForKey:path];
         if (p != nil) {
             pthread_mutex_unlock(&_FFGLPluginInstancesLock);
@@ -142,35 +142,35 @@ static void finalizer()
         _pluginData->parameters = nil;
         _pluginData->attributes = nil;
 		_pluginData->sortedParameterKeys = nil;
-	_pluginData->main = NULL;
+		_pluginData->main = NULL;
         
-	NSString *loadableName = [[path lastPathComponent] stringByDeletingPathExtension];
-	CFStringRef pathToLoadable = (CFStringRef)[NSString stringWithFormat:@"%@/Contents/MacOS/%@", path, loadableName];
-	if (pathToLoadable != NULL)
-	{
-	    CFIndex buffSize = CFStringGetMaximumSizeOfFileSystemRepresentation(pathToLoadable);
-	    char cPathToLoadable[buffSize];
-	    if (CFStringGetFileSystemRepresentation(pathToLoadable, cPathToLoadable, buffSize))
-	    {
-		/*
-		 Don't change (RTLD_NOW | RTLD_LOCAL | RTLD_FIRST) -
-		 Changes can have a serious impact on speed (ie increase init time by a factor of 3).
-		 */
-		_pluginData->handle = dlopen(cPathToLoadable, (RTLD_NOW | RTLD_LOCAL | RTLD_FIRST));
-		if (_pluginData->handle != NULL) {
-		    _pluginData->main = dlsym(_pluginData->handle, "plugMain");
+		NSString *loadableName = [[path lastPathComponent] stringByDeletingPathExtension];
+		CFStringRef pathToLoadable = (CFStringRef)[NSString stringWithFormat:@"%@/Contents/MacOS/%@", path, loadableName];
+		if (pathToLoadable != NULL)
+		{
+			CFIndex buffSize = CFStringGetMaximumSizeOfFileSystemRepresentation(pathToLoadable);
+			char cPathToLoadable[buffSize];
+			if (CFStringGetFileSystemRepresentation(pathToLoadable, cPathToLoadable, buffSize))
+			{
+				/*
+				 Don't change (RTLD_NOW | RTLD_LOCAL | RTLD_FIRST) -
+				 Changes can have a serious impact on speed (ie increase init time by a factor of 3).
+				 */
+				_pluginData->handle = dlopen(cPathToLoadable, (RTLD_NOW | RTLD_LOCAL | RTLD_FIRST));
+				if (_pluginData->handle != NULL) {
+					_pluginData->main = dlsym(_pluginData->handle, "plugMain");
+				}
+			}
 		}
-	    }
-	}
-	if (_pluginData->main == NULL)
-	{
-	    pthread_mutex_unlock(&_FFGLPluginInstancesLock);
-	    [self release];
-	    return nil;
-	}
+		if (_pluginData->main == NULL)
+		{
+			pthread_mutex_unlock(&_FFGLPluginInstancesLock);
+			[self release];
+			return nil;
+		}
         
         FFMixed result;
-
+		
         // Initialise the plugin. According to the FF spec we only need to do this before calling instantiate,
         // but some plugins require it before other calls, so it should be our first call.
         result = _pluginData->main(FF_INITIALISE, (FFMixed)0U, 0);
@@ -198,9 +198,9 @@ static void finalizer()
         
         /*
          Long init
-            Current strategy is to do all our parameter/attributes calls to the plugin at init, so we can give that information out without locks
-            because we won't be changing anything in memory after init... Can change if it proves problematic, in which case the below will move
-            to respective methods.
+		 Current strategy is to do all our parameter/attributes calls to the plugin at init, so we can give that information out without locks
+		 because we won't be changing anything in memory after init... Can change if it proves problematic, in which case the below will move
+		 to respective methods.
          */
         
         // Set type from the PluginInfoStruct.
@@ -224,7 +224,7 @@ static void finalizer()
             [(NSMutableDictionary *)_pluginData->attributes setObject:name forKey:FFGLPluginAttributeNameKey];
         
         [(NSMutableDictionary *)_pluginData->attributes setObject:[[path copy] autorelease] forKey:FFGLPluginAttributePathKey];
-
+		
         result = _pluginData->main(FF_GETEXTENDEDINFO, (FFMixed)0U, 0);
         FFPluginExtendedInfoStruct *extendedInfo = (FFPluginExtendedInfoStruct *)result.PointerValue;
         if (extendedInfo != NULL) {
@@ -236,7 +236,7 @@ static void finalizer()
                 description = [NSString stringWithCString:extendedInfo->Description encoding:NSASCIIStringEncoding];
                 [(NSMutableDictionary *)_pluginData->attributes setObject:description forKey:FFGLPluginAttributeDescriptionKey];
             }            
-    
+			
             NSString *author;
             if (extendedInfo->About) {
                 author = [NSString stringWithCString:extendedInfo->About encoding:NSASCIIStringEncoding];
@@ -248,8 +248,10 @@ static void finalizer()
         result = _pluginData->main(FF_GETPLUGINCAPS, (FFMixed)FF_CAP_PROCESSOPENGL, 0);
         if (result.UIntValue == FF_SUPPORTED) {
             _pluginData->mode = FFGLPluginModeGPU;
-            // We don't support any pixel formats.
-            _pluginData->bufferPixelFormats = [[NSArray alloc] init];
+            // We (by conversion) support all pixel-formats
+            _pluginData->bufferPixelFormats = [[NSArray arrayWithObjects:FFGLPixelFormatARGB8888, FFGLPixelFormatBGRA8888,
+												FFGLPixelFormatRGB888, FFGLPixelFormatBGR888,
+												FFGLPixelFormatRGB565, FFGLPixelFormatBGR565, nil] retain];
         } else {
             _pluginData->mode = FFGLPluginModeCPU;
             // Fill out our preferred mode
@@ -316,7 +318,7 @@ static void finalizer()
 			[(NSMutableArray *)_pluginData->sortedParameterKeys addObject:pName];
         }        
         // Non-image parameters
-	
+		
         uint32_t paramCount = _pluginData->main(FF_GETNUMPARAMETERS, (FFMixed)0U, 0).UIntValue;
         for (i = 0; i < paramCount; i++) {
             pAttributes = [NSMutableDictionary dictionaryWithCapacity:4];
@@ -349,7 +351,7 @@ static void finalizer()
                     result = _pluginData->main(FF_GETPARAMETERDEFAULT, (FFMixed)i, 0);
                     if (result.PointerValue != NULL) {
                         [pAttributes setValue:[NSString stringWithCString:result.PointerValue encoding:NSASCIIStringEncoding]
-                                      forKey:FFGLParameterAttributeDefaultValueKey];
+									   forKey:FFGLParameterAttributeDefaultValueKey];
                     }
                     break;
                 default:
@@ -393,8 +395,8 @@ static void finalizer()
         if (_pluginData->initted == YES) {
             _pluginData->main(FF_DEINITIALISE, (FFMixed)0U, 0);
         }
-	if (_pluginData->handle != NULL)
-	    dlclose(_pluginData->handle);
+		if (_pluginData->handle != NULL)
+			dlclose(_pluginData->handle);
         [_pluginData->bufferPixelFormats release];
         [_pluginData->parameters release];
         [_pluginData->attributes release];
@@ -423,7 +425,7 @@ static void finalizer()
 - (BOOL)isEqual:(id)anObject
 {
     /* This depends on our instance tracking being functional, otherwise
-	we would have to compare our attributes */
+	 we would have to compare our attributes */
     if (anObject == self) {
         return YES;
     }
