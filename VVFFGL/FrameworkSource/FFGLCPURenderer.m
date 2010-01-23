@@ -138,7 +138,8 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
         result = [_plugin _processFrameInPlace:_fcStruct.outputFrame forInstance:_instance];
     }
     FFGLImage *output;
-    if (result) {
+    if (result)
+	{
         output = [[[FFGLImage alloc] initWithBuffer:_fcStruct.outputFrame
                                          CGLContext:_context
                                         pixelFormat:_pixelFormat
@@ -149,19 +150,23 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
 #if defined(FFGL_USE_BUFFER_POOLS)
                                     releaseCallback:FFGLCPURendererPoolObjectRelease
                                         releaseInfo:obj] autorelease];
-    } else {
+		[self setOutputImage:output];
+    }
+	else
+	{
         FFGLPoolObjectRelease(obj);
-        output = nil;
     }
 #else
-				    releaseCallback:FFGLCPURendererFree
-					releaseInfo:NULL] autorelease];
-    } else {
+									releaseCallback:FFGLCPURendererFree
+										releaseInfo:NULL] autorelease];
+		[self setOutputImage:output];
+
+    }
+	else
+	{
         free(_fcStruct.outputFrame);
-        output = nil;
     }
 #endif
-    [self setOutputImage:output];
     return result;
 }
 

@@ -369,7 +369,14 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	
 	// render our plugin to our FBO
 	BOOL result = [_plugin _processFrameGL:&_frameStruct forInstance:_instance];
-		
+	if (result == NO)
+	{
+#if defined(FFGL_USE_TEXTURE_POOLS)
+		FFGLPoolObjectRelease(obj);
+#else
+		glDeleteTextures(1, &rendererFBOTexture);
+#endif
+	}
 	// Restore OpenGL states 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
@@ -393,42 +400,44 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	
 	CGLUnlockContext(cgl_ctx);
 	
-//	NSLog(@"new FFGL image with texture: %u", _rendererFBOTexture);
-	
-	FFGLImage *output = nil;
+	if (result == YES)
+	{
+		//	NSLog(@"new FFGL image with texture: %u", _rendererFBOTexture);
+		FFGLImage *output = nil;
 #if defined(FFGL_USE_TEXTURE_POOLS)
-
-	FFGLImageTextureReleaseCallback callback = FFGLGPURendererPoolObjectRelease;
-	void *info = obj;
+		
+		FFGLImageTextureReleaseCallback callback = FFGLGPURendererPoolObjectRelease;
+		void *info = obj;
 #else
-    
-	FFGLImageTextureReleaseCallback callback = FFGLGPURendererTextureDelete;
-	void *info = NULL;
+		
+		FFGLImageTextureReleaseCallback callback = FFGLGPURendererTextureDelete;
+		void *info = NULL;
 #endif
-	if(_textureTarget == GL_TEXTURE_2D)
-	{
-		output = [[[FFGLImage alloc] initWithTexture2D:rendererFBOTexture
-						    CGLContext:cgl_ctx
-					       imagePixelsWide:_size.width
-					       imagePixelsHigh:_size.height
-					     texturePixelsWide:_textureWidth
-					     texturePixelsHigh:_textureHeight
-						       flipped:NO
-					       releaseCallback:callback
-						   releaseInfo:info] autorelease];
+		if(_textureTarget == GL_TEXTURE_2D)
+		{
+			output = [[[FFGLImage alloc] initWithTexture2D:rendererFBOTexture
+												CGLContext:cgl_ctx
+										   imagePixelsWide:_size.width
+										   imagePixelsHigh:_size.height
+										 texturePixelsWide:_textureWidth
+										 texturePixelsHigh:_textureHeight
+												   flipped:NO
+										   releaseCallback:callback
+											   releaseInfo:info] autorelease];
+		}
+		else if(_textureTarget == GL_TEXTURE_RECTANGLE_ARB)
+		{
+			output = [[[FFGLImage alloc] initWithTextureRect:rendererFBOTexture
+												  CGLContext:cgl_ctx 
+												  pixelsWide:_size.width
+												  pixelsHigh:_size.height
+													 flipped:NO
+											 releaseCallback:callback
+												 releaseInfo:info] autorelease];						
+		}
+		
+		[self setOutputImage:output];		
 	}
-	else if(_textureTarget == GL_TEXTURE_RECTANGLE_ARB)
-	{
-		output = [[[FFGLImage alloc] initWithTextureRect:rendererFBOTexture
-						      CGLContext:cgl_ctx 
-						      pixelsWide:_size.width
-						      pixelsHigh:_size.height
-							 flipped:NO
-						 releaseCallback:callback
-						     releaseInfo:info] autorelease];						
-	}
-    
-    [self setOutputImage:output];
      
     return result;
 }
