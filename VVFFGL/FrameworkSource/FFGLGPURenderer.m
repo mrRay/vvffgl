@@ -367,6 +367,10 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	glPushMatrix();
 	glLoadIdentity();
 	
+	// Some plugins get very upset if we don't do a glClear before rendering
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	// render our plugin to our FBO
 	BOOL result = [_plugin _processFrameGL:&_frameStruct forInstance:_instance];
 	if (result == NO)
