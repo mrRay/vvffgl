@@ -12,22 +12,9 @@
 
 #import "FFGLQCPlugIn.h"
 
-#define	kQCPlugIn_Name				@"FFGL Plugin"
+#define	kQCPlugIn_Name				@"FreeFrame Plugin"
 #define	kQCPlugIn_Description		@"Use FreeFrame Plugins in Quartz Composer."
 
-
-static void QCTextureRelease(GLuint name, CGLContextObj cgl_ctx, void *context)
-{
-	NSLog(@"delete texture: %u", name);
-	CGLLockContext(cgl_ctx);
-	glDeleteTextures(1, &name);
-	CGLUnlockContext(cgl_ctx);
-}
-
-static void QCBufferRelease(const void *baseAddress, void *context)
-{
-    [(id <QCPlugInInputImageSource>)context unlockBufferRepresentation];
-}
 
 static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* context)
 {
@@ -37,7 +24,7 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
 
 @implementation FFGLQCPlugIn
 
-@dynamic outputImage;
+@dynamic outputImage, outputInfo;
 
 + (NSDictionary*) attributes
 {
@@ -54,8 +41,15 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
 	Specify the optional attributes for property based ports (QCPortAttributeNameKey, QCPortAttributeDefaultValueKey...).
 	*/
 	if ([key isEqualToString:@"outputImage"])
-            return [NSDictionary dictionaryWithObjectsAndKeys:@"Image", QCPortAttributeNameKey, nil];
+		return [NSDictionary dictionaryWithObjectsAndKeys:@"Image", QCPortAttributeNameKey, nil];
+	if ([key isEqualToString:@"outputInfo"])
+		return [NSDictionary dictionaryWithObjectsAndKeys:@"Plugin Properties", QCPortAttributeNameKey, nil];
 	return nil;
+}
+
++ (NSArray *)sortedPropertyPortKeys
+{
+	return [NSArray arrayWithObjects:@"outputImage", @"outputInfo", nil];
 }
 
 + (QCPlugInExecutionMode) executionMode
@@ -117,7 +111,7 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
 	/*
 	Return a list of the KVC keys corresponding to the internal settings of the plug-in.
 	*/
-    return [NSArray arrayWithObject:@"pluginPath"];
+    return [NSArray arrayWithObject:@"plugin"];
 }
 
 - (id) serializedValueForKey:(NSString*)key;
@@ -126,8 +120,17 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
 	Provide custom serialization for the plug-in internal settings that are not values complying to the <NSCoding> protocol.
 	The return object must be nil or a PList compatible i.e. NSString, NSNumber, NSDate, NSData, NSArray or NSDictionary.
 	*/
-	
-	return [super serializedValueForKey:key];
+	if ([key isEqualToString:@"plugin"])
+	{
+		NSDictionary *attributes = [[_renderer plugin] attributes];
+		NSString *path = [attributes objectForKey:FFGLPluginAttributePathKey];
+		NSString *identifier = [attributes objectForKey:FFGLPluginAttributeIdentifierKey];
+		return [NSDictionary dictionaryWithObjectsAndKeys:path, @"FFGLQCPluginPath", identifier, @"FFGLQCPluginIdentifier", nil];
+	}
+	else
+	{
+		return [super serializedValueForKey:key];
+	}
 }
 
 - (void) setSerializedValue:(id)serializedValue forKey:(NSString*)key
@@ -136,8 +139,40 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
 	Provide deserialization for the plug-in internal settings that were custom serialized in -serializedValueForKey.
 	Deserialize the value, then call [self setValue:value forKey:key] to set the corresponding internal setting of the plug-in instance to that deserialized value.
 	*/
-	
-	[super setSerializedValue:serializedValue forKey:key];
+	if ([key isEqualToString:@"plugin"])
+	{
+		FFGLPlugin *plugin;
+		NSString *path = [(NSDictionary *)serializedValue objectForKey:@"FFGLQCPluginPath"];
+		if (path != nil)
+		{
+			plugin = [[[FFGLPlugin alloc] initWithPath:path] autorelease];
+			if (plugin == nil)
+			{
+				NSString *identifier = [(NSDictionary *)serializedValue objectForKey:@"FFGLQCPluginIdentifier"];
+				if (identifier != nil)
+				{
+					NSArray *plugins = [self plugins];
+					FFGLPlugin *next;
+					for (next in plugins) {
+						if ([[[next attributes] objectForKey:FFGLPluginAttributeIdentifierKey] isEqualToString:identifier])
+						{
+							plugin = next;
+							break;
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			plugin = nil;
+		}
+		[self setPlugin:plugin];
+	}
+	else
+	{
+		[super setSerializedValue:serializedValue forKey:key];
+	}
 }
 
 - (QCPlugInViewController*) createViewController
@@ -148,16 +183,6 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
 	*/
 	
 	return [[QCPlugInViewController alloc] initWithPlugIn:self viewNibName:@"Settings"];
-}
-
-- (void)setPluginPath:(NSString *)path
-{
-    self.plugin = [[[FFGLPlugin alloc] initWithPath:path] autorelease];
-    self.rendererNeedsRebuild = YES;
-}
-
-- (NSString *)pluginPath {
-    return [[[_renderer plugin] attributes] objectForKey:FFGLPluginAttributePathKey];
 }
 
 - (FFGLPlugin *)plugin
@@ -338,6 +363,7 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
 			_renderer = [[FFGLRenderer alloc] initWithPlugin:self.plugin context:cgl_ctx pixelFormat:ffPixelFormat outputHint:FFGLRendererHintTextureRect size:_dimensions];
 		}
         self.rendererNeedsRebuild = NO;
+		self.outputInfo = [self.plugin attributes];
         needsAllInputs = YES;
     }
     else
@@ -360,26 +386,20 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
                 {	
                     
                     //NSLog(@"have QCimage for key %@ and locked rep", key);
-                    // we may have flipping issues here, if the input QC Texture is flipped...
-                    // normalizeCoords: YES provides for a flipped texture matrix, but it also means
-                    // the texture coords are different than what swapTextureTargets will expect..
-                    
-                    // ANTON - annoyingly we need to pass textures into FFGL the right way up.
-                    // Flipping at the other end isn't a fix, as that turns FFGL's output upside down (try FFGLTime, Particles, etc.).
-                    // TODO: flip the texture
-                    [input bindTextureRepresentationToCGLContext:cgl_ctx textureUnit:GL_TEXTURE0 normalizeCoordinates:NO];
+                                    
+//					[input bindTextureRepresentationToCGLContext:cgl_ctx textureUnit:GL_TEXTURE0 normalizeCoordinates:NO];
                     
                     //NSLog(@"new FFGL based on rect texture: %u", [input textureName]);
                     
+					// We copy the image as we can't retain it.
+					
                     image = [[FFGLImage alloc] initWithCopiedTextureRect:[input textureName]
                                                               CGLContext:cgl_ctx
                                                               pixelsWide:[input imageBounds].size.width
                                                               pixelsHigh:[input imageBounds].size.height
                                                                  flipped:[input textureFlipped]];
-                     
                     [image autorelease];
-                    
-                    [input unbindTextureRepresentationFromCGLContext:cgl_ctx textureUnit:GL_TEXTURE0];
+//					[input unbindTextureRepresentationFromCGLContext:cgl_ctx textureUnit:GL_TEXTURE0];
                     [input unlockTextureRepresentation];
                 }
                 else
@@ -390,7 +410,7 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
             }
             else 
             {
-            [_renderer setValue:[self valueForInputKey:key] forParameterKey:key];
+				[_renderer setValue:[self valueForInputKey:key] forParameterKey:key];
             }
         }
     }
@@ -398,11 +418,12 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
     BOOL result;
     if (result = [_renderer renderAtTime:time])
     {
-        FFGLImage *output = [[_renderer outputImage] retain]; // released in outputImageProvider callback
+        FFGLImage *output = [_renderer outputImage];
 		
         id <QCPlugInOutputImageProvider> provider;
         if ([output lockTextureRectRepresentation])
-	{
+		{
+			[output	retain]; // released in outputImageProvider callback
             provider = [context outputImageProviderFromTextureWithPixelFormat:qcPixelFormat 
                                                                    pixelsWide:[output textureRectPixelsWide]
                                                                    pixelsHigh:[output textureRectPixelsHigh]
@@ -415,10 +436,10 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
             self.outputImage = provider;
             result = YES;
         }
-	else
-	{
+		else
+		{
             result = YES;
-	    self.outputImage = nil;
+			self.outputImage = nil;
         }
     } 
     else
@@ -433,7 +454,7 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
 
 - (void) disableExecution:(id<QCPlugInContext>)context
 {
-	NSLog(@"called disable Execution");
+//	NSLog(@"called disable Execution");
 	/*
 	Called by Quartz Composer when the plug-in instance stops being used by Quartz Composer.
 	*/
@@ -441,7 +462,7 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
 
 - (void) stopExecution:(id<QCPlugInContext>)context
 {
-	NSLog(@"called stop Execution");
+//	NSLog(@"called stop Execution");
 
 	/*
 	Called by Quartz Composer when rendering of the composition stops: perform any required cleanup for the plug-in.

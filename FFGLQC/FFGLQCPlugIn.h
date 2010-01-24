@@ -21,7 +21,6 @@
     CGColorSpaceRef _cspace;
     pthread_mutex_t _lock;
 }
-//@property (assign) NSUInteger settingPluginIndex;
 @property (retain) FFGLPlugin *plugin;
 @property (assign) BOOL rendererNeedsRebuild;
 - (NSArray *)plugins;
@@ -31,5 +30,6 @@ Declare here the Obj-C 2.0 properties to be used as input and output ports for t
 @property(assign) NSString* outputBar;
 You can access their values in the appropriate plug-in methods using self.inputFoo or self.inputBar
 */
-@property (assign) id<QCPlugInOutputImageProvider>   outputImage;
+@property (assign) id<QCPlugInOutputImageProvider>  outputImage;
+@property (assign) NSDictionary						*outputInfo;
 @end
