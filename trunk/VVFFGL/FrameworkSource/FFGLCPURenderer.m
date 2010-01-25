@@ -43,10 +43,13 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
         {
             _buffers = malloc(sizeof(void *) * numBuffers);
             if (_buffers == NULL)
-	    {
+			{
                 [self release];
                 return nil;
             }
+			for (int i = 0; i < numBuffers; i++) {
+				_buffers[i] = NULL;
+			}
         }
         _frameCopies = [_plugin _prefersFrameCopy];
         _fcStruct.inputFrameCount = 0;
@@ -93,21 +96,26 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
     [super dealloc];
 }
 
-- (BOOL)_implementationSetImage:(id)image forInputAtIndex:(NSUInteger)index
+- (BOOL)_implementationReplaceImage:(FFGLImage *)prevImage withImage:(FFGLImage *)newImage forInputAtIndex:(NSUInteger)index
 {
-    if ([image lockBufferRepresentationWithPixelFormat:_pixelFormat]) {
-        if (([image bufferPixelsHigh] != _size.height) || ([image bufferPixelsWide] != _size.width)
-            || ([image bufferPixelFormat] != _pixelFormat)) {
-            [image unlockBufferRepresentation];
+	if (_buffers[index] != NULL)
+	{
+		[prevImage unlockBufferRepresentation];
+	}
+    if ([newImage lockBufferRepresentationWithPixelFormat:_pixelFormat]) {
+        if (([newImage bufferPixelsHigh] != _size.height) || ([newImage bufferPixelsWide] != _size.width))
+		{
+			[newImage unlockBufferRepresentation];
+			_buffers[index] = NULL;
             // Not sure what we do here - for now raise exception, could just return NO.
             // But that failure is only used within FFGLRenderer, not transmitted to client.
             [NSException raise:@"FFGLRendererException" format:@"Input image dimensions or format do not match renderer."];
             return NO;
         }
-	// TODO: unlock previous image, in case we ever do anything in unlock
-        _buffers[index] = (void *)[image bufferBaseAddress];
+        _buffers[index] = (void *)[newImage bufferBaseAddress];
         return YES;
     } else {
+		_buffers[index] = NULL;
         return NO;
     }
 }
