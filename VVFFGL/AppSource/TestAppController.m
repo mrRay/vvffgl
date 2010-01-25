@@ -15,6 +15,7 @@
 #endif
 
 #define kRenderDimensions NSMakeSize(640, 480)
+#define kRendererOutputHint FFGLRendererHintTextureRect
 
 @implementation TestAppController
 
@@ -45,7 +46,8 @@
 		// Multi-threaded execution is possibly not available
 		// Insert your code to take appropriate action
 		NSLog(@"Couldn't enable multi-threaded GL");
-	} 
+	}
+ 
     [self willChangeValueForKey:@"renderChain"];
     _chain = [[RenderChain alloc] initWithOpenGLContext:[_renderView openGLContext] pixelFormat:kFFPixelFormat forDimensions:kRenderDimensions];
     [self didChangeValueForKey:@"renderChain"];
@@ -138,7 +140,7 @@
                 renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:[[_renderView openGLContext] CGLContextObj] pixelFormat:kFFPixelFormat outputHint:FFGLRendererHintNone size:kRenderDimensions] autorelease];
             }
         } else {
-            renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:[[_renderView openGLContext] CGLContextObj] pixelFormat:kFFPixelFormat outputHint:FFGLRendererHintTexture2D size:kRenderDimensions] autorelease];
+            renderer = [[[FFGLRenderer alloc] initWithPlugin:plugin context:[[_renderView openGLContext] CGLContextObj] pixelFormat:kFFPixelFormat outputHint:kRendererOutputHint size:kRenderDimensions] autorelease];
         }
         if (renderer == nil) {
             NSLog(@"Couldn't create plugin renderer.");
