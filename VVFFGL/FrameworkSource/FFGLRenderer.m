@@ -221,7 +221,8 @@ enum FFGLRendererReadyState {
         // check our subclass can use the image
         BOOL validity;
         if (value != nil) {
-            validity = [self _implementationSetImage:value forInputAtIndex:index];
+			validity = [self _implementationReplaceImage:[_imageInputs objectForKey:key] withImage:value forInputAtIndex:index];
+//            validity = [self _implementationSetImage:value forInputAtIndex:index];
             [_imageInputs setObject:value forKey:key];
         } else {
             validity = NO;

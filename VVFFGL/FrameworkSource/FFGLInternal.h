@@ -81,7 +81,7 @@ bool ffglOpenGLSupportsExtension(CGLContextObj cgl_ctx, const char *extension);
 
 /* Subclasses must implement these methods */
 - (void)_implementationSetImageInputCount:(NSUInteger)count;
-- (BOOL)_implementationSetImage:(FFGLImage *)image forInputAtIndex:(NSUInteger)index;
+- (BOOL)_implementationReplaceImage:(FFGLImage *)prevImage withImage:(FFGLImage *)newImage forInputAtIndex:(NSUInteger)index;
 - (BOOL)_implementationRender;
 
 /* Subclasses should emit output after render using this */

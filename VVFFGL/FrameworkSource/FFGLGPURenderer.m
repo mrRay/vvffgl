@@ -170,6 +170,9 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
                 [self release];
                 return nil;
             }
+			for (int i = 0; i < numInputs; i++) {
+				_frameStruct.inputTextures[i] = NULL;
+			}
         } else
 		{
             _frameStruct.inputTextures = NULL;
@@ -280,13 +283,17 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	return NSMakeSize(_textureWidth, _textureHeight);
 }
 #endif
-
-- (BOOL)_implementationSetImage:(FFGLImage *)image forInputAtIndex:(NSUInteger)index
+- (BOOL)_implementationReplaceImage:(FFGLImage *)prevImage withImage:(FFGLImage *)newImage forInputAtIndex:(NSUInteger)index
 {
-    if ([image lockTexture2DRepresentation]) {
-        _frameStruct.inputTextures[index] = [image _texture2DInfo];
+	if (_frameStruct.inputTextures[index] != NULL)
+	{
+		[prevImage unlockTexture2DRepresentation];
+	}
+    if ([newImage lockTexture2DRepresentation]) {
+        _frameStruct.inputTextures[index] = [newImage _texture2DInfo];
         return YES;
     } else {
+		_frameStruct.inputTextures[index] = NULL;
         return NO;
     }
 }
