@@ -53,10 +53,10 @@
     [self didChangeValueForKey:@"renderChain"];
     [_renderView setRenderChain:_chain];
     if ([[[FFGLPluginManager sharedManager] sourcePlugins] count] == 0) {
-        NSLog(@"No source plugins loaded. Copy some to your \"~/Library/Graphics/Free Frame Plug-Ins\" folder.");
+        NSLog(@"No source plugins loaded. Copy some to your \"~/Library/Graphics/FreeFrame Plug-Ins\" folder.");
     }
     if ([[[FFGLPluginManager sharedManager] effectPlugins] count] == 0) {
-        NSLog(@"No effect plugins loaded. Copy some to your \"~/Library/Graphics/Free Frame Plug-Ins\" folder.");
+        NSLog(@"No effect plugins loaded. Copy some to your \"~/Library/Graphics/FreeFrame Plug-Ins\" folder.");
     }
     [_paramsView bind:@"renderer" toObject:_renderChainRenderersController withKeyPath:@"selection.self" options:nil];
 	_renderStart = [NSDate timeIntervalSinceReferenceDate];
