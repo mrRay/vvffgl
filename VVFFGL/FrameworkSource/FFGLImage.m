@@ -386,7 +386,7 @@ static FFGLImageRep *FFGLTextureRepCreateFromTextureRep(CGLContextObj cgl_ctx, c
 		
 		// save as much state;
 		glPushAttrib(GL_ALL_ATTRIB_BITS);
-		
+		glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
 		// new texture
 		GLuint newTex;
 		glGenTextures(1, &newTex);
@@ -443,56 +443,63 @@ static FFGLImageRep *FFGLTextureRepCreateFromTextureRep(CGLContextObj cgl_ctx, c
 			glEnable(fromGLTarget);
 			glBindTexture(fromGLTarget, fromTexture->texture);
 			
-			if(fromGLTarget == GL_TEXTURE_RECTANGLE_ARB || fromGLTarget == GL_TEXTURE_2D)
-			{	
-				glTexParameteri(fromGLTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(fromGLTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameteri(fromGLTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-				glTexParameteri(fromGLTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);				
+			glTexParameteri(fromGLTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(fromGLTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(fromGLTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+			glTexParameteri(fromGLTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);				
 			
-				// since our image is NPOT but our texture is POT, we must 
-				// deduce proper texture coords in normalized space
-				
-				GLfloat texImageWidth, texImageHeight;
-
-				texImageWidth = fromGLTarget == GL_TEXTURE_2D ? (GLfloat) fromTexture->width / (GLfloat)fromTexture->hardwareWidth : fromTexture->width;
-				texImageHeight = fromGLTarget == GL_TEXTURE_2D ? (GLfloat)fromTexture->height / (GLfloat)fromTexture->hardwareHeight : fromTexture->height;
-				GLfloat fboImageWidth, fboImageHeight;
-				fboImageWidth = toTexture->width;
-				fboImageHeight = toTexture->height;
+//				GLfloat texImageWidth, texImageHeight;
+//
+//				texImageWidth = fromGLTarget == GL_TEXTURE_2D ? (GLfloat) fromTexture->width / (GLfloat)fromTexture->hardwareWidth : fromTexture->width;
+//				texImageHeight = fromGLTarget == GL_TEXTURE_2D ? (GLfloat)fromTexture->height / (GLfloat)fromTexture->hardwareHeight : fromTexture->height;
+//				GLfloat fboImageWidth, fboImageHeight;
+//				fboImageWidth = toTexture->width;
+//				fboImageHeight = toTexture->height;
 //				NSLog(@"%@ -> %@ flipped: %@ texWidth: %f texHeight: %f fboImageWidth: %d fboImageHeight: %d", fromTarget == GL_TEXTURE_2D ? @"2D" : @"Rect", toTarget == GL_TEXTURE_2D ? @"2D" : @"Rect", fromTextureRep->flipped ? @"YES" : @"NO", texWidth, texHeight, fboImageWidth, fboImageHeight);
-				if(fromTextureRep->flipped)
-				{
-					glBegin(GL_QUADS);
-					glTexCoord2f(0, 0);
-					glVertex2f(0, fboImageHeight);
-					glTexCoord2f(0, texImageHeight); 
-					glVertex2f(0, 0);
-					glTexCoord2f(texImageWidth, texImageHeight);
-					glVertex2f(fboImageWidth, 0);
-					glTexCoord2f(texImageWidth, 0);
-					glVertex2f(fboImageWidth, fboImageHeight);
-					glEnd();		
-					
-				}
-				else
-				{
-					glBegin(GL_QUADS);
-					glTexCoord2f(0, 0);
-					glVertex2f(0, 0);
-					glTexCoord2f(0, texImageHeight); 
-					glVertex2f(0, fboImageHeight);
-					glTexCoord2f(texImageWidth, texImageHeight);
-					glVertex2f(fboImageWidth, fboImageHeight);
-					glTexCoord2f(texImageWidth, 0);
-					glVertex2f(fboImageWidth, 0);
-					glEnd();		
-				}				
+			
+			GLfloat tax, tay, tbx, tby, tcx, tcy, tdx, tdy, vax, vay, vbx, vby, vcx, vcy, vdx, vdy;
+			
+			tax = tay = tbx = tdy = 0.0;
+			tby = tcy = (fromGLTarget == GL_TEXTURE_2D ? (GLfloat)fromTexture->height / (GLfloat)fromTexture->hardwareHeight : fromTexture->height);
+			tcx = tdx = (fromGLTarget == GL_TEXTURE_2D ? (GLfloat) fromTexture->width / (GLfloat)fromTexture->hardwareWidth : fromTexture->width);
+			
+			GLfloat tex_coords[] =
+			{
+				tax, tay,
+				tbx, tby,
+				tcx, tcy,
+				tdx, tdy
+			};
+			
+			vax = vbx = 0.0;
+			vcx = vdx = toTexture->width;
+
+			if (fromTextureRep->flipped)
+			{
+				vay = vdy = toTexture->height;
+				vby = vcy = 0.0;
 			}
 			else
 			{
-				// uh....
+				vay = vdy = 0.0;
+				vby = vcy = toTexture->height;
 			}
+
+			GLfloat verts[] =
+			{
+				vax, vay,
+				vbx, vby,
+				vcx, vcy,
+				vdx, vdy
+			};
+
+			glEnableClientState( GL_TEXTURE_COORD_ARRAY );
+			glTexCoordPointer(2, GL_FLOAT, 0, tex_coords );
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glVertexPointer(2, GL_FLOAT, 0, verts );
+			glDrawArrays(GL_QUADS, 0, 4);
+			glDisableClientState( GL_TEXTURE_COORD_ARRAY );
+			glDisableClientState(GL_VERTEX_ARRAY);
 		}
 		glBindTexture(fromGLTarget, 0);
 		glDisable(fromGLTarget);
@@ -503,7 +510,8 @@ static FFGLImageRep *FFGLTextureRepCreateFromTextureRep(CGLContextObj cgl_ctx, c
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix();
 		
-		// restore states // assume this is balanced with above 
+		// restore states // assume this is balanced with above
+		glPopClientAttrib();
 		glPopAttrib();
 		
 		// pop back to old FBO
