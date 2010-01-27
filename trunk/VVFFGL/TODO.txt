@@ -10,3 +10,14 @@ Yo, add to this, mark things done, reasign, comment, whateverrrrr.
 4. Continue interaction with FF list on other matters (TEXTURE_RECT, multithreading, whatever else). Tom tried
 
 5. Play with FFGLContext - Tom did, doesn't help much, not going with it.
+
+6. Fix the following:
+
+KNOWN PROBLEMS
+
+The following plugins have issues with NPOT 2D textures:
+Bendoscope
+Recolour
+Twisted
+
+We need to check for failed plugin instantiation, with different code for 32 and 64 bit.
