@@ -71,6 +71,13 @@
 - (void)loadPluginsFromDirectories:(NSArray *)paths;
 
 /*
+ - (void)loadPluginAtPath:(NSString *)path
+ 
+	Loads the specified plugin.
+	path should be the path to a FreeFrame plugin.
+ */
+- (void)loadPluginAtPath:(NSString *)path;
+/*
  - (void)unloadPlugin:(FFGLPlugin *)plugin
  
 	Unloads the plugin.
