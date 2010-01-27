@@ -41,6 +41,7 @@ typedef NSUInteger FFGLRendererHint;
 /*
  - (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint size:(NSSize)size
     Initializes a new renderer.
+	plugin should be the FFGLPlugin to use for rendering.
     pixelFormat must be one of the pixel-formats supported by plugin. If plugin is a GPU plugin, pixelFormat may be nil.
     hint should indicate your intentions for the output, and may be used to provide an FFGLImage optimized to suit.
     If you are passing the output of one FFGLRenderer into another FFGLRenderer as input for an image parameter, use FFGLRendererHintNone.
