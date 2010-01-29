@@ -137,9 +137,8 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	    // cleanup GL resources
 	    glDeleteFramebuffersEXT(1, fbo);
 	    glDeleteRenderbuffersEXT(1, depthBuffer);
-	    
-	    NSLog(@"Cannot create FBO for FFGLGPURenderer: %u", status);
 		result = NO;
+//	    NSLog(@"Cannot create FBO for FFGLGPURenderer: %u", status);
 	}
 	else
 	{
@@ -380,6 +379,14 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 
 	// render our plugin to our FBO
 	BOOL result = [_plugin _processFrameGL:&_frameStruct forInstance:_instance];
+	GLenum error = glGetError();
+	
+	
+	if (error != GL_NO_ERROR)
+	{
+		NSLog(@"Poo");
+	}
+	
 	if (result == NO)
 	{
 #if defined(FFGL_USE_TEXTURE_POOLS)
