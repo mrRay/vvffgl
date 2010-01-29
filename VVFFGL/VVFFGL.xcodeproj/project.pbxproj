@@ -38,10 +38,20 @@
 		BDA64DE710A1186500E010AF /* VVFFGL_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = BDA64DE610A1186500E010AF /* VVFFGL_Prefix.pch */; };
 		BDAA2CCC107928A90053E947 /* FFGLImage.h in Headers */ = {isa = PBXBuildFile; fileRef = BDAA2CCA107928A90053E947 /* FFGLImage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BDAA2CCD107928A90053E947 /* FFGLImage.m in Sources */ = {isa = PBXBuildFile; fileRef = BDAA2CCB107928A90053E947 /* FFGLImage.m */; };
+		BDD437D911130B8600ADC32C /* FFGLImageTests.m in Sources */ = {isa = PBXBuildFile; fileRef = BDD437D811130B8600ADC32C /* FFGLImageTests.m */; };
+		BDD4382811132A6F00ADC32C /* VVFFGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9606B14D101761EF00CC50B7 /* VVFFGL.framework */; };
+		BDD4384611132AC800ADC32C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BCF31B0101A5AEC00D50A21 /* OpenGL.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		9691666A101765230078DF52 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9606B14C101761EF00CC50B7;
+			remoteInfo = VVFFGL;
+		};
+		BDD4382511132A4900ADC32C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
@@ -102,6 +112,10 @@
 		BDA64DE610A1186500E010AF /* VVFFGL_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VVFFGL_Prefix.pch; path = FrameworkSource/VVFFGL_Prefix.pch; sourceTree = "<group>"; };
 		BDAA2CCA107928A90053E947 /* FFGLImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLImage.h; path = FrameworkSource/FFGLImage.h; sourceTree = "<group>"; };
 		BDAA2CCB107928A90053E947 /* FFGLImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLImage.m; path = FrameworkSource/FFGLImage.m; sourceTree = "<group>"; };
+		BDD437D011130A2300ADC32C /* FFGLUnitTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FFGLUnitTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BDD437D111130A2300ADC32C /* FFGLUnitTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "FFGLUnitTests-Info.plist"; path = "UnitTests/FFGLUnitTests-Info.plist"; sourceTree = "<group>"; };
+		BDD437D711130B8600ADC32C /* FFGLImageTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLImageTests.h; path = UnitTests/FFGLImageTests.h; sourceTree = "<group>"; };
+		BDD437D811130B8600ADC32C /* FFGLImageTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLImageTests.m; path = UnitTests/FFGLImageTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -123,6 +137,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BDD437CD11130A2300ADC32C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BDD4384611132AC800ADC32C /* OpenGL.framework in Frameworks */,
+				BDD4382811132A6F00ADC32C /* VVFFGL.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -131,6 +154,7 @@
 			children = (
 				9606B14D101761EF00CC50B7 /* VVFFGL.framework */,
 				9606B15C1017621200CC50B7 /* FFGLTestApp.app */,
+				BDD437D011130A2300ADC32C /* FFGLUnitTests.octest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -159,6 +183,7 @@
 		9606B186101763A700CC50B7 /* Framework */ = {
 			isa = PBXGroup;
 			children = (
+				BDD437D511130B0000ADC32C /* Unit Testing */,
 				BD8E3C641030DB4100152772 /* Public Headers */,
 				BD8E3C651030DB4A00152772 /* Private */,
 				BD5A42CD10ECA74C00C02884 /* Resources */,
@@ -235,6 +260,16 @@
 			name = Private;
 			sourceTree = "<group>";
 		};
+		BDD437D511130B0000ADC32C /* Unit Testing */ = {
+			isa = PBXGroup;
+			children = (
+				BDD437D111130A2300ADC32C /* FFGLUnitTests-Info.plist */,
+				BDD437D711130B8600ADC32C /* FFGLImageTests.h */,
+				BDD437D811130B8600ADC32C /* FFGLImageTests.m */,
+			);
+			name = "Unit Testing";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -296,6 +331,25 @@
 			productReference = 9606B15C1017621200CC50B7 /* FFGLTestApp.app */;
 			productType = "com.apple.product-type.application";
 		};
+		BDD437CF11130A2300ADC32C /* FFGLUnitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BDD437D411130A2500ADC32C /* Build configuration list for PBXNativeTarget "FFGLUnitTests" */;
+			buildPhases = (
+				BDD437CB11130A2300ADC32C /* Resources */,
+				BDD437CC11130A2300ADC32C /* Sources */,
+				BDD437CD11130A2300ADC32C /* Frameworks */,
+				BDD437CE11130A2300ADC32C /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BDD4382611132A4900ADC32C /* PBXTargetDependency */,
+			);
+			name = FFGLUnitTests;
+			productName = FFGLUnitTests;
+			productReference = BDD437D011130A2300ADC32C /* FFGLUnitTests.octest */;
+			productType = "com.apple.product-type.bundle";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -311,6 +365,7 @@
 			targets = (
 				9606B14C101761EF00CC50B7 /* VVFFGL */,
 				9606B15B1017621200CC50B7 /* FFGLTestApp */,
+				BDD437CF11130A2300ADC32C /* FFGLUnitTests */,
 			);
 		};
 /* End PBXProject section */
@@ -332,7 +387,30 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BDD437CB11130A2300ADC32C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		BDD437CE11130A2300ADC32C /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		9606B14A101761EF00CC50B7 /* Sources */ = {
@@ -362,6 +440,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BDD437CC11130A2300ADC32C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BDD437D911130B8600ADC32C /* FFGLImageTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -369,6 +455,11 @@
 			isa = PBXTargetDependency;
 			target = 9606B14C101761EF00CC50B7 /* VVFFGL */;
 			targetProxy = 9691666A101765230078DF52 /* PBXContainerItemProxy */;
+		};
+		BDD4382611132A4900ADC32C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9606B14C101761EF00CC50B7 /* VVFFGL */;
+			targetProxy = BDD4382511132A4900ADC32C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -510,6 +601,60 @@
 			};
 			name = Release;
 		};
+		BDD437D211130A2400ADC32C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Cocoa.framework/Headers/Cocoa.h";
+				INFOPLIST_FILE = "./UnitTests/FFGLUnitTests-Info.plist";
+				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Cocoa,
+					"-framework",
+					SenTestingKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = FFGLUnitTests;
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Debug;
+		};
+		BDD437D311130A2400ADC32C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Cocoa.framework/Headers/Cocoa.h";
+				INFOPLIST_FILE = "./UnitTests/FFGLUnitTests-Info.plist";
+				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Cocoa,
+					"-framework",
+					SenTestingKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = FFGLUnitTests;
+				WRAPPER_EXTENSION = octest;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -536,6 +681,15 @@
 			buildConfigurations = (
 				9606B15F1017621200CC50B7 /* Debug */,
 				9606B1601017621200CC50B7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BDD437D411130A2500ADC32C /* Build configuration list for PBXNativeTarget "FFGLUnitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BDD437D211130A2400ADC32C /* Debug */,
+				BDD437D311130A2400ADC32C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
