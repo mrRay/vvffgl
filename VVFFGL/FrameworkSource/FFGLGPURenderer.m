@@ -379,13 +379,6 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 
 	// render our plugin to our FBO
 	BOOL result = [_plugin _processFrameGL:&_frameStruct forInstance:_instance];
-	GLenum error = glGetError();
-	
-	
-	if (error != GL_NO_ERROR)
-	{
-		NSLog(@"Poo");
-	}
 	
 	if (result == NO)
 	{
