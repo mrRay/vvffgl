@@ -132,7 +132,7 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
     FFGLPoolObjectRef obj = FFGLPoolObjectCreate(_pool);
     _fcStruct.outputFrame = (void *)FFGLPoolObjectGetData(obj);
 #else
-    _fcStruct.outputFrame = valloc(_bpb);
+    _fcStruct.outputFrame = valloc(_bytesPerBuffer);
 #endif
     if (_fcStruct.outputFrame == NULL) {
         return NO;
