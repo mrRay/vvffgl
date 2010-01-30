@@ -15,6 +15,7 @@
 		9606B18F101763C900CC50B7 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9606B18D101763C900CC50B7 /* MainMenu.xib */; };
 		9606B190101763C900CC50B7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 9606B18E101763C900CC50B7 /* main.m */; };
 		969166531017650F0078DF52 /* VVFFGL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9606B14D101761EF00CC50B7 /* VVFFGL.framework */; };
+		BD2672421113863100D4F1CF /* FFGLGLState.c in Sources */ = {isa = PBXBuildFile; fileRef = BD2672411113863100D4F1CF /* FFGLGLState.c */; };
 		BD5A42E110ECA82800C02884 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = BD5A42E010ECA82800C02884 /* Localizable.strings */; };
 		BD7410801080F81A00BF8285 /* ParametersView.m in Sources */ = {isa = PBXBuildFile; fileRef = BD74107F1080F81A00BF8285 /* ParametersView.m */; };
 		BD7A934610F6A2E1009A3D98 /* FFGLUtilityFunctions.c in Sources */ = {isa = PBXBuildFile; fileRef = BD7A934510F6A2E1009A3D98 /* FFGLUtilityFunctions.c */; };
@@ -85,6 +86,9 @@
 		9606B184101763A200CC50B7 /* VVFFGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VVFFGL.h; path = FrameworkSource/VVFFGL.h; sourceTree = "<group>"; };
 		9606B18D101763C900CC50B7 /* MainMenu.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = MainMenu.xib; path = AppSource/MainMenu.xib; sourceTree = "<group>"; };
 		9606B18E101763C900CC50B7 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = AppSource/main.m; sourceTree = "<group>"; };
+		BD2672401113863100D4F1CF /* FFGLGLState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLGLState.h; path = UnitTests/FFGLGLState.h; sourceTree = "<group>"; };
+		BD2672411113863100D4F1CF /* FFGLGLState.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = FFGLGLState.c; path = UnitTests/FFGLGLState.c; sourceTree = "<group>"; };
+		BD26725611138AA300D4F1CF /* FFGLUnitTests_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLUnitTests_Prefix.pch; path = UnitTests/FFGLUnitTests_Prefix.pch; sourceTree = "<group>"; };
 		BD4A78FD109B94B80018ABBD /* TODO.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TODO.txt; sourceTree = "<group>"; };
 		BD4C6AEA11092C4500274217 /* Unexported_Symbols.exp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.exports; name = Unexported_Symbols.exp; path = FrameworkSource/Unexported_Symbols.exp; sourceTree = "<group>"; };
 		BD5A42C310ECA65E00C02884 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = FrameworkSource/English.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -266,6 +270,9 @@
 				BDD437D111130A2300ADC32C /* FFGLUnitTests-Info.plist */,
 				BDD437D711130B8600ADC32C /* FFGLImageTests.h */,
 				BDD437D811130B8600ADC32C /* FFGLImageTests.m */,
+				BD2672401113863100D4F1CF /* FFGLGLState.h */,
+				BD2672411113863100D4F1CF /* FFGLGLState.c */,
+				BD26725611138AA300D4F1CF /* FFGLUnitTests_Prefix.pch */,
 			);
 			name = "Unit Testing";
 			sourceTree = "<group>";
@@ -445,6 +452,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BDD437D911130B8600ADC32C /* FFGLImageTests.m in Sources */,
+				BD2672421113863100D4F1CF /* FFGLGLState.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -613,7 +621,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Cocoa.framework/Headers/Cocoa.h";
+				GCC_PREFIX_HEADER = ./UnitTests/FFGLUnitTests_Prefix.pch;
 				INFOPLIST_FILE = "./UnitTests/FFGLUnitTests-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				OTHER_LDFLAGS = (
@@ -639,7 +647,7 @@
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Cocoa.framework/Headers/Cocoa.h";
+				GCC_PREFIX_HEADER = ./UnitTests/FFGLUnitTests_Prefix.pch;
 				INFOPLIST_FILE = "./UnitTests/FFGLUnitTests-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				OTHER_LDFLAGS = (
