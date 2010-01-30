@@ -12,8 +12,8 @@
 #import <libkern/OSAtomic.h>
 #import <stdlib.h>
 
-#define kGLGetIntCount 21
-#define kGLGetBoolCount 7
+#define kGLGetIntCount 23
+#define kGLGetBoolCount 9
 #define kGLGetTexParamIntCount 14
 #define kGLTargetCount 2
 #define kGLTargets GL_TEXTURE_2D, GL_TEXTURE_RECTANGLE_ARB
@@ -61,7 +61,10 @@ GLStateRef GLStateCreateForContext(CGLContextObj context)
 			GL_RENDERBUFFER_BINDING_EXT,
 			GL_READ_FRAMEBUFFER_BINDING_EXT,
 			GL_DRAW_FRAMEBUFFER_BINDING_EXT,
-			GL_MATRIX_MODE
+			GL_MATRIX_MODE,
+			GL_CLIENT_ACTIVE_TEXTURE,
+			GL_ACTIVE_TEXTURE
+			
 		};
 		
 		for (int i = 0; i < kGLGetIntCount; i++) {
@@ -75,7 +78,9 @@ GLStateRef GLStateCreateForContext(CGLContextObj context)
 			GL_UNPACK_SWAP_BYTES,
 			GL_UNPACK_CLIENT_STORAGE_APPLE,
 			GL_TEXTURE_2D,
-			GL_TEXTURE_RECTANGLE_ARB
+			GL_TEXTURE_RECTANGLE_ARB,
+			GL_TEXTURE_COORD_ARRAY,
+			GL_VERTEX_ARRAY
 		};
 		
 		for (int i = 0; i < kGLGetBoolCount; i++) {
