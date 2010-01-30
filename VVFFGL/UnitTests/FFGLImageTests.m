@@ -24,6 +24,11 @@ static void FFGLImageTestBufferCallback(const void *baseAddress, void *userInfo)
 	// Do nothing, we free the buffer in tearDown
 }
 
+void FFGLImageTestTextureReleaseCallback(GLuint name, CGLContextObj cgl_ctx, void *userInfo) {
+	// Destroy or recycle your texture and any associated resources.
+	[(FFGLImage *)userInfo unlockTexture2DRepresentation];
+	[(FFGLImage *)userInfo release];
+}
 @implementation FFGLImageTests
 
 - (void) setUp
@@ -103,5 +108,28 @@ static void FFGLImageTestBufferCallback(const void *baseAddress, void *userInfo)
 	[_image unlockTextureRectRepresentation];
 	GLStateRelease(before);
 	GLStateRelease(after);
+}
+
+- (void)test2DToRectTextureCopy
+{
+	if ([_image lockTexture2DRepresentation])
+	{
+		[_image retain];
+		FFGLImage *copied = [[[FFGLImage alloc] initWithTexture2D:[_image texture2DName]
+													   CGLContext:_CGLContext
+												  imagePixelsWide:[_image imagePixelsWide]
+												  imagePixelsHigh:[_image imagePixelsHigh]
+												texturePixelsWide:[_image texture2DPixelsWide]
+												texturePixelsHigh:[_image texture2DPixelsHigh]
+														  flipped:[_image texture2DIsFlipped]
+												  releaseCallback:FFGLImageTestTextureReleaseCallback
+													  releaseInfo:_image] autorelease];
+		GLStateRef before = GLStateCreateForContext(_CGLContext);
+		STAssertTrue([copied lockTextureRectRepresentation], @"FFGLImage couldn't lockTextureRectRepresentation from texture2D");
+		GLStateRef after = GLStateCreateForContext(_CGLContext);
+		STAssertTrue(GLStatesAreEqual(before, after), @"OpenGL state changed after call to lockTextureRectRepresentation");
+		GLStateRelease(before);
+		GLStateRelease(after);
+	}
 }
 @end
