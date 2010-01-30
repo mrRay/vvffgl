@@ -16,6 +16,8 @@
 		9606B190101763C900CC50B7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 9606B18E101763C900CC50B7 /* main.m */; };
 		969166531017650F0078DF52 /* VVFFGL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9606B14D101761EF00CC50B7 /* VVFFGL.framework */; };
 		BD2672421113863100D4F1CF /* FFGLGLState.c in Sources */ = {isa = PBXBuildFile; fileRef = BD2672411113863100D4F1CF /* FFGLGLState.c */; };
+		BD26735E1113B29700D4F1CF /* FFGLPluginTests.m in Sources */ = {isa = PBXBuildFile; fileRef = BD26735D1113B29700D4F1CF /* FFGLPluginTests.m */; };
+		BD2673641113B32000D4F1CF /* FFGLRendererTests.m in Sources */ = {isa = PBXBuildFile; fileRef = BD2673631113B32000D4F1CF /* FFGLRendererTests.m */; };
 		BD5A42E110ECA82800C02884 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = BD5A42E010ECA82800C02884 /* Localizable.strings */; };
 		BD7410801080F81A00BF8285 /* ParametersView.m in Sources */ = {isa = PBXBuildFile; fileRef = BD74107F1080F81A00BF8285 /* ParametersView.m */; };
 		BD7A934610F6A2E1009A3D98 /* FFGLUtilityFunctions.c in Sources */ = {isa = PBXBuildFile; fileRef = BD7A934510F6A2E1009A3D98 /* FFGLUtilityFunctions.c */; };
@@ -89,6 +91,10 @@
 		BD2672401113863100D4F1CF /* FFGLGLState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLGLState.h; path = UnitTests/FFGLGLState.h; sourceTree = "<group>"; };
 		BD2672411113863100D4F1CF /* FFGLGLState.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = FFGLGLState.c; path = UnitTests/FFGLGLState.c; sourceTree = "<group>"; };
 		BD26725611138AA300D4F1CF /* FFGLUnitTests_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLUnitTests_Prefix.pch; path = UnitTests/FFGLUnitTests_Prefix.pch; sourceTree = "<group>"; };
+		BD26735C1113B29700D4F1CF /* FFGLPluginTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLPluginTests.h; path = UnitTests/FFGLPluginTests.h; sourceTree = "<group>"; };
+		BD26735D1113B29700D4F1CF /* FFGLPluginTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLPluginTests.m; path = UnitTests/FFGLPluginTests.m; sourceTree = "<group>"; };
+		BD2673621113B32000D4F1CF /* FFGLRendererTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLRendererTests.h; path = UnitTests/FFGLRendererTests.h; sourceTree = "<group>"; };
+		BD2673631113B32000D4F1CF /* FFGLRendererTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLRendererTests.m; path = UnitTests/FFGLRendererTests.m; sourceTree = "<group>"; };
 		BD4A78FD109B94B80018ABBD /* TODO.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TODO.txt; sourceTree = "<group>"; };
 		BD4C6AEA11092C4500274217 /* Unexported_Symbols.exp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.exports; name = Unexported_Symbols.exp; path = FrameworkSource/Unexported_Symbols.exp; sourceTree = "<group>"; };
 		BD5A42C310ECA65E00C02884 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = FrameworkSource/English.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -273,6 +279,10 @@
 				BD2672401113863100D4F1CF /* FFGLGLState.h */,
 				BD2672411113863100D4F1CF /* FFGLGLState.c */,
 				BD26725611138AA300D4F1CF /* FFGLUnitTests_Prefix.pch */,
+				BD26735C1113B29700D4F1CF /* FFGLPluginTests.h */,
+				BD26735D1113B29700D4F1CF /* FFGLPluginTests.m */,
+				BD2673621113B32000D4F1CF /* FFGLRendererTests.h */,
+				BD2673631113B32000D4F1CF /* FFGLRendererTests.m */,
 			);
 			name = "Unit Testing";
 			sourceTree = "<group>";
@@ -453,6 +463,8 @@
 			files = (
 				BDD437D911130B8600ADC32C /* FFGLImageTests.m in Sources */,
 				BD2672421113863100D4F1CF /* FFGLGLState.c in Sources */,
+				BD26735E1113B29700D4F1CF /* FFGLPluginTests.m in Sources */,
+				BD2673641113B32000D4F1CF /* FFGLRendererTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
