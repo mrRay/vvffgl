@@ -8,6 +8,7 @@
 
 #import "FFGLImageTests.h"
 #import <OpenGL/CGLMacro.h>
+#import "FFGLGLState.h"
 
 #define kFFGLImageTestWidth 1024
 #define kFFGLImageTestHeight 768
@@ -84,13 +85,23 @@ static void FFGLImageTestBufferCallback(const void *baseAddress, void *userInfo)
 
 - (void)test2DTextureCreationFromBuffer
 {
+	GLStateRef before = GLStateCreateForContext(_CGLContext);
 	STAssertTrue([_image lockTexture2DRepresentation], @"FFGLImage couldn't lockTexture2DRepresentation");
+	GLStateRef after = GLStateCreateForContext(_CGLContext);
+	STAssertTrue(GLStatesAreEqual(before, after), @"OpenGL state changed after call to lockTexture2DRepresentation");
 	[_image unlockTexture2DRepresentation];
+	GLStateRelease(before);
+	GLStateRelease(after);
 }
 
 - (void)testRectTextureCreationFromBuffer
 {
+	GLStateRef before = GLStateCreateForContext(_CGLContext);
 	STAssertTrue([_image lockTextureRectRepresentation], @"FFGLImage couldn't lockTextureRectRepresentation");
+	GLStateRef after = GLStateCreateForContext(_CGLContext);
+	STAssertTrue(GLStatesAreEqual(before, after), @"OpenGL state changed after call to lockTextureRectRepresentation");
 	[_image unlockTextureRectRepresentation];
+	GLStateRelease(before);
+	GLStateRelease(after);
 }
 @end
