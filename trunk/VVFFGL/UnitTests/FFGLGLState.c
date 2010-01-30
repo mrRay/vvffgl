@@ -14,7 +14,7 @@
 
 #define kGLGetIntCount 16
 #define kGLGetBoolCount 7
-#define kGLGetTexParamIntCount 2
+#define kGLGetTexParamIntCount 14
 #define kGLTargetCount 2
 #define kGLTargets GL_TEXTURE_2D, GL_TEXTURE_RECTANGLE_ARB
 
@@ -80,7 +80,19 @@ GLStateRef GLStateCreateForContext(CGLContextObj context)
 		GLenum targets[kGLTargetCount] = {kGLTargets};
 		GLenum getTexParamIntEnums[kGLGetTexParamIntCount] = {
 			GL_TEXTURE_STORAGE_HINT_APPLE,
-			GL_TEXTURE_RANGE_LENGTH_APPLE
+			GL_TEXTURE_RANGE_LENGTH_APPLE,
+			GL_TEXTURE_MAG_FILTER,
+			GL_TEXTURE_MIN_FILTER,
+			GL_TEXTURE_MIN_LOD,
+			GL_TEXTURE_MAX_LOD,
+			GL_TEXTURE_BASE_LEVEL,
+			GL_TEXTURE_MAX_LEVEL,
+			GL_TEXTURE_WRAP_S,
+			GL_TEXTURE_WRAP_T,
+			GL_TEXTURE_WRAP_R,
+			GL_TEXTURE_BORDER_COLOR,
+			GL_TEXTURE_PRIORITY,
+			GL_TEXTURE_RESIDENT
 		};
 		
 		for (int i = 0; i < kGLTargetCount; i++) {
