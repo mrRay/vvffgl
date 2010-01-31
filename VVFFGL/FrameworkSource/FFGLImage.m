@@ -113,7 +113,7 @@ static BOOL ffglGLInfoForPixelFormat(NSString *ffglFormat, GLenum *format, GLenu
 	else if ([ffglFormat isEqualToString:FFGLPixelFormatARGB8888])
 	{ 
 		*format = GL_BGRA;
-		*type = GL_UNSIGNED_INT_8_8_8_8_REV;
+		*type = GL_UNSIGNED_INT_8_8_8_8;
 	}
 	else if ([ffglFormat isEqualToString:FFGLPixelFormatBGR565])
 	{
@@ -122,7 +122,7 @@ static BOOL ffglGLInfoForPixelFormat(NSString *ffglFormat, GLenum *format, GLenu
 	}
 	else if ([ffglFormat isEqualToString:FFGLPixelFormatBGR888])
 	{
-		*format = GL_RGB;
+		*format = GL_BGR;
 		*type = GL_UNSIGNED_BYTE;
 	}
 	else if ([ffglFormat isEqualToString:FFGLPixelFormatBGRA8888])
@@ -498,11 +498,8 @@ static FFGLImageRep *FFGLTextureRepCreateFromTextureRep(CGLContextObj cgl_ctx, c
 			glEnableClientState(GL_VERTEX_ARRAY);
 			glVertexPointer(2, GL_FLOAT, 0, verts );
 			glDrawArrays(GL_QUADS, 0, 4);
-			glDisableClientState( GL_TEXTURE_COORD_ARRAY );
-			glDisableClientState(GL_VERTEX_ARRAY);
 		}
 		glBindTexture(fromGLTarget, 0);
-		glDisable(fromGLTarget);
 		
 		// Restore OpenGL states 
 		glMatrixMode(GL_MODELVIEW);
