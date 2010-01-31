@@ -13,11 +13,7 @@
 #define kFFGLImageTestWidth 1024
 #define kFFGLImageTestHeight 768
 #define kFFGLImageTestBytesPerPixel 4
-#if __BIG_ENDIAN__
-#define kFFPixelFormat FFGLPixelFormatARGB8888
-#else
 #define kFFPixelFormat FFGLPixelFormatBGRA8888
-#endif
 
 static void FFGLImageTestBufferCallback(const void *baseAddress, void *userInfo)
 {
@@ -131,5 +127,82 @@ void FFGLImageTestTextureReleaseCallback(GLuint name, CGLContextObj cgl_ctx, voi
 		GLStateRelease(before);
 		GLStateRelease(after);
 	}
+}
+
+- (void)testBufferToTextureToBuffer
+{
+	uint8_t *originalBuffer = valloc(kFFGLImageTestBytesPerPixel * kFFGLImageTestWidth * kFFGLImageTestHeight);
+	unsigned int offset = 0;
+	for (unsigned int y = 0; y < kFFGLImageTestHeight; y++) {
+		for (unsigned int x = 0; x < kFFGLImageTestWidth; x++) {
+			originalBuffer[offset] = 255 * ((float)x / (float)kFFGLImageTestWidth); // blue
+			originalBuffer[offset+1] = 180 * ((float)x / (float)kFFGLImageTestWidth); // green
+			originalBuffer[offset+2] = 10 * ((float)x / (float)kFFGLImageTestWidth); // red
+			originalBuffer[offset+3] = 255; // alpha
+			offset += kFFGLImageTestBytesPerPixel;
+		}
+	}
+	FFGLImage *original = [[FFGLImage alloc] initWithBuffer:originalBuffer
+												 CGLContext:_CGLContext
+												pixelFormat:kFFPixelFormat
+												 pixelsWide:kFFGLImageTestWidth
+												 pixelsHigh:kFFGLImageTestHeight
+												bytesPerRow:kFFGLImageTestWidth * kFFGLImageTestBytesPerPixel
+													flipped:NO
+											releaseCallback:NULL
+												releaseInfo:NULL];
+	
+	STAssertTrue([original lockTexture2DRepresentation], @"Couldn't lockTexture2DRepresentation");
+
+	
+	NSString *formats[4] = {
+		FFGLPixelFormatARGB8888,
+		FFGLPixelFormatBGRA8888,
+		FFGLPixelFormatRGB888,
+		FFGLPixelFormatBGR888
+	};
+	unsigned int pixelByteArray[4] = { 4,4,3,3 };
+	unsigned int rIndex[4] = { 1,2,0,2 };
+	unsigned int gIndex[4] = { 2,1,1,1 };
+	unsigned int bIndex[4] = { 3,0,2,0 };
+	
+	for (int i = 0; i < 4; i++) {
+		FFGLImage *copy = [[FFGLImage alloc] initWithTexture2D:[original texture2DName]
+													CGLContext:_CGLContext
+											   imagePixelsWide:[original imagePixelsWide]
+											   imagePixelsHigh:[original imagePixelsHigh]
+											 texturePixelsWide:[original texture2DPixelsWide]
+											 texturePixelsHigh:[original texture2DPixelsHigh]
+													   flipped:[original texture2DIsFlipped]
+											   releaseCallback:NULL
+												   releaseInfo:NULL];
+		STAssertTrue([copy lockBufferRepresentationWithPixelFormat:formats[i]], @"Couldn't lockBufferRepresentation for pixel-format %@", formats[i]);
+		uint8_t *copiedBuffer = (uint8_t *)[copy bufferBaseAddress];
+		STAssertTrue([copy bufferPixelsWide] == kFFGLImageTestWidth, @"Width changed.");
+		STAssertTrue([copy bufferPixelsHigh] == kFFGLImageTestHeight, @"Height changed.");
+		STAssertTrue([copy bufferBytesPerRow] == kFFGLImageTestWidth * pixelByteArray[i], @"Bytes per pixel not as expected");
+		unsigned int copyOffset = 0;
+		unsigned int origOffset = 0;
+		BOOL changed = NO;
+		for (unsigned int y = 0; y < kFFGLImageTestHeight; y++) {
+			for (unsigned int x = 0; x < kFFGLImageTestWidth; x++) {
+				if (copiedBuffer[copyOffset + bIndex[i]] != originalBuffer[origOffset]
+					|| copiedBuffer[copyOffset + gIndex[i]] != originalBuffer[origOffset + 1]
+					|| copiedBuffer[copyOffset + rIndex[i]] != originalBuffer[origOffset + 2])
+				{
+					changed = YES;
+				}
+				copyOffset += pixelByteArray[i];
+				origOffset += kFFGLImageTestBytesPerPixel;
+			}
+		}
+		STAssertFalse(changed, @"Buffer changed for format %@", formats[i]);
+		[copy unlockBufferRepresentation];
+		[copy release];
+	}
+
+	[original unlockTexture2DRepresentation];
+	[original release];
+	free(originalBuffer);
 }
 @end
