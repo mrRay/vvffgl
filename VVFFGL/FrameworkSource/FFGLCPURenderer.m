@@ -103,7 +103,7 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
 		[prevImage unlockBufferRepresentation];
 	}
     if ([newImage lockBufferRepresentationWithPixelFormat:_pixelFormat]) {
-        if (([newImage bufferPixelsHigh] != _size.height) || ([newImage bufferPixelsWide] != _size.width))
+        if (([newImage imagePixelsHigh] != _size.height) || ([newImage imagePixelsWide] != _size.width))
 		{
 			[newImage unlockBufferRepresentation];
 			_buffers[index] = NULL;

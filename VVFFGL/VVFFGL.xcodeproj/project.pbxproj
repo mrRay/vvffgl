@@ -15,6 +15,8 @@
 		9606B18F101763C900CC50B7 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9606B18D101763C900CC50B7 /* MainMenu.xib */; };
 		9606B190101763C900CC50B7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 9606B18E101763C900CC50B7 /* main.m */; };
 		969166531017650F0078DF52 /* VVFFGL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9606B14D101761EF00CC50B7 /* VVFFGL.framework */; };
+		BD1BE75E1117776A00985023 /* FFGLImageRep.h in Headers */ = {isa = PBXBuildFile; fileRef = BD1BE75C1117776A00985023 /* FFGLImageRep.h */; };
+		BD1BE75F1117776A00985023 /* FFGLImageRep.m in Sources */ = {isa = PBXBuildFile; fileRef = BD1BE75D1117776A00985023 /* FFGLImageRep.m */; };
 		BD2672421113863100D4F1CF /* FFGLGLState.c in Sources */ = {isa = PBXBuildFile; fileRef = BD2672411113863100D4F1CF /* FFGLGLState.c */; };
 		BD26735E1113B29700D4F1CF /* FFGLPluginTests.m in Sources */ = {isa = PBXBuildFile; fileRef = BD26735D1113B29700D4F1CF /* FFGLPluginTests.m */; };
 		BD2673641113B32000D4F1CF /* FFGLRendererTests.m in Sources */ = {isa = PBXBuildFile; fileRef = BD2673631113B32000D4F1CF /* FFGLRendererTests.m */; };
@@ -88,6 +90,8 @@
 		9606B184101763A200CC50B7 /* VVFFGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VVFFGL.h; path = FrameworkSource/VVFFGL.h; sourceTree = "<group>"; };
 		9606B18D101763C900CC50B7 /* MainMenu.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = MainMenu.xib; path = AppSource/MainMenu.xib; sourceTree = "<group>"; };
 		9606B18E101763C900CC50B7 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = AppSource/main.m; sourceTree = "<group>"; };
+		BD1BE75C1117776A00985023 /* FFGLImageRep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLImageRep.h; path = FrameworkSource/FFGLImageRep.h; sourceTree = "<group>"; };
+		BD1BE75D1117776A00985023 /* FFGLImageRep.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLImageRep.m; path = FrameworkSource/FFGLImageRep.m; sourceTree = "<group>"; };
 		BD2672401113863100D4F1CF /* FFGLGLState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLGLState.h; path = UnitTests/FFGLGLState.h; sourceTree = "<group>"; };
 		BD2672411113863100D4F1CF /* FFGLGLState.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = FFGLGLState.c; path = UnitTests/FFGLGLState.c; sourceTree = "<group>"; };
 		BD26725611138AA300D4F1CF /* FFGLUnitTests_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLUnitTests_Prefix.pch; path = UnitTests/FFGLUnitTests_Prefix.pch; sourceTree = "<group>"; };
@@ -263,6 +267,8 @@
 				BD8E3C6A1030DC1800152772 /* FFGLGPURenderer.h */,
 				BD8E3C6B1030DC1800152772 /* FFGLGPURenderer.m */,
 				BDAA2CCB107928A90053E947 /* FFGLImage.m */,
+				BD1BE75C1117776A00985023 /* FFGLImageRep.h */,
+				BD1BE75D1117776A00985023 /* FFGLImageRep.m */,
 				BDA64DA210A1006600E010AF /* FFGLPool.h */,
 				BDA64DA310A1006600E010AF /* FFGLPool.c */,
 				BD7A934510F6A2E1009A3D98 /* FFGLUtilityFunctions.c */,
@@ -274,11 +280,11 @@
 			isa = PBXGroup;
 			children = (
 				BDD437D111130A2300ADC32C /* FFGLUnitTests-Info.plist */,
+				BD26725611138AA300D4F1CF /* FFGLUnitTests_Prefix.pch */,
 				BDD437D711130B8600ADC32C /* FFGLImageTests.h */,
 				BDD437D811130B8600ADC32C /* FFGLImageTests.m */,
 				BD2672401113863100D4F1CF /* FFGLGLState.h */,
 				BD2672411113863100D4F1CF /* FFGLGLState.c */,
-				BD26725611138AA300D4F1CF /* FFGLUnitTests_Prefix.pch */,
 				BD26735C1113B29700D4F1CF /* FFGLPluginTests.h */,
 				BD26735D1113B29700D4F1CF /* FFGLPluginTests.m */,
 				BD2673621113B32000D4F1CF /* FFGLRendererTests.h */,
@@ -305,6 +311,7 @@
 				BD9F49C11098D55F00E8A7C0 /* FFGLFreeFrame.h in Headers */,
 				BDA64DA410A1006600E010AF /* FFGLPool.h in Headers */,
 				BDA64DE710A1186500E010AF /* VVFFGL_Prefix.pch in Headers */,
+				BD1BE75E1117776A00985023 /* FFGLImageRep.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -442,6 +449,7 @@
 				BDAA2CCD107928A90053E947 /* FFGLImage.m in Sources */,
 				BDA64DA510A1006600E010AF /* FFGLPool.c in Sources */,
 				BD7A934610F6A2E1009A3D98 /* FFGLUtilityFunctions.c in Sources */,
+				BD1BE75F1117776A00985023 /* FFGLImageRep.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

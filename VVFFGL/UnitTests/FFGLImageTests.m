@@ -178,8 +178,8 @@ void FFGLImageTestTextureReleaseCallback(GLuint name, CGLContextObj cgl_ctx, voi
 												   releaseInfo:NULL];
 		STAssertTrue([copy lockBufferRepresentationWithPixelFormat:formats[i]], @"Couldn't lockBufferRepresentation for pixel-format %@", formats[i]);
 		uint8_t *copiedBuffer = (uint8_t *)[copy bufferBaseAddress];
-		STAssertTrue([copy bufferPixelsWide] == kFFGLImageTestWidth, @"Width changed.");
-		STAssertTrue([copy bufferPixelsHigh] == kFFGLImageTestHeight, @"Height changed.");
+		STAssertTrue([copy imagePixelsWide] == kFFGLImageTestWidth, @"Width changed.");
+		STAssertTrue([copy imagePixelsHigh] == kFFGLImageTestHeight, @"Height changed.");
 		STAssertTrue([copy bufferBytesPerRow] == kFFGLImageTestWidth * pixelByteArray[i], @"Bytes per pixel not as expected");
 		unsigned int copyOffset = 0;
 		unsigned int origOffset = 0;
