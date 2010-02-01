@@ -54,18 +54,7 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
         _frameCopies = [_plugin _prefersFrameCopy];
         _fcStruct.inputFrameCount = 0;
         _fcStruct.inputFrames = _buffers;
-#if __BIG_ENDIAN__
-        if ([format isEqualToString:FFGLPixelFormatRGB565]) { _bytesPerRow = 2 * _size.width; }
-        else if ([format isEqualToString:FFGLPixelFormatRGB888]) { _bytesPerRow = 3 * _size.width; }
-        else if ([format isEqualToString:FFGLPixelFormatARGB8888]) { _bytesPerRow = 4 * _size.width; }
-#else
-        if ([format isEqualToString:FFGLPixelFormatBGR565]) { _bytesPerRow = 2 * _size.width; }
-        else if ([format isEqualToString:FFGLPixelFormatBGR888]) { _bytesPerRow = 3 * _size.width; }
-        else if ([format isEqualToString:FFGLPixelFormatBGRA8888]) { _bytesPerRow = 4 * _size.width; }
-#endif
-        else { // This should never happen, as it is checked in FFGLRenderer at init.
-            [NSException raise:@"FFGLRendererException" format:@"Unexpected pixel format."];
-        }
+		_bytesPerRow = _size.width * ffglBytesPerPixelForPixelFormat(format);
         _bytesPerBuffer = _bytesPerRow * _size.height;
 #if defined(FFGL_USE_BUFFER_POOLS)
         FFGLPoolCallBacks callbacks = {FFGLCPURendererBufferCreate, FFGLCPURendererBufferDestroy};

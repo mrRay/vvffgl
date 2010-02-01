@@ -49,6 +49,7 @@ static inline unsigned int ffglPOTDimension(unsigned int dimension)
     return glSize;
 }
 
+NSUInteger ffglBytesPerPixelForPixelFormat(NSString *format);
 bool ffglOpenGLSupportsExtension(CGLContextObj cgl_ctx, const char *extension);
 
 #define FFGLLocalized(s) [[NSBundle bundleForClass:[self class]] localizedStringForKey:s value:s table:nil]

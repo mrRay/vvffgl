@@ -52,7 +52,6 @@ typedef struct FFGLImageRep
     void					*releaseContext;
 } FFGLImageRep;
 
-NSUInteger ffglBytesPerPixelForPixelFormat(NSString *format);
 FFGLImageRep *FFGLTextureRepCreateFromTexture(GLint texture, FFGLImageRepType type, NSUInteger imageWidth, NSUInteger imageHeight, NSUInteger textureWidth, NSUInteger textureHeight, BOOL isFlipped, FFGLImageTextureReleaseCallback callback, void *userInfo);
 FFGLImageRep *FFGLBufferRepCreateFromBuffer(const void *source, NSUInteger width, NSUInteger height, NSUInteger rowBytes, NSString *pixelFormat, BOOL isFlipped, FFGLImageBufferReleaseCallback callback, void *userInfo, BOOL forceCopy);
 FFGLImageRep *FFGLTextureRepCreateFromTextureRep(CGLContextObj cgl_ctx, const FFGLImageRep *fromTextureRep, FFGLImageRepType toTarget, BOOL useNPOT);

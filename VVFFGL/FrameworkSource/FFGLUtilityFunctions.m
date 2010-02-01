@@ -7,8 +7,10 @@
  *
  */
 
+#import <Cocoa/Cocoa.h>
 #import <OpenGL/OpenGL.h>
 #import <OpenGL/CGLMacro.h>
+#import "FFGLPlugin.h"
 #import <strings.h>
 #import <stdbool.h>
 
@@ -46,4 +48,17 @@ bool ffglOpenGLSupportsExtension(CGLContextObj cgl_ctx, const char *extension)
 		start = terminator;
 	}
 	return false;
+}
+
+NSUInteger ffglBytesPerPixelForPixelFormat(NSString *format)
+{
+     if ([format isEqualToString:FFGLPixelFormatBGRA8888] || [format isEqualToString:FFGLPixelFormatARGB8888]) {
+        return 4;
+    } else if ([format isEqualToString:FFGLPixelFormatBGR888] || [format isEqualToString:FFGLPixelFormatRGB888]) {
+        return 3;
+    } else if ([format isEqualToString:FFGLPixelFormatBGR565] || [format isEqualToString:FFGLPixelFormatRGB565]) {
+        return 2;
+    } else {
+        return 0;
+    }
 }

@@ -21,19 +21,7 @@ static void FFGLImageTextureRelease(GLuint name, CGLContextObj cgl_ctx, void *co
     CGLUnlockContext(cgl_ctx);
 }
 
-NSUInteger ffglBytesPerPixelForPixelFormat(NSString *format)
-{
-    if ([format isEqualToString:FFGLPixelFormatRGB565] || [format isEqualToString:FFGLPixelFormatBGR565]) {
-        return 2;
-    } else if ([format isEqualToString:FFGLPixelFormatRGB888] || [format isEqualToString:FFGLPixelFormatBGR888]) {
-        return 3;
-    } else if ([format isEqualToString:FFGLPixelFormatARGB8888] || [format isEqualToString:FFGLPixelFormatBGRA8888]) {
-        return 4;
-    } else {
-        return 0;
-    }
-}
-
+#pragma mark Private Utility
 static BOOL ffglGLInfoForPixelFormat(NSString *ffglFormat, GLenum *format, GLenum *type)
 {
 	if ([ffglFormat isEqualToString:FFGLPixelFormatRGB565])
@@ -71,6 +59,8 @@ static BOOL ffglGLInfoForPixelFormat(NSString *ffglFormat, GLenum *format, GLenu
 	}
 	return YES;
 }
+
+#pragma mark FFGLImageRep
 
 FFGLImageRep *FFGLBufferRepCreateFromTextureRep(CGLContextObj cgl_ctx, const FFGLImageRep *fromTextureRep, NSString *pixelFormat)
 {
