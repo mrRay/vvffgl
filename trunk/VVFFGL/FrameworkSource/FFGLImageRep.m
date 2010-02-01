@@ -42,7 +42,7 @@ static BOOL ffglGLInfoForPixelFormat(NSString *ffglFormat, GLenum *format, GLenu
 	else if ([ffglFormat isEqualToString:FFGLPixelFormatBGR565])
 	{
 		*format = GL_RGB;
-		*type = GL_UNSIGNED_SHORT_5_6_5;
+		*type = GL_UNSIGNED_SHORT_5_6_5_REV;
 	}
 	else if ([ffglFormat isEqualToString:FFGLPixelFormatBGR888])
 	{

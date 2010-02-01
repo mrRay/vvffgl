@@ -39,7 +39,7 @@ static const void *FFGLGPURendererTextureCreate(const void *userInfo)
 	data->context = cgl_ctx;
     glGenTextures(1, &data->texture);
 	glBindTexture(target, data->texture);
-	glTexImage2D(target, 0, GL_RGBA8, dimensions.width, dimensions.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(target, 0, GL_RGBA8, dimensions.width, dimensions.height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, NULL);
     return data;
 }
 
@@ -96,7 +96,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	// TODO: here we are unbinding any previously bound texture. we need to push/pop attributes to catch that,
 	// or do it once we have bound our FBO if possible
 	glBindTexture(textureTarget, rendererFBOTexture);
-	glTexImage2D(textureTarget, 0, GL_RGBA8, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(textureTarget, 0, GL_RGBA8, textureWidth, textureHeight, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, NULL);
 	
 	// texture filtering and wrapping modes for FBO texture.
 	
@@ -335,7 +335,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	glGenTextures(1, &rendererFBOTexture);
 	glBindTexture(_textureTarget, rendererFBOTexture);
 	//	NSLog(@"new implementationRender texture: %u", _rendererFBOTexture);
-	glTexImage2D(_textureTarget, 0, GL_RGBA8, _textureWidth, _textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(_textureTarget, 0, GL_RGBA8, _textureWidth, _textureHeight, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, NULL);
 #endif
 	
 	// texture filtering and wrapping modes. Do we actually want to fuck with this here? Hrm.
