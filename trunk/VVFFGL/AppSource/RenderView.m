@@ -103,8 +103,8 @@
 	    //	glDisable(GL_BLEND);
 //		glEnable(GL_BLEND);
 //		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-		NSUInteger w = [image textureRectPixelsWide];
-		NSUInteger h = [image textureRectPixelsHigh];
+		NSUInteger w = [image imagePixelsWide];
+		NSUInteger h = [image imagePixelsHigh];
 		// Calculate origin, using floorf() to remain pixel-aligned
 		CGPoint at = CGPointMake(floorf((bounds.size.width / 2.0) - (w / 2.0)), floorf((bounds.size.height / 2.0) - ( h / 2.0)));
 	    glBegin(GL_QUADS);
