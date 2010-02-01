@@ -8,7 +8,6 @@
 
 #import <Cocoa/Cocoa.h>
 #import <OpenGL/OpenGL.h>
-#import <pthread.h>
 
 /*
  typedef void (*FFGLImageTextureReleaseCallback)(GLuint name, CGLContextObj cgl_ctx, void *userInfo)
@@ -35,14 +34,7 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *us
 
 @interface FFGLImage : NSObject {
 @private
-    NSUInteger      _imageWidth;
-    NSUInteger      _imageHeight;
-    CGLContextObj   _context;
-    pthread_mutex_t	_conversionLock;
-    void			*_texture2D;
-    void			*_textureRect;
-    void			*_buffer;
-	NSUInteger		_NPOTRule;
+	void *_private;
 }
 /*
  - (id)initWithTexture2D:(GLuint)texture CGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight flipped:(BOOL)isFlipped releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo

@@ -100,11 +100,9 @@ extern NSString * const FFGLParameterTypeNumber;
 extern NSString * const FFGLParameterTypeString;
 extern NSString * const FFGLParameterTypeImage;
 
-typedef struct FFGLPluginData FFGLPluginData; // Private
-
 @interface FFGLPlugin : NSObject <NSCopying> {
 @private
-    FFGLPluginData *_pluginData;
+    void *_pluginPrivate;
 }
 
 /*

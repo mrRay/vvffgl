@@ -9,7 +9,7 @@
 #import "FFGLImage.h"
 #import "FFGLPlugin.h"
 #import "FFGLInternal.h"
-
+#import <pthread.h>
 #import <OpenGL/CGLMacro.h>
 
 /*
@@ -97,9 +97,6 @@ static NSUInteger ffglBytesPerPixelForPixelFormat(NSString *format) {
 
 static BOOL ffglGLInfoForPixelFormat(NSString *ffglFormat, GLenum *format, GLenum *type)
 {
-	/*
-	 I can't spot a difference using 5_6_5_REV and 5_6_5, etc. Anyone explain it? T.
-	 */
 	if ([ffglFormat isEqualToString:FFGLPixelFormatRGB565])
 	{
 		*format = GL_RGB;
@@ -595,6 +592,19 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
 	free(rep);
 }
 
+typedef struct FFGLImagePrivate {
+	NSUInteger      imageWidth;
+    NSUInteger      imageHeight;
+    CGLContextObj   context;
+    pthread_mutex_t	conversionLock;
+    FFGLImageRep	*texture2D;
+    FFGLImageRep	*textureRect;
+    FFGLImageRep	*buffer;
+	NSUInteger		NPOTRule;
+} FFGLImagePrivate;
+
+#define ffglIPrivate(x) ((FFGLImagePrivate *)_private)->x
+
 @interface FFGLImage (Private)
 - (id)initWithCGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight imageRep:(FFGLImageRep *)rep usePOT2D:(FFGLImagePOT2DRule)POT;
 - (void)releaseResources;
@@ -611,31 +621,35 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
 {
     if (self = [super init]) {
         if (rep == NULL
-			|| pthread_mutex_init(&_conversionLock, NULL) != 0)
+			|| (_private = malloc(sizeof(FFGLImagePrivate))) == NULL
+			|| pthread_mutex_init(&ffglIPrivate(conversionLock), NULL) != 0)
 		{
             [self release];
             return nil;
         }
-        _context = CGLRetainContext(context);
-		_NPOTRule = POT;
+        ffglIPrivate(context) = CGLRetainContext(context);
+		ffglIPrivate(NPOTRule) = POT;
 		
 		if (rep->type == FFGLImageRepTypeTexture2D)
 		{
-			_texture2D = rep;
-			_imageWidth = rep->repInfo.textureInfo.width;
-			_imageHeight = rep->repInfo.textureInfo.height;
+			ffglIPrivate(texture2D) = rep;
+			ffglIPrivate(textureRect) = ffglIPrivate(buffer) = NULL;
+			ffglIPrivate(imageWidth) = rep->repInfo.textureInfo.width;
+			ffglIPrivate(imageHeight) = rep->repInfo.textureInfo.height;
 		}
 		else if (rep->type == FFGLImageRepTypeTextureRect)
 		{
-			_textureRect = rep;
-			_imageWidth = rep->repInfo.textureInfo.width;
-			_imageHeight = rep->repInfo.textureInfo.height;
+			ffglIPrivate(textureRect) = rep;
+			ffglIPrivate(texture2D) = ffglIPrivate(buffer) = NULL;
+			ffglIPrivate(imageWidth) = rep->repInfo.textureInfo.width;
+			ffglIPrivate(imageHeight) = rep->repInfo.textureInfo.height;
 		}
 		else if (rep->type == FFGLImageRepTypeBuffer)
 		{
-			_buffer = rep;
-			_imageWidth = rep->repInfo.bufferInfo.width;
-			_imageHeight = rep->repInfo.bufferInfo.height;
+			ffglIPrivate(buffer) = rep;
+			ffglIPrivate(textureRect) = ffglIPrivate(texture2D) = NULL;
+			ffglIPrivate(imageWidth) = rep->repInfo.bufferInfo.width;
+			ffglIPrivate(imageHeight) = rep->repInfo.bufferInfo.height;
 		}
 		else
 		{
@@ -725,14 +739,17 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
 
 - (void)releaseResources 
 {
-    if (_texture2D)
-		FFGLImageRepDestroy(_context, (FFGLImageRep *)_texture2D);
-	if (_textureRect)
-		FFGLImageRepDestroy(_context, (FFGLImageRep *)_textureRect);
-    if (_buffer)
-		FFGLImageRepDestroy(_context, (FFGLImageRep *)_buffer);
-	CGLReleaseContext(_context);
-    pthread_mutex_destroy(&_conversionLock);
+	if (_private) {
+		if (ffglIPrivate(texture2D) != NULL)
+			FFGLImageRepDestroy(ffglIPrivate(context), (FFGLImageRep *)ffglIPrivate(texture2D));
+		if (ffglIPrivate(textureRect) != NULL)
+			FFGLImageRepDestroy(ffglIPrivate(context), (FFGLImageRep *)ffglIPrivate(textureRect));
+		if (ffglIPrivate(buffer))
+			FFGLImageRepDestroy(ffglIPrivate(context), (FFGLImageRep *)ffglIPrivate(buffer));
+		CGLReleaseContext(ffglIPrivate(context));
+		pthread_mutex_destroy(&ffglIPrivate(conversionLock));
+		free(_private);
+	}
 }
 
 - (void)dealloc {
@@ -746,39 +763,39 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
 }
 
 - (NSUInteger)imagePixelsWide {
-    return _imageWidth;
+    return ffglIPrivate(imageWidth);
 }
 
 - (NSUInteger)imagePixelsHigh {
-    return _imageHeight;
+    return ffglIPrivate(imageHeight);
 }
 
 - (BOOL)useNPOT2D
 {
 	// always called from within a lock, so no need to lock
-	if (_NPOTRule == FFGLImagePOTUnknown)
+	if (ffglIPrivate(NPOTRule) == FFGLImagePOTUnknown)
 	{
-		_NPOTRule = ffglOpenGLSupportsExtension(_context, "GL_ARB_texture_non_power_of_two") ? FFGLImageUseNPOT2D : FFGLImageUsePOT2D;
+		ffglIPrivate(NPOTRule) = ffglOpenGLSupportsExtension(ffglIPrivate(context), "GL_ARB_texture_non_power_of_two") ? FFGLImageUseNPOT2D : FFGLImageUsePOT2D;
 	}
-	return _NPOTRule == FFGLImageUseNPOT2D ? YES : NO;
+	return ffglIPrivate(NPOTRule) == FFGLImageUseNPOT2D ? YES : NO;
 }
 
 #pragma mark GL_TEXTURE_2D
 
 - (BOOL)lockTexture2DRepresentation {
     BOOL result = NO;
-    pthread_mutex_lock(&_conversionLock);
-    if (_texture2D)
+    pthread_mutex_lock(&ffglIPrivate(conversionLock));
+    if (ffglIPrivate(texture2D))
     {
-		if (((FFGLImageRep *)_texture2D)->flipped == YES)
+		if (ffglIPrivate(texture2D)->flipped == YES)
 		{
 			// An FFGLImage may be initted with a flipped texture, but we always lock with it not flipped
 			// as plugins don't support flipping
-			FFGLImageRep *rep = FFGLTextureRepCreateFromTextureRep(_context, _texture2D, FFGLImageRepTypeTexture2D, [self useNPOT2D]);
+			FFGLImageRep *rep = FFGLTextureRepCreateFromTextureRep(ffglIPrivate(context), ffglIPrivate(texture2D), FFGLImageRepTypeTexture2D, [self useNPOT2D]);
 			if (rep != NULL)
 			{
-				FFGLImageRepDestroy(_context, _texture2D);
-				_texture2D = rep;
+				FFGLImageRepDestroy(ffglIPrivate(context), ffglIPrivate(texture2D));
+				ffglIPrivate(texture2D) = rep;
 				result = YES;
 			}
 		}
@@ -789,32 +806,32 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
     }
     else
     {
-		if (_textureRect)
+		if (ffglIPrivate(textureRect))
 		{
-			_texture2D = FFGLTextureRepCreateFromTextureRep(_context, _textureRect, FFGLImageRepTypeTexture2D, [self useNPOT2D]);
-			if (_texture2D)
+			ffglIPrivate(texture2D) = FFGLTextureRepCreateFromTextureRep(ffglIPrivate(context), ffglIPrivate(textureRect), FFGLImageRepTypeTexture2D, [self useNPOT2D]);
+			if (ffglIPrivate(texture2D))
 				result = YES;
 		}
-		else if (_buffer)
+		else if (ffglIPrivate(buffer))
 		{
 			BOOL useNPOT2D = [self useNPOT2D];
-			_texture2D = FFGLTextureRepCreateFromBufferRep(_context, _buffer, FFGLImageRepTypeTexture2D, useNPOT2D);
-			if (_texture2D == NULL)
+			ffglIPrivate(texture2D) = FFGLTextureRepCreateFromBufferRep(ffglIPrivate(context), ffglIPrivate(buffer), FFGLImageRepTypeTexture2D, useNPOT2D);
+			if (ffglIPrivate(texture2D) == NULL)
 			{
 				// Buffer->2D creation will fail in some cases, so try buffer->rect->2D
-				_textureRect = FFGLTextureRepCreateFromBufferRep(_context, _buffer, FFGLImageRepTypeTextureRect, useNPOT2D);
-				if (_textureRect)
+				ffglIPrivate(textureRect) = FFGLTextureRepCreateFromBufferRep(ffglIPrivate(context), ffglIPrivate(buffer), FFGLImageRepTypeTextureRect, useNPOT2D);
+				if (ffglIPrivate(textureRect))
 				{
-					_texture2D = FFGLTextureRepCreateFromTextureRep(_context, _textureRect, FFGLImageRepTypeTexture2D, useNPOT2D);
+					ffglIPrivate(texture2D) = FFGLTextureRepCreateFromTextureRep(ffglIPrivate(context), ffglIPrivate(textureRect), FFGLImageRepTypeTexture2D, useNPOT2D);
 				}
 			}
-			if (_texture2D)
+			if (ffglIPrivate(texture2D))
 			{
 				result = YES;
 			}
 		}
     }
-    pthread_mutex_unlock(&_conversionLock);
+    pthread_mutex_unlock(&ffglIPrivate(conversionLock));
     return result;
 }
 
@@ -824,52 +841,52 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
 
 - (GLuint)texture2DName
 {
-    return ((FFGLImageRep *)_texture2D)->repInfo.textureInfo.texture;
+    return ffglIPrivate(texture2D)->repInfo.textureInfo.texture;
 }
 
 - (NSUInteger)texture2DPixelsWide 
 {
-    return ((FFGLImageRep *)_texture2D)->repInfo.textureInfo.hardwareWidth;
+    return ffglIPrivate(texture2D)->repInfo.textureInfo.hardwareWidth;
 }
 
 - (NSUInteger)texture2DPixelsHigh
 {
-    return ((FFGLImageRep *)_texture2D)->repInfo.textureInfo.hardwareHeight;
+    return ffglIPrivate(texture2D)->repInfo.textureInfo.hardwareHeight;
 }
 
 - (BOOL)texture2DIsFlipped
 {
     // currently this will always be NO
-    return ((FFGLImageRep *)_texture2D)->flipped;
+    return ffglIPrivate(texture2D)->flipped;
 }
 
 - (FFGLTextureInfo *)_texture2DInfo
 {
-    return &((FFGLImageRep *)_texture2D)->repInfo.textureInfo;
+    return &ffglIPrivate(texture2D)->repInfo.textureInfo;
 }
 
 #pragma mark GL_TEXTURE_RECTANGLE_EXT
 
 - (BOOL)lockTextureRectRepresentation {
     BOOL result = NO;
-    pthread_mutex_lock(&_conversionLock);
-    if (_textureRect)
+    pthread_mutex_lock(&ffglIPrivate(conversionLock));
+    if (ffglIPrivate(textureRect))
     {
 		result = YES;
     }
-    else if (_texture2D)
+    else if (ffglIPrivate(texture2D))
     {
-		_textureRect = FFGLTextureRepCreateFromTextureRep(_context, _texture2D, FFGLImageRepTypeTextureRect, [self useNPOT2D]);
-		if (_textureRect)
+		ffglIPrivate(textureRect) = FFGLTextureRepCreateFromTextureRep(ffglIPrivate(context), ffglIPrivate(texture2D), FFGLImageRepTypeTextureRect, [self useNPOT2D]);
+		if (ffglIPrivate(textureRect))
 			result = YES;
     }
-    else if (_buffer)
+    else if (ffglIPrivate(buffer))
     {
-		_textureRect = FFGLTextureRepCreateFromBufferRep(_context, _buffer, FFGLImageRepTypeTextureRect, [self useNPOT2D]);
-		if (_textureRect)
+		ffglIPrivate(textureRect) = FFGLTextureRepCreateFromBufferRep(ffglIPrivate(context), ffglIPrivate(buffer), FFGLImageRepTypeTextureRect, [self useNPOT2D]);
+		if (ffglIPrivate(textureRect))
 			result = YES;
     }	
-    pthread_mutex_unlock(&_conversionLock);
+    pthread_mutex_unlock(&ffglIPrivate(conversionLock));
     return result;
 }
 
@@ -880,32 +897,32 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
 
 - (GLuint)textureRectName
 {
-    return ((FFGLImageRep *)_textureRect)->repInfo.textureInfo.texture;
+    return ffglIPrivate(textureRect)->repInfo.textureInfo.texture;
 }
 
 - (NSUInteger)textureRectPixelsWide
 {
-    return ((FFGLImageRep *)_textureRect)->repInfo.textureInfo.hardwareWidth;
+    return ffglIPrivate(textureRect)->repInfo.textureInfo.hardwareWidth;
 }
 
 - (NSUInteger)textureRectPixelsHigh
 {
-    return ((FFGLImageRep *)_textureRect)->repInfo.textureInfo.hardwareHeight;
+    return ffglIPrivate(textureRect)->repInfo.textureInfo.hardwareHeight;
 }
 
 - (BOOL)textureRectIsFlipped
 {
-    return ((FFGLImageRep *)_textureRect)->flipped;
+    return ffglIPrivate(textureRect)->flipped;
 }
 
 #pragma mark Pixel Buffers
 
 - (BOOL)lockBufferRepresentationWithPixelFormat:(NSString *)format {
     BOOL result = NO;
-    pthread_mutex_lock(&_conversionLock);
-    if (_buffer)
+    pthread_mutex_lock(&ffglIPrivate(conversionLock));
+    if (ffglIPrivate(buffer))
     {
-		if (![format isEqualToString:((FFGLImageRep *)_buffer)->repInfo.bufferInfo.pixelFormat])
+		if (![format isEqualToString:ffglIPrivate(buffer)->repInfo.bufferInfo.pixelFormat])
 		{
 			// We don't support converting between different formats (yet?).
 		}
@@ -914,29 +931,29 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
 			result = YES;
 		}
     }
-    else if (_textureRect)
+    else if (ffglIPrivate(textureRect))
     {
-		_buffer = FFGLBufferRepCreateFromTextureRep(_context, _textureRect, format);
-		if (_buffer)
+		ffglIPrivate(buffer) = FFGLBufferRepCreateFromTextureRep(ffglIPrivate(context), ffglIPrivate(textureRect), format);
+		if (ffglIPrivate(buffer))
 			result = YES;
     }
-	else if (_texture2D)
+	else if (ffglIPrivate(texture2D))
 	{
-		_buffer = FFGLBufferRepCreateFromTextureRep(_context, _texture2D, format);
-		if (_buffer == NULL)
+		ffglIPrivate(buffer) = FFGLBufferRepCreateFromTextureRep(ffglIPrivate(context), ffglIPrivate(texture2D), format);
+		if (ffglIPrivate(buffer) == NULL)
 		{
 			// Buffer creation from 2D textures fails if it would involve a buffer copy stage.
 			// In such cases, create a rect texture, then create the buffer from that.
-			_textureRect = FFGLTextureRepCreateFromTextureRep(_context, _texture2D, FFGLImageRepTypeTextureRect, [self useNPOT2D]);
-			if (_textureRect)
+			ffglIPrivate(textureRect) = FFGLTextureRepCreateFromTextureRep(ffglIPrivate(context), ffglIPrivate(texture2D), FFGLImageRepTypeTextureRect, [self useNPOT2D]);
+			if (ffglIPrivate(textureRect))
 			{
-				_buffer = FFGLBufferRepCreateFromTextureRep(_context, _textureRect, format);
+				ffglIPrivate(buffer) = FFGLBufferRepCreateFromTextureRep(ffglIPrivate(context), ffglIPrivate(textureRect), format);
 			}
 		}
-		if (_buffer)
+		if (ffglIPrivate(buffer))
 			result = YES;
 	}
-    pthread_mutex_unlock(&_conversionLock);
+    pthread_mutex_unlock(&ffglIPrivate(conversionLock));
     return result;
 }
 
@@ -947,31 +964,31 @@ static void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
 
 - (const void *)bufferBaseAddress
 {
-    return ((FFGLImageRep *)_buffer)->repInfo.bufferInfo.buffer;
+    return ffglIPrivate(buffer)->repInfo.bufferInfo.buffer;
 }
 
 - (NSUInteger)bufferPixelsWide
 {
-    return _imageWidth; // our buffers are never padded.
+    return ffglIPrivate(imageWidth); // our buffers are never padded.
 }
 
 - (NSUInteger)bufferPixelsHigh
 {
-    return _imageHeight; // our buffers are never padded.
+    return ffglIPrivate(imageHeight); // our buffers are never padded.
 }
 
 - (NSUInteger)bufferBytesPerRow
 {
-    return _imageWidth * ffglBytesPerPixelForPixelFormat(((FFGLImageRep *)_buffer)->repInfo.bufferInfo.pixelFormat);
+    return ffglIPrivate(imageWidth) * ffglBytesPerPixelForPixelFormat(ffglIPrivate(buffer)->repInfo.bufferInfo.pixelFormat);
 }
 
 - (NSString *)bufferPixelFormat
 {
-    return ((FFGLImageRep *)_buffer)->repInfo.bufferInfo.pixelFormat;
+    return ffglIPrivate(buffer)->repInfo.bufferInfo.pixelFormat;
 }
 
 - (BOOL)bufferIsFlipped
 {
-    return ((FFGLImageRep *)_buffer)->flipped;
+    return ffglIPrivate(buffer)->flipped;
 }
 @end

@@ -15,6 +15,17 @@
  - use nicer locks
  */
 
+typedef struct FFGLPluginManagerPrivate {
+	NSMutableArray  *sources;
+	NSMutableArray  *effects;
+	BOOL            autoLoads;
+	BOOL            libraryLoaded;
+	BOOL            appLoaded;
+	
+}FFGLPluginManagerPrivate;
+
+#define ffglPMPrivate(x) ((FFGLPluginManagerPrivate *)_private)->x
+
 static FFGLPluginManager *_sharedPluginManager = nil;
 
 @interface FFGLPluginManager (Private)
@@ -89,9 +100,16 @@ static FFGLPluginManager *_sharedPluginManager = nil;
 {
     if (self = [super init])
 	{
-        _sources = [[NSMutableArray alloc] initWithCapacity:4];
-        _effects = [[NSMutableArray alloc] initWithCapacity:4];
-        _auto = YES;
+		_private = malloc(sizeof(FFGLPluginManagerPrivate));
+		if (_private == NULL)
+		{
+			return nil;
+		}
+        ffglPMPrivate(sources) = [[NSMutableArray alloc] initWithCapacity:4];
+        ffglPMPrivate(effects) = [[NSMutableArray alloc] initWithCapacity:4];
+        ffglPMPrivate(autoLoads) = YES;
+		ffglPMPrivate(libraryLoaded) = NO;
+		ffglPMPrivate(appLoaded) = NO;
     }
     return self;
 }
@@ -101,7 +119,7 @@ static FFGLPluginManager *_sharedPluginManager = nil;
 {
     BOOL result;
     @synchronized(self) {
-        result = _auto;
+        result = ffglPMPrivate(autoLoads);
     }
     return result;
 }
@@ -110,7 +128,7 @@ static FFGLPluginManager *_sharedPluginManager = nil;
 {
     @synchronized(self)
 	{
-        _auto = autoLoads;
+        ffglPMPrivate(autoLoads) = autoLoads;
     }
 }
 
@@ -134,9 +152,9 @@ static FFGLPluginManager *_sharedPluginManager = nil;
     }
     @synchronized(self)
 	{
-        if (_libraryLoaded == NO) {
+        if (ffglPMPrivate(libraryLoaded) == NO) {
 			// Set _libraryLoaded to YES before we do it, to avoid recursion as KVO looks up the old value
-			_libraryLoaded = YES;
+			ffglPMPrivate(libraryLoaded) = YES;
             [self loadPluginsFromDirectories:directories];
         }
     }
@@ -147,10 +165,10 @@ static FFGLPluginManager *_sharedPluginManager = nil;
 {
     @synchronized(self)
 	{
-        if (_appLoaded == NO)
+        if (ffglPMPrivate(appLoaded) == NO)
 		{
 			// Set _appLoaded to YES before we do it, to avoid recursion as KVO looks up the old value
-			_appLoaded = YES;
+			ffglPMPrivate(appLoaded) = YES;
             [self loadPluginsFromDirectory:[[NSBundle mainBundle] builtInPlugInsPath]];
         }
     }
@@ -188,11 +206,11 @@ static FFGLPluginManager *_sharedPluginManager = nil;
 			plugin = [[[FFGLPlugin alloc] initWithPath:[path stringByAppendingPathComponent:file]] autorelease];
 			if (plugin != nil)
 			{
-				if (([plugin type] == FFGLPluginTypeSource) && ![_sources containsObject:plugin])
+				if (([plugin type] == FFGLPluginTypeSource) && ![ffglPMPrivate(sources) containsObject:plugin])
 				{
 					[newSources addObject:plugin];
 				}
-				else if (([plugin type] == FFGLPluginTypeEffect) && ![_effects containsObject:plugin])
+				else if (([plugin type] == FFGLPluginTypeEffect) && ![ffglPMPrivate(effects) containsObject:plugin])
 				{
 					[newEffects addObject:plugin];
 				}
@@ -211,11 +229,11 @@ static FFGLPluginManager *_sharedPluginManager = nil;
 		NSArray *array = [NSArray arrayWithObject:plugin];
 		@synchronized(self)
 		{
-			if (([plugin type] == FFGLPluginTypeSource) && ![_sources containsObject:plugin])
+			if (([plugin type] == FFGLPluginTypeSource) && ![ffglPMPrivate(sources) containsObject:plugin])
 			{
 				[self _addSourcePlugins:array];
 			}
-			else if (([plugin type] == FFGLPluginTypeEffect) && ![_effects containsObject:plugin])
+			else if (([plugin type] == FFGLPluginTypeEffect) && ![ffglPMPrivate(effects) containsObject:plugin])
 			{
 				[self _addEffectPlugins:array];
 			}
@@ -225,21 +243,21 @@ static FFGLPluginManager *_sharedPluginManager = nil;
 
 - (void)_addSourcePlugins:(NSArray *)plugins
 {
-	NSIndexSet *indexSet = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange([_sources count], [plugins count])];
+	NSIndexSet *indexSet = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange([ffglPMPrivate(sources) count], [plugins count])];
 	[self willChange:NSKeyValueChangeInsertion valuesAtIndexes:indexSet forKey:@"sourcePlugins"];
 	[self willChange:NSKeyValueChangeInsertion valuesAtIndexes:indexSet forKey:@"plugins"];
-	[_sources addObjectsFromArray:plugins];
+	[ffglPMPrivate(sources) addObjectsFromArray:plugins];
 	[self didChange:NSKeyValueChangeInsertion valuesAtIndexes:indexSet forKey:@"plugins"];
 	[self didChange:NSKeyValueChangeInsertion valuesAtIndexes:indexSet forKey:@"sourcePlugins"];
 }
 
 - (void)_addEffectPlugins:(NSArray *)plugins
 {	
-	NSIndexSet *effectsIndexSet = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange([_effects count], [plugins count])];
-	NSIndexSet *allPluginsIndexSet = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange([_sources count] + [_effects count], [plugins count])];
+	NSIndexSet *effectsIndexSet = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange([ffglPMPrivate(effects) count], [plugins count])];
+	NSIndexSet *allPluginsIndexSet = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange([ffglPMPrivate(sources) count] + [ffglPMPrivate(effects) count], [plugins count])];
 	[self willChange:NSKeyValueChangeInsertion valuesAtIndexes:effectsIndexSet forKey:@"effectPlugins"];
 	[self willChange:NSKeyValueChangeInsertion valuesAtIndexes:allPluginsIndexSet forKey:@"plugins"];
-	[_effects addObjectsFromArray:plugins];
+	[ffglPMPrivate(effects) addObjectsFromArray:plugins];
 	[self didChange:NSKeyValueChangeInsertion valuesAtIndexes:allPluginsIndexSet forKey:@"plugins"];
 	[self didChange:NSKeyValueChangeInsertion valuesAtIndexes:effectsIndexSet forKey:@"effectPlugins"];
 }
@@ -252,27 +270,27 @@ static FFGLPluginManager *_sharedPluginManager = nil;
 		{
 			if (([plugin type] == FFGLPluginTypeSource))
 			{
-				NSUInteger index = [_sources indexOfObject:plugin];
+				NSUInteger index = [ffglPMPrivate(sources) indexOfObject:plugin];
 				if (index != NSNotFound)
 				{
 					NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex:index];
 					[self willChange:NSKeyValueChangeRemoval valuesAtIndexes:indexSet forKey:@"sourcePlugins"];
 					[self willChange:NSKeyValueChangeRemoval valuesAtIndexes:indexSet forKey:@"plugins"];
-					[_sources removeObjectAtIndex:index];
+					[ffglPMPrivate(sources) removeObjectAtIndex:index];
 					[self didChange:NSKeyValueChangeRemoval valuesAtIndexes:indexSet forKey:@"plugins"];
 					[self didChange:NSKeyValueChangeRemoval valuesAtIndexes:indexSet forKey:@"sourcePlugins"];
 				}
 			}
 			else if(([plugin type] == FFGLPluginTypeEffect))
 			{
-				NSUInteger index = [_effects indexOfObject:plugin];
+				NSUInteger index = [ffglPMPrivate(effects) indexOfObject:plugin];
 				if (index != NSNotFound)
 				{
 					NSIndexSet *effectsIndexSet = [NSIndexSet indexSetWithIndex:index];
-					NSIndexSet *allPluginsIndexSet = [NSIndexSet indexSetWithIndex:[_sources count] + index];
+					NSIndexSet *allPluginsIndexSet = [NSIndexSet indexSetWithIndex:[ffglPMPrivate(sources) count] + index];
 					[self willChange:NSKeyValueChangeInsertion valuesAtIndexes:effectsIndexSet forKey:@"effectPlugins"];
 					[self willChange:NSKeyValueChangeInsertion valuesAtIndexes:allPluginsIndexSet forKey:@"plugins"];
-					[_effects removeObjectAtIndex:index];
+					[ffglPMPrivate(effects) removeObjectAtIndex:index];
 					[self didChange:NSKeyValueChangeInsertion valuesAtIndexes:allPluginsIndexSet forKey:@"plugins"];
 					[self didChange:NSKeyValueChangeInsertion valuesAtIndexes:effectsIndexSet forKey:@"effectPlugins"];
 				}
@@ -291,12 +309,12 @@ static FFGLPluginManager *_sharedPluginManager = nil;
     NSArray *copy;
     @synchronized(self)
 	{
-        if (_auto)
+        if (ffglPMPrivate(autoLoads))
 		{
             [self loadLibraryPlugins];
             [self loadApplicationPlugins];
         }
-        copy = [[_sources copy] autorelease];
+        copy = [[ffglPMPrivate(sources) copy] autorelease];
     }
     return copy;
 }
@@ -306,12 +324,12 @@ static FFGLPluginManager *_sharedPluginManager = nil;
     NSArray *copy;
     @synchronized(self)
 	{
-        if (_auto)
+        if (ffglPMPrivate(autoLoads))
 		{
             [self loadLibraryPlugins];
             [self loadApplicationPlugins];
         }
-        copy = [[_effects copy] autorelease];
+        copy = [[ffglPMPrivate(effects) copy] autorelease];
     }
     return copy;
 }
