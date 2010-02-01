@@ -117,7 +117,7 @@ typedef struct FFGLPluginData FFGLPluginData; // Private
 - (id)initWithPath:(NSString *)path;
 
 /*
- - (FFGLPluginType)type
+ @property (readonly) FFGLPluginType type
 	
 	Returns one of
 		FFGLPluginTypeEffect
@@ -125,20 +125,20 @@ typedef struct FFGLPluginData FFGLPluginData; // Private
 	An effect plugin typically has one or more image parameter.
 	A source plugin typically has no image parameters.
 */
-- (FFGLPluginType)type;
+@property (readonly) FFGLPluginType type;
 
 /*
- - (FFGLPluginMode)mode
+ @property (readonly) FFGLPluginMode mode
  
 	Returns one of
 		FFGLPluginModeCPU
 		FFGLPluginModeGPU
 	CPU-mode plugins run in main memory, GPU-mode plugins run on the graphics card.
  */
-- (FFGLPluginMode)mode;
+@property (readonly) FFGLPluginMode mode;
 
 /*
- - (NSArray *)supportedBufferPixelFormats
+ @property (readonly) NSArray *supportedBufferPixelFormats
  
 	Returns an array of NSStrings indicating the pixel-formats supported. These may be some of
 		FFGLPixelFormatARGB8888
@@ -148,10 +148,10 @@ typedef struct FFGLPluginData FFGLPluginData; // Private
 		FFGLPixelFormatRGB565
 		FFGLPixelFormatBGR565
  */
-- (NSArray *)supportedBufferPixelFormats;
+@property (readonly) NSArray *supportedBufferPixelFormats;
 
 /*
- - (NSDictionary *)attributes
+ @property (readonly) NSDictionary *attributes
  
 	Returns a dictionary with information about the plugin. The dictionary may have some or all
 	of the following keys:
@@ -162,13 +162,13 @@ typedef struct FFGLPluginData FFGLPluginData; // Private
 		FFGLPluginAttributeAuthorKey
 		FFGLPluginAttributePathKey
  */
-- (NSDictionary *)attributes;
+@property (readonly) NSDictionary *attributes;
 
 /*
- - (NSArray *)parameterKeys
+ @property (readonly) NSArray *parameterKeys
 	Returns an array of NSStrings representing the plugin's parameters.
  */
-- (NSArray *)parameterKeys;
+@property (readonly) NSArray *parameterKeys;
 
 /*
  - (NSDictionary *)attributesForParameterWithKey:(NSString *)key

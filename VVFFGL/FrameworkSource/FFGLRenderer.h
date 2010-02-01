@@ -49,15 +49,15 @@ typedef NSUInteger FFGLRendererHint;
 */
 - (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint size:(NSSize)size;
 
-- (FFGLPlugin *)plugin;
+@property (readonly) FFGLPlugin *plugin;
 
-- (CGLContextObj)context;
+@property (readonly) CGLContextObj context;
 
-- (NSString *)pixelFormat;
+@property (readonly) NSString *pixelFormat;
 
-- (NSSize)size;
+@property (readonly) NSSize size;
 
-- (FFGLRendererHint)outputHint;
+@property (readonly) FFGLRendererHint outputHint;
 
 /*
  - (BOOL)willUseParameterKey:(NSString *)key
@@ -82,16 +82,17 @@ typedef NSUInteger FFGLRendererHint;
 - (id)valueForParameterKey:(NSString *)key;
 
 /*
- - (id)parameters
+ @property (readonly) id parameters
     Returns an object interested parties can bind to to get/set parameter values. Bind to aRenderer.parameters.aKey
+	Note that although the parameters object itself is readonly, the values for the keys are read-write.
  */
-- (id)parameters;
+@property (readonly) id parameters;
 
 /*
- - (FFGLImage *)outputImage
+ @property (readonly) FFGLImage *outputImage
 	Returns the product of the last call to renderAtTime: if such a call was made and succeeded, otherwise nil.
  */
-- (FFGLImage *)outputImage;
+@property (readonly) FFGLImage *outputImage;
 
 /*
  - (BOOL)renderAtTime:(NSTimeInterval)time
