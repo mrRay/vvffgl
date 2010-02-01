@@ -25,19 +25,12 @@
 + (FFGLPluginManager *)sharedManager;
 
 /*
- - (BOOL)loadsPluginsAutomatically
+ @property (readwrite, assign) BOOL loadsPluginsAutomatically
  
-	Plugins available on the user's system as well as any bundled with the application will be loaded automatically if this returns YES.
+	Plugins available on the user's system as well as any bundled with the application will be loaded automatically if this is YES.
 	The default behaviour is to load plugins automatically.
  */
-- (BOOL)loadsPluginsAutomatically;
-
-/*
-- (void)setLoadsPluginsAutomatically:(BOOL)autoLoads
- 
-	Enables or disables automatic loading of plugins.
- */
-- (void)setLoadsPluginsAutomatically:(BOOL)autoLoads;
+@property (readwrite, assign) BOOL loadsPluginsAutomatically;
 
 /*
  - (void)loadLibraryPlugins
@@ -86,26 +79,26 @@
 - (void)unloadPlugin:(FFGLPlugin *)plugin;
 
 /*
- - (NSArray *)plugins
+ @property (readonly) NSArray *plugins
 	
 	Returns an array of all FFGLPlugins currently loaded. If loadsPluginsAutomatically returns YES, this method will call
 	loadLibraryPlugins and loadApplicationPlugins if they haven't already been called.
  */
-- (NSArray *)plugins;
+@property (readonly) NSArray *plugins;
 
 /*
- - (NSArray *)sourcePlugins
+ @property (readonly) NSArray *sourcePlugins
  
 	 Returns an array of all source type FFGLPlugins currently loaded. If loadsPluginsAutomatically returns YES, this method will call
 	 loadLibraryPlugins and loadApplicationPlugins if they haven't already been called.
  */
-- (NSArray *)sourcePlugins;
+@property (readonly) NSArray *sourcePlugins;
 
 /*
- - (NSArray *)effectPlugins
+ @property (readonly) NSArray *effectPlugins
  
 	 Returns an array of all effect type FFGLPlugins currently loaded. If loadsPluginsAutomatically returns YES, this method will call
 	 loadLibraryPlugins and loadApplicationPlugins if they haven't already been called.
  */
-- (NSArray *)effectPlugins;
+@property (readonly) NSArray *effectPlugins;
 @end

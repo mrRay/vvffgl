@@ -148,8 +148,8 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *us
  */
 - (id)initWithCopiedBuffer:(const void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes flipped:(BOOL)isFlipped;
 
-- (NSUInteger)imagePixelsWide;
-- (NSUInteger)imagePixelsHigh;
+@property (readonly) NSUInteger imagePixelsWide;
+@property (readonly) NSUInteger imagePixelsHigh;
 
 /*
  lockTexture2DRepresentation
@@ -169,35 +169,35 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *us
 - (void)unlockTexture2DRepresentation;
 
 /*
- - (GLuint)texture2DName
+ @property (readonly) GLuint texture2DName
  
 	Returns the name of the GL_TEXTURE_2D texture for the image. Only call this method after a call to lockTexture2DRepresentation has returned YES.
  */
-- (GLuint)texture2DName;
+@property (readonly) GLuint texture2DName;
 
 /*
- - (NSUInteger)texture2DPixelsWide
+ @property (readonly) NSUInteger texture2DPixelsWide
  
 	Returns the width of the GL_TEXTURE_2D texture, which may be greater than the image dimensions.
 	Only call this method after a call to lockTexture2DRepresentation has returned YES.
  */
-- (NSUInteger)texture2DPixelsWide;
+@property (readonly) NSUInteger texture2DPixelsWide;
 
 /*
- - (NSUInteger)texture2DPixelsHigh
+ @property (readonly) NSUInteger texture2DPixelsHigh
  
 	Returns the height of the GL_TEXTURE_2D texture, which may be greater than the image dimensions.
 	Only call this method after a call to lockTexture2DRepresentation has returned YES.
  */
-- (NSUInteger)texture2DPixelsHigh;
+@property (readonly) NSUInteger texture2DPixelsHigh;
 
 /*
- - (BOOL)texture2DIsFlipped
+ @property (readonly) BOOL texture2DIsFlipped
  
 	 Returns a BOOL indicating the vertical orientation of the GL_TEXTURE_2D texture.
 	 Only call this method after a call to lockTexture2DRepresentation has returned YES.
  */
-- (BOOL)texture2DIsFlipped;
+@property (readonly) BOOL texture2DIsFlipped;
 
 /*
  -(BOOL)lockTextureRectRepresentation
@@ -214,35 +214,35 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *us
 - (void)unlockTextureRectRepresentation;
 
 /*
- - (GLuint)texture2DName
+ @property (readonly) GLuint textureRectName
  
 	Returns the name of the GL_TEXTURE_RECTANGLE_ARB texture for the image. Only call this method after a call to lockTextureRectRepresentation has returned YES.
  */
-- (GLuint)textureRectName;
+@property (readonly) GLuint textureRectName;
 
 /*
- - (NSUInteger)textureRectPixelsWide
+ @property (readonly) NSUInteger textureRectPixelsWide
  
 	Returns the width of the GL_TEXTURE_RECTANGLE_ARB texture.
 	Only call this method after a call to lockTextureRectRepresentation has returned YES.
  */
-- (NSUInteger)textureRectPixelsWide;
+@property (readonly) NSUInteger textureRectPixelsWide;
 
 /*
- - (NSUInteger)textureRectPixelsHigh
+ @property (readonly) NSUInteger textureRectPixelsHigh
  
 	Returns the height of the GL_TEXTURE_RECTANGLE_ARB texture.
 	Only call this method after a call to lockTextureRectRepresentation has returned YES.
  */
-- (NSUInteger)textureRectPixelsHigh;
+@property (readonly) NSUInteger textureRectPixelsHigh;
 
 /*
- - (BOOL)textureRectIsFlipped
+ @property (readonly) BOOL textureRectIsFlipped
  
 	Returns a BOOL indicating the vertical orientation of the GL_TEXTURE_RECTANGLE_ARB texture.
 	Only call this method after a call to lockTextureRectRepresentation has returned YES.
  */
-- (BOOL)textureRectIsFlipped;
+@property (readonly) BOOL textureRectIsFlipped;
 
 /*
  - (BOOL)lockBufferRepresentationWithPixelFormat:(NSString *)format
@@ -269,50 +269,50 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *us
 - (void)unlockBufferRepresentation;
 
 /*
- - (const void *)bufferBaseAddress
+ @property (readonly) const void *bufferBaseAddress
  
 	Returns the address of the pixel data in memory.
 	Only call this method after a call to lockBufferRepresentationWithPixelFormat: has returned YES.
  */
-- (const void *)bufferBaseAddress;
+@property (readonly) const void *bufferBaseAddress;
 
 /*
- - (NSUInteger)bufferPixelsWide
+ @property (readonly) NSUInteger bufferPixelsWide
  
 	Returns the width of the pixel buffer.
 	Only call this method after a call to lockBufferRepresentationWithPixelFormat: has returned YES. 
  */
-- (NSUInteger)bufferPixelsWide;
+@property (readonly) NSUInteger bufferPixelsWide;
 
 /*
- - (NSUInteger)bufferPixelsHigh
+ @property (readonly) NSUInteger bufferPixelsHigh
  
 	Returns the height of the pixel buffer.
 	Only call this method after a call to lockBufferRepresentationWithPixelFormat: has returned YES. 
  */
-- (NSUInteger)bufferPixelsHigh;
+@property (readonly) NSUInteger bufferPixelsHigh;
 
 /*
- - (NSUInteger)bufferBytesPerRow
+ @property (readonly) NSUInteger bufferBytesPerRow
  
 	Returns the number of bytes per row of pixel data for the pixel buffer.
 	Only call this method after a call to lockBufferRepresentationWithPixelFormat: has returned YES.
  */
-- (NSUInteger)bufferBytesPerRow;
+@property (readonly) NSUInteger bufferBytesPerRow;
 
 /*
- - (NSString *)bufferPixelFormat
+ @property (readonly) NSString *bufferPixelFormat
  
 	Returns the pixel format of the pixel buffer.
 	Only call this method after a call to lockBufferRepresentationWithPixelFormat: has returned YES.
 */
-- (NSString *)bufferPixelFormat;
+@property (readonly) NSString *bufferPixelFormat;
 
 /*
- - (BOOL)bufferIsFlipped
+ @property (readonly) BOOL bufferIsFlipped
  
 	Returns a BOOL indicating the vertical orientation of the pixel buffer.
 	Only call this method after a call to lockBufferRepresentationWithPixelFormat: has returned YES.
 */
-- (BOOL)bufferIsFlipped;
+@property (readonly) BOOL bufferIsFlipped;
 @end
