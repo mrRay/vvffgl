@@ -10,12 +10,27 @@
 #import "FFGLGPURenderer.h"
 #import "FFGLCPURenderer.h"
 #import "FFGLInternal.h"
+#import <libkern/OSAtomic.h>
+#import <pthread.h>
 
 enum FFGLRendererReadyState {
     FFGLRendererNeedsCheck,
     FFGLRendererNotReady,
     FFGLRendererReady
 };
+
+typedef struct FFGLRendererPrivate
+{
+	NSMutableDictionary *imageInputs;
+    BOOL                *imageInputValidity;
+    NSInteger           readyState;
+    FFGLImage           *output;
+    id                  params;
+    pthread_mutex_t     lock;
+    OSSpinLock          paramsBindableCreationLock;
+} FFGLRendererPrivate;
+
+#define ffglRPrivate(x) ((FFGLRendererPrivate *)_private)->x
 
 @interface FFGLRendererParametersBindable : NSObject
 {
@@ -56,7 +71,7 @@ enum FFGLRendererReadyState {
             }        
         }
 		else
-		{
+		{			
             if ((plugin == nil)
                 || (([plugin mode] == FFGLPluginModeCPU)
                     && ![[plugin supportedBufferPixelFormats] containsObject:format])
@@ -67,21 +82,31 @@ enum FFGLRendererReadyState {
                 [NSException raise:@"FFGLRendererException" format:@"Invalid arguments in init"];
                 return nil;
             }
-            
+
+			_private = malloc(sizeof(FFGLRendererPrivate));
+
+			if (_private == NULL)
+			{
+				[self release];
+				return nil;
+			}
+			
 			NSUInteger maxInputs = [plugin _maximumInputFrameCount];
-            _imageInputValidity = malloc(sizeof(BOOL) * maxInputs);
-            _readyState = FFGLRendererNeedsCheck;
+            ffglRPrivate(imageInputValidity) = malloc(sizeof(BOOL) * maxInputs);
+            ffglRPrivate(readyState) = FFGLRendererNeedsCheck;
             
-			if (_imageInputValidity == NULL) 
+			if (ffglRPrivate(imageInputValidity) == NULL) 
 			{
                 [self release];
                 return nil;
             }
 			
+			ffglRPrivate(output) = nil;
+			ffglRPrivate(params) = nil;
             NSUInteger i;
             for (i = 0; i < maxInputs; i++)
 			{
-                _imageInputValidity[i] = NO;
+                ffglRPrivate(imageInputValidity)[i] = NO;
             }
             _instance = [plugin _newInstanceWithSize:size pixelFormat:format];
             
@@ -98,15 +123,15 @@ enum FFGLRendererReadyState {
             }
             _size = size;
             _pixelFormat = [format retain];
-            _imageInputs = [[NSMutableDictionary alloc] initWithCapacity:4];
+            ffglRPrivate(imageInputs) = [[NSMutableDictionary alloc] initWithCapacity:4];
 			
-            if (pthread_mutex_init(&_lock, NULL) != 0)
+            if (pthread_mutex_init(&ffglRPrivate(lock), NULL) != 0)
 			{
                 [self release];
                 return nil;
             }
 			_outputHint = hint;
-			_paramsBindableCreationLock = OS_SPINLOCK_INIT;
+			ffglRPrivate(paramsBindableCreationLock) = OS_SPINLOCK_INIT;
         }
     }	
     return self;
@@ -116,10 +141,14 @@ enum FFGLRendererReadyState {
     if(_context != nil)
         CGLReleaseContext(_context);
     if (_instance != 0)
-        [[self plugin] _disposeInstance:_instance];
-    if (_imageInputValidity != NULL)
-        free(_imageInputValidity);
-    pthread_mutex_destroy(&_lock);
+        [_plugin _disposeInstance:_instance];
+	if (_private != NULL)
+	{
+		if (ffglRPrivate(imageInputValidity) != NULL)
+			free(ffglRPrivate(imageInputValidity));
+		pthread_mutex_destroy(&ffglRPrivate(lock));
+		free(_private);
+	}
 }
 
 - (void)finalize
@@ -130,11 +159,14 @@ enum FFGLRendererReadyState {
 
 - (void)dealloc
 {
-    [_params release];
+	if (_private != NULL)
+	{
+		[ffglRPrivate(params) release];
+		[ffglRPrivate(imageInputs) release];
+		[ffglRPrivate(output) release];
+	}
     [_plugin release];
     [_pixelFormat release];
-    [_imageInputs release];
-	[_output release];
     [self releaseResources];
     [super dealloc];
 }
@@ -177,9 +209,9 @@ enum FFGLRendererReadyState {
         if (index < min) {
             return YES;
         }
-        pthread_mutex_lock(&_lock);
+        pthread_mutex_lock(&ffglRPrivate(lock));
         BOOL result = [_plugin _imageInputAtIndex:index willBeUsedByInstance:_instance];
-        pthread_mutex_unlock(&_lock);
+        pthread_mutex_unlock(&ffglRPrivate(lock));
 		return result;
     } else {
         return YES;
@@ -189,21 +221,21 @@ enum FFGLRendererReadyState {
 - (id)valueForParameterKey:(NSString *)key
 {
     id output;
-    pthread_mutex_lock(&_lock);
+    pthread_mutex_lock(&ffglRPrivate(lock));
     if ([[[_plugin attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
-        output = [_imageInputs objectForKey:key];
+        output = [ffglRPrivate(imageInputs) objectForKey:key];
     } else {
         output = [_plugin _valueForNonImageParameterKey:key ofInstance:_instance];
     }
-    pthread_mutex_unlock(&_lock);
+    pthread_mutex_unlock(&ffglRPrivate(lock));
     return output;
 }
 
 - (void)setValue:(id)value forParameterKey:(NSString *)key
 {
-    [_params willChangeValueForKey:key];
+    [ffglRPrivate(params) willChangeValueForKey:key];
     [self _performSetValue:value forParameterKey:key];
-    [_params didChangeValueForKey:key];
+    [ffglRPrivate(params) didChangeValueForKey:key];
 }
 
 - (void)_performSetValue:(id)value forParameterKey:(NSString *)key
@@ -215,90 +247,89 @@ enum FFGLRendererReadyState {
     }
     NSUInteger index = [[attributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
     NSString *type = [attributes objectForKey:FFGLParameterAttributeTypeKey];
-    pthread_mutex_lock(&_lock);
+    pthread_mutex_lock(&ffglRPrivate(lock));
     if ([type isEqualToString:FFGLParameterTypeImage])
     {
         // check our subclass can use the image
         BOOL validity;
         if (value != nil) {
-			validity = [self _implementationReplaceImage:[_imageInputs objectForKey:key] withImage:value forInputAtIndex:index];
-//            validity = [self _implementationSetImage:value forInputAtIndex:index];
-            [_imageInputs setObject:value forKey:key];
+			validity = [self _implementationReplaceImage:[ffglRPrivate(imageInputs) objectForKey:key] withImage:value forInputAtIndex:index];
+            [ffglRPrivate(imageInputs) setObject:value forKey:key];
         } else {
             validity = NO;
-            [_imageInputs removeObjectForKey:key];
+            [ffglRPrivate(imageInputs) removeObjectForKey:key];
         }
-        if (_imageInputValidity[index] != validity)
+        if (ffglRPrivate(imageInputValidity)[index] != validity)
         {
-            _imageInputValidity[index] = validity;
-            _readyState = FFGLRendererNeedsCheck;
+            ffglRPrivate(imageInputValidity)[index] = validity;
+            ffglRPrivate(readyState) = FFGLRendererNeedsCheck;
         }
     }
     else if ([type isEqualToString:FFGLParameterTypeString])
     {
         [_plugin _setValue:value forStringParameterAtIndex:index ofInstance:_instance];
-        _readyState = FFGLRendererNeedsCheck;
+        ffglRPrivate(readyState) = FFGLRendererNeedsCheck;
     }
     else
     {
         [_plugin _setValue:value forNumberParameterAtIndex:index ofInstance:_instance];
-        _readyState = FFGLRendererNeedsCheck;
+        ffglRPrivate(readyState) = FFGLRendererNeedsCheck;
     }
-    pthread_mutex_unlock(&_lock);
+    pthread_mutex_unlock(&ffglRPrivate(lock));
 }
 
 - (id)parameters
 {
-    OSSpinLockLock(&_paramsBindableCreationLock);
-    if (_params == nil)
+    OSSpinLockLock(&ffglRPrivate(paramsBindableCreationLock));
+    if (ffglRPrivate(params) == nil)
     {
-        _params = [[FFGLRendererParametersBindable alloc] initWithRenderer:self]; // released in dealloc
+        ffglRPrivate(params) = [[FFGLRendererParametersBindable alloc] initWithRenderer:self]; // released in dealloc
     }
-    OSSpinLockUnlock(&_paramsBindableCreationLock);
-    return _params;
+    OSSpinLockUnlock(&ffglRPrivate(paramsBindableCreationLock));
+    return ffglRPrivate(params);
 }
 
 - (FFGLImage *)outputImage
 {
-    return _output;
+    return ffglRPrivate(output);
 }
 
 - (void)setOutputImage:(FFGLImage *)image
 {
     // This is called by subclasses from _implementationRender, so we already have the lock.
     [image retain];
-    [_output release];
-    _output = image;
+    [ffglRPrivate(output) release];
+    ffglRPrivate(output) = image;
 }
 
 - (BOOL)renderAtTime:(NSTimeInterval)time
 {
     BOOL success;
-    pthread_mutex_lock(&_lock);
-    if (_readyState == FFGLRendererNeedsCheck)
+    pthread_mutex_lock(&ffglRPrivate(lock));
+    if (ffglRPrivate(readyState) == FFGLRendererNeedsCheck)
     {
         NSUInteger i;
         NSUInteger min = [_plugin _minimumInputFrameCount];
         NSUInteger max = [_plugin _maximumInputFrameCount];
         NSUInteger got = 0;
-        _readyState = FFGLRendererReady;
+        ffglRPrivate(readyState) = FFGLRendererReady;
         for (i = 0; i < min; i++) {
-            if (_imageInputValidity[i] == NO) {
-                _readyState = FFGLRendererNotReady;
+            if (ffglRPrivate(imageInputValidity)[i] == NO) {
+                ffglRPrivate(readyState) = FFGLRendererNotReady;
                 break;
             }
             got++;
         }
         for (; i < max; i++) {
-            if ((_imageInputValidity[i] == NO) && [_plugin _imageInputAtIndex:i willBeUsedByInstance:_instance]) {
-                _readyState = FFGLRendererNotReady;
+            if ((ffglRPrivate(imageInputValidity)[i] == NO) && [_plugin _imageInputAtIndex:i willBeUsedByInstance:_instance]) {
+                ffglRPrivate(readyState) = FFGLRendererNotReady;
                 break;
             }
             got++;
         }
         [self _implementationSetImageInputCount:got];
     }
-    if (_readyState == FFGLRendererReady)
+    if (ffglRPrivate(readyState) == FFGLRendererReady)
 	{
         if ([_plugin _supportsSetTime])
 		{
@@ -314,7 +345,7 @@ enum FFGLRendererReadyState {
 	{
 		[self setOutputImage:nil];
 	}
-    pthread_mutex_unlock(&_lock);
+    pthread_mutex_unlock(&ffglRPrivate(lock));
     return success;
 }
 @end

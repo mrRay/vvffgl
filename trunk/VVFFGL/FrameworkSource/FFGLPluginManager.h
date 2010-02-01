@@ -11,11 +11,7 @@
 
 @interface FFGLPluginManager : NSObject {
 @private
-    NSMutableArray  *_sources;
-    NSMutableArray  *_effects;
-    BOOL            _auto;
-    BOOL            _libraryLoaded;
-    BOOL            _appLoaded;
+    void *_private; 
 }
 /*
  + (FFGLPluginManager *)sharedManager
