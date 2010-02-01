@@ -148,6 +148,7 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *us
  
 	Indicates that you require access to a GL_TEXTURE_2D representation of the image. If none already exists it will be created from an existing representation if possible.
 	You must call this method before using the GL_TEXTURE_2D representation even if the FFGLImage was created from a GL_TEXTURE_2D texture.
+	Any resulting texture may have dimensions beyond the dimensions of the FFGLImage. Check the size of the texture using texture2DPixelsWide and texture2DPixelsHigh.
     This representation will remain valid until a call to unlockTexture2DRepresentation.
     Returns YES if a texture representation exists or was created, NO otherwise. You should check the returned value before attempting to use the texture.
  */
@@ -195,6 +196,7 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *us
  -(BOOL)lockTextureRectRepresentation
     Creates a GL_TEXTURE_RECTANGLE_ARB representation of the image if none already exists. This will remain valid until a call to unlockTextureRectRepresentation.
     Returns YES if a texture representation exists or was created, NO otherwise. You should check the returned value before attempting to use the texture.
+	Any GL_TEXTURE_RECTANGLE_ARB created will have pixel dimensions to match the FFGLImage.
  */
 - (BOOL)lockTextureRectRepresentation;
 
@@ -213,22 +215,6 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *us
 @property (readonly) GLuint textureRectName;
 
 /*
- @property (readonly) NSUInteger textureRectPixelsWide
- 
-	Returns the width of the GL_TEXTURE_RECTANGLE_ARB texture.
-	Only call this method after a call to lockTextureRectRepresentation has returned YES.
- */
-@property (readonly) NSUInteger textureRectPixelsWide;
-
-/*
- @property (readonly) NSUInteger textureRectPixelsHigh
- 
-	Returns the height of the GL_TEXTURE_RECTANGLE_ARB texture.
-	Only call this method after a call to lockTextureRectRepresentation has returned YES.
- */
-@property (readonly) NSUInteger textureRectPixelsHigh;
-
-/*
  @property (readonly) BOOL textureRectIsFlipped
  
 	Returns a BOOL indicating the vertical orientation of the GL_TEXTURE_RECTANGLE_ARB texture.
@@ -240,6 +226,7 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *us
  - (BOOL)lockBufferRepresentationWithPixelFormat:(NSString *)format
     Creates a buffer representation of the image if none already exists. This will remain valid until a call to unlockBufferRepresentation.
     Returns YES if a buffer representation exists or was created, NO otherwise. You should check the returned value before attempting to use the buffer.
+	Any buffer created will have pixel dimensions to match the FFGLImage.
     Note that this will fail (return NO) if you attempt to lock a buffer representation when one is already locked in another format, or if the FFGLImage
     was created from a buffer in another format, or if a buffer in the requested format could not be created from an existing texture representation, or
     for other reasons.
@@ -267,22 +254,6 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *us
 	Only call this method after a call to lockBufferRepresentationWithPixelFormat: has returned YES.
  */
 @property (readonly) const void *bufferBaseAddress;
-
-/*
- @property (readonly) NSUInteger bufferPixelsWide
- 
-	Returns the width of the pixel buffer.
-	Only call this method after a call to lockBufferRepresentationWithPixelFormat: has returned YES. 
- */
-@property (readonly) NSUInteger bufferPixelsWide;
-
-/*
- @property (readonly) NSUInteger bufferPixelsHigh
- 
-	Returns the height of the pixel buffer.
-	Only call this method after a call to lockBufferRepresentationWithPixelFormat: has returned YES. 
- */
-@property (readonly) NSUInteger bufferPixelsHigh;
 
 /*
  @property (readonly) NSUInteger bufferBytesPerRow
