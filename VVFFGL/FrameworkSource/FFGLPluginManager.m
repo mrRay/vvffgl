@@ -41,7 +41,7 @@ static FFGLPluginManager *_sharedPluginManager = nil;
 #pragma mark Singleton Instance
 + (FFGLPluginManager*)sharedManager
 {
-    @synchronized(self) {
+    @synchronized([FFGLPluginManager class]) {
         if (_sharedPluginManager == nil) {
             [[self alloc] init]; // assignment not done here but in alloc
         }
@@ -51,7 +51,7 @@ static FFGLPluginManager *_sharedPluginManager = nil;
 
 + (id)allocWithZone:(NSZone *)zone
 {
-    @synchronized(self) {
+    @synchronized([FFGLPluginManager class]) {
         if (_sharedPluginManager == nil) {
             _sharedPluginManager = [super allocWithZone:zone];
             return _sharedPluginManager;  // assignment and return on first allocation
