@@ -227,6 +227,7 @@ typedef struct FFGLRendererPrivate
     } else {
         output = [_plugin _valueForNonImageParameterKey:key ofInstance:_instance];
     }
+	[[output retain] autorelease];
     pthread_mutex_unlock(&ffglRPrivate(lock));
     return output;
 }
@@ -291,7 +292,11 @@ typedef struct FFGLRendererPrivate
 
 - (FFGLImage *)outputImage
 {
-    return ffglRPrivate(output);
+	pthread_mutex_lock(&ffglRPrivate(lock));
+	FFGLImage *output = ffglRPrivate(output);
+	[[output retain] autorelease];
+	pthread_mutex_unlock(&ffglRPrivate(lock));
+    return output;
 }
 
 - (void)setOutputImage:(FFGLImage *)image
