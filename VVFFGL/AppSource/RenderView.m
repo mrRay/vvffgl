@@ -75,7 +75,6 @@
 	
 	// render everything?
 	FFGLImage *image = [_chain output];
-	[image retain];
 	
 	// clear everything
 	glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -171,7 +170,6 @@
         NSLog(@"lockBufferRepresentationWithPixelFormat failed");
     }
  
-	[image release];
 	CGLFlushDrawable(cgl_ctx);	
 	CGLUnlockContext(cgl_ctx);
 }

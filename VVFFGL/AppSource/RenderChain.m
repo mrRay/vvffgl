@@ -41,7 +41,6 @@
 @synthesize pixelFormat = _pixelFormat;
 @synthesize openGLContext = _context;
 @synthesize dimensions = _dimensions;
-@synthesize output = _output;
 
 - (FFGLRenderer *)source
 {
@@ -147,5 +146,14 @@
     _output = image;
     [_lock unlock];
     [self didChangeValueForKey:@"output"];
+}
+
+- (FFGLImage *)output
+{
+	FFGLImage *outp;
+	[_lock lock];
+	outp = [[_output retain] autorelease];
+	[_lock unlock];
+	return outp;
 }
 @end
