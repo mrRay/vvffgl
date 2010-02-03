@@ -11,11 +11,11 @@
 
 #pragma mark Private Callbacks
 
-static void FFGLImageBufferRelease(const void *baseAddress, void* context) {
+static void FFGLImageRepBufferRelease(const void *baseAddress, void* context) {
     free((void *)baseAddress);
 }
 
-static void FFGLImageTextureRelease(GLuint name, CGLContextObj cgl_ctx, void *context) {
+static void FFGLImageRepTextureRelease(GLuint name, CGLContextObj cgl_ctx, void *context) {
     CGLLockContext(cgl_ctx);
     glDeleteTextures(1, &name);
     CGLUnlockContext(cgl_ctx);
@@ -142,7 +142,7 @@ FFGLImageRep *FFGLBufferRepCreateFromTextureRep(CGLContextObj cgl_ctx, const FFG
 													  fromTextureRep->repInfo.textureInfo.width,
 													  fromTextureRep->repInfo.textureInfo.height,
 													  rowBytes, pixelFormat, fromTextureRep->flipped,
-													  FFGLImageBufferRelease, NULL, NO);
+													  FFGLImageRepBufferRelease, NULL, NO);
 	return rep;
 }
 
@@ -182,79 +182,75 @@ FFGLImageRep *FFGLTextureRepCreateFromBufferRep(CGLContextObj cgl_ctx, const FFG
 	{
 		return NULL;
 	}
-	FFGLImageRep *rep = malloc(sizeof(FFGLImageRep));
 	
-	if (rep != NULL)
-	{
-		rep->flipped = NO;
-		rep->releaseCallback.textureCallback = FFGLImageTextureRelease;
-		rep->releaseContext = NULL;
-		rep->type = toTarget;
-		rep->repInfo.textureInfo.width = fromBufferRep->repInfo.bufferInfo.width;
-		rep->repInfo.textureInfo.height = fromBufferRep->repInfo.bufferInfo.height;
-		rep->repInfo.textureInfo.hardwareWidth = texWidth;
-		rep->repInfo.textureInfo.hardwareHeight = texHeight;
-		
-		CGLLockContext(cgl_ctx);
-		
-		// Save state
-		glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
-		glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
-		
-		glEnable(targetGL);
-		
-		// Make our new texture
-		GLuint tex;
-		glGenTextures(1, &tex);
-		glBindTexture(targetGL, tex);
-		
-		// Set up the environment for unpacking
-		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, fromBufferRep->repInfo.bufferInfo.width);
-		glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0);
-		glPixelStorei(GL_UNPACK_LSB_FIRST, GL_FALSE);
-		glPixelStorei(GL_UNPACK_SKIP_IMAGES, 0);
-		glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
-		glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
-		glPixelStorei(GL_UNPACK_SWAP_BYTES, GL_FALSE);
-		
-		// GL_UNPACK_CLIENT_STORAGE_APPLE tells GL to use our buffer in memory if possible, to avoid a copy to the GPU.
-		glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_TRUE);
-		
+	CGLLockContext(cgl_ctx);
+	
+	// Save state
+	glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
+	glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
+	
+	glEnable(targetGL);
+	
+	// Make our new texture
+	GLuint tex;
+	glGenTextures(1, &tex);
+	glBindTexture(targetGL, tex);
+	
+	// Set up the environment for unpacking
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, fromBufferRep->repInfo.bufferInfo.width);
+	glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0);
+	glPixelStorei(GL_UNPACK_LSB_FIRST, GL_FALSE);
+	glPixelStorei(GL_UNPACK_SKIP_IMAGES, 0);
+	glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+	glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+	glPixelStorei(GL_UNPACK_SWAP_BYTES, GL_FALSE);
+	
+	// GL_UNPACK_CLIENT_STORAGE_APPLE tells GL to use our buffer in memory if possible, to avoid a copy to the GPU.
+	glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_TRUE);
+	
 #if defined(FFGL_USE_TEXTURE_RANGE)
-		// Set storage hint GL_STORAGE_SHARED_APPLE to tell GL to share storage with main memory.
-		glTexParameteri(targetGL, GL_TEXTURE_STORAGE_HINT_APPLE , GL_STORAGE_SHARED_APPLE);
-		glTextureRangeAPPLE(targetGL, fromBufferRep->repInfo.bufferInfo.width * fromBufferRep->repInfo.bufferInfo.height, fromBufferRep->repInfo.bufferInfo.buffer);
+	// Set storage hint GL_STORAGE_SHARED_APPLE to tell GL to share storage with main memory.
+	glTexParameteri(targetGL, GL_TEXTURE_STORAGE_HINT_APPLE , GL_STORAGE_SHARED_APPLE);
+	glTextureRangeAPPLE(targetGL, fromBufferRep->repInfo.bufferInfo.width * fromBufferRep->repInfo.bufferInfo.height, fromBufferRep->repInfo.bufferInfo.buffer);
 #endif
-		
-		glTexParameteri(targetGL, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(targetGL, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(targetGL, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(targetGL, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		
-		glTexImage2D(targetGL, 0, GL_RGBA8, rep->repInfo.textureInfo.hardwareWidth, rep->repInfo.textureInfo.hardwareHeight, 0, format, type, fromBufferRep->repInfo.bufferInfo.buffer);
-		
-		GLenum error = glGetError();
-		// We get the error now but wait until we've popped attributes so our texture is unbound
-		// when we delete it.
-		
-		// restore state.
-		glPopClientAttrib();
-		glPopAttrib();
-		
-		if (error != GL_NO_ERROR)
-		{
-			glDeleteTextures(1, &tex);
-			free(rep);
-			rep = NULL;
-		}
-		else
-		{
-			rep->repInfo.textureInfo.texture = tex;
-		}
-		CGLUnlockContext(cgl_ctx);
+	
+	glTexParameteri(targetGL, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(targetGL, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(targetGL, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(targetGL, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	
+	glTexImage2D(targetGL, 0, GL_RGBA8, texWidth, texHeight, 0, format, type, fromBufferRep->repInfo.bufferInfo.buffer);
+	
+	GLenum error = glGetError();
+	// We get the error now but wait until we've popped attributes so our texture is unbound
+	// when we delete it.
+	
+	// restore state.
+	glPopClientAttrib();
+	glPopAttrib();
+	
+	FFGLImageRep *rep;
+	
+	if (error != GL_NO_ERROR)
+	{
+		glDeleteTextures(1, &tex);
+		rep = NULL;
 	}
+	else
+	{
+		rep = FFGLTextureRepCreateFromTexture(tex,
+											  toTarget,
+											  fromBufferRep->repInfo.bufferInfo.width,
+											  fromBufferRep->repInfo.bufferInfo.height,
+											  texWidth,
+											  texHeight,
+											  NO,
+											  FFGLImageRepTextureRelease,
+											  NULL);
+	}
+	CGLUnlockContext(cgl_ctx);
 	return rep;
 }
 
@@ -269,187 +265,173 @@ FFGLImageRep *FFGLTextureRepCreateFromTextureRep(CGLContextObj cgl_ctx, const FF
     {
 		return NULL;
     }
-    FFGLImageRep *toTextureRep = malloc(sizeof(FFGLImageRep));
-    if (toTextureRep != NULL)
-    {
-		// direct access to the FFGLTextureInfo and texture target of the source
-		const FFGLTextureInfo *fromTexture = &fromTextureRep->repInfo.textureInfo;
-		GLenum fromGLTarget = fromTextureRep->type == FFGLImageRepTypeTexture2D ? GL_TEXTURE_2D : GL_TEXTURE_RECTANGLE_ARB;
-		GLenum toGLTarget = toTarget == FFGLImageRepTypeTexture2D ? GL_TEXTURE_2D : GL_TEXTURE_RECTANGLE_ARB;
-		// set up our new texture-rep.
-		toTextureRep->flipped = NO;
-		toTextureRep->releaseCallback.textureCallback = FFGLImageTextureRelease;
-		toTextureRep->releaseContext = NULL;
-		toTextureRep->type = toTarget;
+	// direct access to the FFGLTextureInfo and texture target of the source
+	const FFGLTextureInfo *fromTexture = &fromTextureRep->repInfo.textureInfo;
+	GLenum fromGLTarget = fromTextureRep->type == FFGLImageRepTypeTexture2D ? GL_TEXTURE_2D : GL_TEXTURE_RECTANGLE_ARB;
+	GLenum toGLTarget = toTarget == FFGLImageRepTypeTexture2D ? GL_TEXTURE_2D : GL_TEXTURE_RECTANGLE_ARB;
+	
+	// cache FBO state
+	GLint previousFBO, previousReadFBO, previousDrawFBO;
+	
+	// the FBO attachment texture we are going to render to.
+	
+	GLsizei fboWidth, fboHeight;
+	// set up our destination target
+	if((toGLTarget == GL_TEXTURE_2D) && (!useNPOT))
+	{
+		fboWidth = ffglPOTDimension(fromTexture->width);
+		fboHeight = ffglPOTDimension(fromTexture->height);
+	} 
+	else
+	{
+		fboWidth = fromTexture->width;
+		fboHeight = fromTexture->height;
+	}
+	
+	CGLLockContext(cgl_ctx);
+	
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &previousFBO);
+	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &previousReadFBO);
+	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &previousDrawFBO);
+	
+	// save as much state;
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
+	// new texture
+	GLuint newTex;
+	glGenTextures(1, &newTex);
+	
+	glEnable(toGLTarget);
+	
+	glBindTexture(toGLTarget, newTex);
+	glTexImage2D(toGLTarget, 0, GL_RGBA8, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	
+	// texture filtering and wrapping modes for FBO texture.
+	glTexParameteri(toGLTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(toGLTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(toGLTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(toGLTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	
+	//	NSLog(@"new texture: %u, original texture: %u", newTex, fromTexture->texture);
+	
+	// make new FBO and attach.
+	GLuint fboID;
+	glGenFramebuffersEXT(1, &fboID);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboID);
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, toGLTarget, newTex, 0);
+	
+	// unbind texture
+	glBindTexture(toGLTarget, 0);
+	glDisable(toGLTarget);
+	
+	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+	if(status != GL_FRAMEBUFFER_COMPLETE_EXT)
+	{
+		glDeleteTextures(1, &newTex);
+		NSLog(@"Cannot create FBO for swapTextureTarget: %u", status);
+	}
+	else // FBO creation worked, carry on
+	{	
+		glViewport(0, 0, fboWidth, fboHeight);
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
 		
-		FFGLTextureInfo *toTexture = &toTextureRep->repInfo.textureInfo;
+		// weirdo ortho
+		glOrtho(0.0, fboWidth, 0.0, fboHeight, -1, 1);		
 		
-		// cache FBO state
-		GLint previousFBO, previousReadFBO, previousDrawFBO;
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
 		
-		// the FBO attachment texture we are going to render to.
+		// draw the texture.
 		
-		GLsizei fboWidth, fboHeight;
-		// set up our destination target
-		if((toGLTarget == GL_TEXTURE_2D) && (!useNPOT))
+		glActiveTexture(GL_TEXTURE0);
+		glEnable(fromGLTarget);
+		glBindTexture(fromGLTarget, fromTexture->texture);
+		
+		glTexParameteri(fromGLTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(fromGLTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(fromGLTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(fromGLTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);				
+		
+		//				GLfloat texImageWidth, texImageHeight;
+		//
+		//				texImageWidth = fromGLTarget == GL_TEXTURE_2D ? (GLfloat) fromTexture->width / (GLfloat)fromTexture->hardwareWidth : fromTexture->width;
+		//				texImageHeight = fromGLTarget == GL_TEXTURE_2D ? (GLfloat)fromTexture->height / (GLfloat)fromTexture->hardwareHeight : fromTexture->height;
+		//				GLfloat fboImageWidth, fboImageHeight;
+		//				fboImageWidth = toTexture->width;
+		//				fboImageHeight = toTexture->height;
+		//				NSLog(@"%@ -> %@ flipped: %@ texWidth: %f texHeight: %f fboImageWidth: %d fboImageHeight: %d", fromTarget == GL_TEXTURE_2D ? @"2D" : @"Rect", toTarget == GL_TEXTURE_2D ? @"2D" : @"Rect", fromTextureRep->flipped ? @"YES" : @"NO", texWidth, texHeight, fboImageWidth, fboImageHeight);
+		
+		GLfloat tax, tay, tbx, tby, tcx, tcy, tdx, tdy, vax, vay, vbx, vby, vcx, vcy, vdx, vdy;
+		
+		tax = tay = tbx = tdy = 0.0;
+		tby = tcy = (fromGLTarget == GL_TEXTURE_2D ? (GLfloat)fromTexture->height / (GLfloat)fromTexture->hardwareHeight : fromTexture->height);
+		tcx = tdx = (fromGLTarget == GL_TEXTURE_2D ? (GLfloat) fromTexture->width / (GLfloat)fromTexture->hardwareWidth : fromTexture->width);
+		
+		GLfloat tex_coords[] =
 		{
-			fboWidth = toTexture->hardwareWidth = ffglPOTDimension(fromTexture->width);
-			fboHeight = toTexture->hardwareHeight = ffglPOTDimension(fromTexture->height);
-		} 
+			tax, tay,
+			tbx, tby,
+			tcx, tcy,
+			tdx, tdy
+		};
+		
+		vax = vbx = 0.0;
+		vcx = vdx = fromTexture->width;
+		
+		if (fromTextureRep->flipped)
+		{
+			vay = vdy = fromTexture->height;
+			vby = vcy = 0.0;
+		}
 		else
 		{
-			fboWidth = toTexture->hardwareWidth = fromTexture->width;
-			fboHeight = toTexture->hardwareHeight = fromTexture->height;
+			vay = vdy = 0.0;
+			vby = vcy = fromTexture->height;
 		}
-		toTexture->width = fromTexture->width;
-		toTexture->height = fromTexture->height;
 		
-		CGLLockContext(cgl_ctx);
-		
-		glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &previousFBO);
-		glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &previousReadFBO);
-		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &previousDrawFBO);
-		
-		// save as much state;
-		glPushAttrib(GL_ALL_ATTRIB_BITS);
-		glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
-		// new texture
-		GLuint newTex;
-		glGenTextures(1, &newTex);
-		
-		glEnable(toGLTarget);
-		
-		glBindTexture(toGLTarget, newTex);
-		glTexImage2D(toGLTarget, 0, GL_RGBA8, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-		
-		// texture filtering and wrapping modes for FBO texture.
-		glTexParameteri(toGLTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(toGLTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(toGLTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(toGLTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-		
-		//	NSLog(@"new texture: %u, original texture: %u", newTex, fromTexture->texture);
-		toTexture->texture = newTex;
-		
-		// make new FBO and attach.
-		GLuint fboID;
-		glGenFramebuffersEXT(1, &fboID);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboID);
-		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, toGLTarget, newTex, 0);
-		
-		// unbind texture
-		glBindTexture(toGLTarget, 0);
-		glDisable(toGLTarget);
-		
-		GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-		if(status != GL_FRAMEBUFFER_COMPLETE_EXT)
+		GLfloat verts[] =
 		{
-			glDeleteTextures(1, &newTex);
-			free(toTextureRep);
-			toTextureRep = NULL;
-			NSLog(@"Cannot create FBO for swapTextureTarget: %u", status);
-		}
-		else // FBO creation worked, carry on
-		{	
-			glViewport(0, 0, fboWidth, fboHeight);
-			glMatrixMode(GL_PROJECTION);
-			glPushMatrix();
-			glLoadIdentity();
-			
-			// weirdo ortho
-			glOrtho(0.0, fboWidth, 0.0, fboHeight, -1, 1);		
-			
-			glMatrixMode(GL_MODELVIEW);
-			glPushMatrix();
-			glLoadIdentity();
-			
-			// draw the texture.
-			
-			glActiveTexture(GL_TEXTURE0);
-			glEnable(fromGLTarget);
-			glBindTexture(fromGLTarget, fromTexture->texture);
-			
-			glTexParameteri(fromGLTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(fromGLTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(fromGLTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-			glTexParameteri(fromGLTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);				
-			
-			//				GLfloat texImageWidth, texImageHeight;
-			//
-			//				texImageWidth = fromGLTarget == GL_TEXTURE_2D ? (GLfloat) fromTexture->width / (GLfloat)fromTexture->hardwareWidth : fromTexture->width;
-			//				texImageHeight = fromGLTarget == GL_TEXTURE_2D ? (GLfloat)fromTexture->height / (GLfloat)fromTexture->hardwareHeight : fromTexture->height;
-			//				GLfloat fboImageWidth, fboImageHeight;
-			//				fboImageWidth = toTexture->width;
-			//				fboImageHeight = toTexture->height;
-			//				NSLog(@"%@ -> %@ flipped: %@ texWidth: %f texHeight: %f fboImageWidth: %d fboImageHeight: %d", fromTarget == GL_TEXTURE_2D ? @"2D" : @"Rect", toTarget == GL_TEXTURE_2D ? @"2D" : @"Rect", fromTextureRep->flipped ? @"YES" : @"NO", texWidth, texHeight, fboImageWidth, fboImageHeight);
-			
-			GLfloat tax, tay, tbx, tby, tcx, tcy, tdx, tdy, vax, vay, vbx, vby, vcx, vcy, vdx, vdy;
-			
-			tax = tay = tbx = tdy = 0.0;
-			tby = tcy = (fromGLTarget == GL_TEXTURE_2D ? (GLfloat)fromTexture->height / (GLfloat)fromTexture->hardwareHeight : fromTexture->height);
-			tcx = tdx = (fromGLTarget == GL_TEXTURE_2D ? (GLfloat) fromTexture->width / (GLfloat)fromTexture->hardwareWidth : fromTexture->width);
-			
-			GLfloat tex_coords[] =
-			{
-				tax, tay,
-				tbx, tby,
-				tcx, tcy,
-				tdx, tdy
-			};
-			
-			vax = vbx = 0.0;
-			vcx = vdx = toTexture->width;
-			
-			if (fromTextureRep->flipped)
-			{
-				vay = vdy = toTexture->height;
-				vby = vcy = 0.0;
-			}
-			else
-			{
-				vay = vdy = 0.0;
-				vby = vcy = toTexture->height;
-			}
-			
-			GLfloat verts[] =
-			{
-				vax, vay,
-				vbx, vby,
-				vcx, vcy,
-				vdx, vdy
-			};
-			
-			glEnableClientState( GL_TEXTURE_COORD_ARRAY );
-			glTexCoordPointer(2, GL_FLOAT, 0, tex_coords );
-			glEnableClientState(GL_VERTEX_ARRAY);
-			glVertexPointer(2, GL_FLOAT, 0, verts );
-			glDrawArrays(GL_QUADS, 0, 4);
-		}
-		glBindTexture(fromGLTarget, 0);
+			vax, vay,
+			vbx, vby,
+			vcx, vcy,
+			vdx, vdy
+		};
 		
-		// Restore OpenGL states 
-		glMatrixMode(GL_MODELVIEW);
-		glPopMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-		
-		// restore states // assume this is balanced with above
-		glPopClientAttrib();
-		glPopAttrib();
-		
-		// pop back to old FBO
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previousFBO);	
-		glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, previousReadFBO);
-		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, previousDrawFBO);
-		
-		glFlushRenderAPPLE();
-		
-		// delete our FBO so we dont leak.
-		glDeleteFramebuffersEXT(1, &fboID);
-		
-		CGLUnlockContext(cgl_ctx);
-    }
-    return toTextureRep;
+		glEnableClientState( GL_TEXTURE_COORD_ARRAY );
+		glTexCoordPointer(2, GL_FLOAT, 0, tex_coords );
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glVertexPointer(2, GL_FLOAT, 0, verts );
+		glDrawArrays(GL_QUADS, 0, 4);
+	}
+	glBindTexture(fromGLTarget, 0);
+	
+	// Restore OpenGL states 
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	
+	// restore states // assume this is balanced with above
+	glPopClientAttrib();
+	glPopAttrib();
+	
+	// pop back to old FBO
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previousFBO);	
+	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, previousReadFBO);
+	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, previousDrawFBO);
+	
+	glFlushRenderAPPLE();
+	
+	// delete our FBO so we dont leak.
+	glDeleteFramebuffersEXT(1, &fboID);
+	
+	CGLUnlockContext(cgl_ctx);
+    
+	FFGLImageRep *rep = FFGLTextureRepCreateFromTexture(newTex, toTarget, fromTexture->width, fromTexture->height, fboWidth, fboHeight, NO, FFGLImageRepTextureRelease, NULL);
+    return rep;
 }
 
 FFGLImageRep *FFGLTextureRepCreateFromTexture(GLint texture, FFGLImageRepType type, NSUInteger imageWidth, NSUInteger imageHeight, NSUInteger textureWidth, NSUInteger textureHeight, BOOL isFlipped, FFGLImageTextureReleaseCallback callback, void *userInfo)
@@ -507,7 +489,7 @@ FFGLImageRep *FFGLBufferRepCreateFromBuffer(const void *source, NSUInteger width
 			if (callback)
 				callback(source, userInfo);
 			source = newBuffer;
-			callback = FFGLImageBufferRelease;
+			callback = FFGLImageRepBufferRelease;
 			userInfo = NULL;
 		}
 		rep->flipped = NO;
