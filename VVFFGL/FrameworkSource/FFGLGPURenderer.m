@@ -48,9 +48,12 @@ static void FFGLGPURendererTextureDelete(const void *item, const void *userInfo)
 {
 	FFGLGPURPoolObjectData *data = (FFGLGPURPoolObjectData *)item;
     CGLContextObj cgl_ctx = data->context;
+	CGLContextObj prev;
+	ffglSetContext(cgl_ctx, prev);
     CGLLockContext(cgl_ctx);
     glDeleteTextures(1, &data->texture);
     CGLUnlockContext(cgl_ctx);
+	ffglRestoreContext(cgl_ctx, prev);
 	CGLReleaseContext(data->context);
     free(data);
 }
@@ -63,6 +66,7 @@ static void FFGLGPURendererPoolObjectRelease(GLuint name, CGLContextObj cgl_ctx,
 
 #else /* FFGL_USE_TEXTURE_POOLS is not defined */
 
+// to pass to FFGLImage
 static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, void *object)
 {
     CGLLockContext(cgl_ctx);
@@ -177,8 +181,10 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
             _frameStruct.inputTextures = NULL;
         }
 		
-		// set up our texture properties
-//		BOOL tryNPOT2D = NO;
+		// Switch to our context
+		CGLContextObj prevContext;
+		ffglSetContext(context, prevContext);
+
 		if (_outputHint == FFGLRendererHintTextureRect)
 		{
 			_textureTarget = GL_TEXTURE_RECTANGLE_ARB;
@@ -193,7 +199,6 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 			{
 				_textureWidth = _size.width;
 				_textureHeight = _size.height;
-//				tryNPOT2D = YES;
 			}
 			else
 			{
@@ -208,26 +213,17 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 		_pool = FFGLPoolCreate(&callbacks, 3, self);
 		if (_pool == NULL)
 		{
+			ffglRestoreContext(context, prevContext);
 			[self release];
 			return nil;
 		}
 #endif
 		
 		BOOL success = FFGLGPURendererSetupFBO(context, _textureTarget, _textureWidth, _textureHeight, &_rendererFBO, &_rendererDepthBuffer);
-		/*
-		 
-		 // The following will go unless any other setups have problems, problem with ATI cards is dealt with
-		 // in FFGLGPURendererSetupFBO()
-		if (!success && tryNPOT2D)
-		{
-			NSLog(@"Trying POT fallback");
-			// Some older ATI cards report support for GL_ARB_texture_non_power_of_two, but cannot handle NPOT FBOs.
-			// Rather than check for those cards, we guess that may have been a problem and try again, with POT dimensions.
-			_textureWidth = ffglPOTDimension(_textureWidth);
-			_textureHeight = ffglPOTDimension(_textureHeight);
-			success = FFGLGPURendererSetupFBO(context, _textureTarget, _textureWidth, _textureHeight, &_rendererFBO, &_rendererDepthBuffer);
-		}
-		 */
+
+		// restore context
+		ffglRestoreContext(context, prevContext);
+		
         if(!success)
         {	
 			[self release];
@@ -243,17 +239,25 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 
 - (void)nonGCCleanup
 {
+	CGLContextObj prevContext;
+	CGLContextObj cgl_ctx = _context;
+	
+	ffglSetContext(cgl_ctx, prevContext);
+	
 #if defined(FFGL_USE_TEXTURE_POOLS)
     FFGLPoolRelease(_pool);
 #endif
-    CGLContextObj cgl_ctx = _context;
+	
     CGLLockContext(cgl_ctx);
     
     glDeleteFramebuffersEXT(1, &_rendererFBO);
     glDeleteRenderbuffersEXT(1, &_rendererDepthBuffer);
 	
     CGLUnlockContext(cgl_ctx);
-    if (_frameStruct.inputTextures != NULL) {
+	
+	ffglRestoreContext(cgl_ctx, prevContext);
+    
+	if (_frameStruct.inputTextures != NULL) {
         free(_frameStruct.inputTextures);
     }
 }
@@ -305,6 +309,8 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 - (BOOL)_implementationRender
 {
     CGLContextObj cgl_ctx = _context;
+	CGLContextObj prevContext;
+	ffglSetContext(cgl_ctx, prevContext);
     CGLLockContext(cgl_ctx);
 	    
 	// state vars
@@ -410,6 +416,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, previousDrawFBO);
 	
 	CGLUnlockContext(cgl_ctx);
+	ffglRestoreContext(cgl_ctx, prevContext);
 	
 	if (result == YES)
 	{
