@@ -109,6 +109,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	glTexParameteri(textureTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
 
 	// Some plugins require a depth buffer
 	glGenRenderbuffersEXT(1, depthBuffer);
@@ -349,7 +350,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	glTexParameteri(_textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-		
+	glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
 	
 	// bind our FBO
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rendererFBO);
@@ -382,7 +383,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	// Some plugins get very upset if we don't do a glClear before rendering
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	
 	// render our plugin to our FBO
 	BOOL result = [_plugin _processFrameGL:&_frameStruct forInstance:_instance];
 	
@@ -407,8 +408,12 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	// restore states // assume this is balanced with above 
 	glPopAttrib();
 	
-	glFlushRenderAPPLE();
-
+	// this fixes apparent render issues with Bendoscope (and friends) during software fallback (?)
+	// If a plugin uses GL_TEXTURE_2D on some hardware with GL_REPEAT wrapping mode, fallback happens.
+	// This forces proper texture synchronization with the hardware (since this may happen on the CPU.)
+	glFlush();	
+	//glFlushRenderAPPLE(); // only will work if we remain on the GPU.
+	
 	// return FBO state
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previousFBO);
 	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, previousRenderBuffer);
