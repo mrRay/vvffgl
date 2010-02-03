@@ -54,6 +54,21 @@ bool ffglOpenGLSupportsExtension(CGLContextObj cgl_ctx, const char *extension);
 
 #define FFGLLocalized(s) [[NSBundle bundleForClass:[self class]] localizedStringForKey:s value:s table:nil]
 
+#define ffglSetContext(context,prevStore) { \
+	prevStore = CGLGetCurrentContext(); \
+	if (prevStore != context) \
+	{ \
+		CGLSetCurrentContext(context); \
+	} \
+}
+
+#define ffglRestoreContext(context,prevStore) { \
+	if (prevStore != context) \
+	{ \
+		CGLSetCurrentContext(prevStore); \
+	} \
+}
+
 @interface FFGLPlugin (Instances)
 /*
  Plugin properties

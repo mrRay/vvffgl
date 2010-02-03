@@ -92,6 +92,8 @@ typedef NSUInteger FFGLRendererHint;
 	Returns YES if rendering succeeded, NO otherwise.
 	Rendering may fail if insufficient image parameters are set, if image parameters are set but they couldn't be used by
 	the renderer, or for other reasons.
+	Note that if you are rendering a chain of FFGLRenderers which share a CGLContext, making that context current (using CGLSetCurrentContext())
+	before rendering them will save the FFGLRenderers from having to switch and restore the current context for every render pass.
  */
 - (BOOL)renderAtTime:(NSTimeInterval)time;
 @end
