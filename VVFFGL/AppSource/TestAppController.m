@@ -15,7 +15,7 @@
 #endif
 
 #define kRenderDimensions NSMakeSize(640, 480)
-#define kRendererOutputHint FFGLRendererHintTextureRect
+#define kRendererOutputHint FFGLRendererHintTexture2D
 
 @implementation TestAppController
 
