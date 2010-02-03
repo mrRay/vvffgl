@@ -10,8 +10,8 @@
 #import <OpenGL/CGLMacro.h>
 #import "FFGLGLState.h"
 
-#define kFFGLImageTestWidth 1024
-#define kFFGLImageTestHeight 768
+#define kFFGLImageTestWidth 100
+#define kFFGLImageTestHeight 33
 #define kFFGLImageTestBytesPerPixel 4
 #define kFFPixelFormat FFGLPixelFormatBGRA8888
 
@@ -135,9 +135,9 @@ void FFGLImageTestTextureReleaseCallback(GLuint name, CGLContextObj cgl_ctx, voi
 	unsigned int offset = 0;
 	for (unsigned int y = 0; y < kFFGLImageTestHeight; y++) {
 		for (unsigned int x = 0; x < kFFGLImageTestWidth; x++) {
-			originalBuffer[offset] = 255 * ((float)x / (float)kFFGLImageTestWidth); // blue
-			originalBuffer[offset+1] = 180 * ((float)x / (float)kFFGLImageTestWidth); // green
-			originalBuffer[offset+2] = 10 * ((float)x / (float)kFFGLImageTestWidth); // red
+			originalBuffer[offset] = 55;	// blue
+			originalBuffer[offset+1] = 180; // green
+			originalBuffer[offset+2] = 10;  // red
 			originalBuffer[offset+3] = 255; // alpha
 			offset += kFFGLImageTestBytesPerPixel;
 		}
@@ -196,7 +196,11 @@ void FFGLImageTestTextureReleaseCallback(GLuint name, CGLContextObj cgl_ctx, voi
 				origOffset += kFFGLImageTestBytesPerPixel;
 			}
 		}
-		STAssertFalse(changed, @"Buffer changed for format %@", formats[i]);
+		STAssertFalse(changed, @"Buffer changed for format %@. First pixel R was %u is %u G was %u is %u B was %u is %u A was %u ", formats[i],
+					  (unsigned int)originalBuffer[2], (unsigned int)copiedBuffer[rIndex[i]],
+					  (unsigned int)originalBuffer[1], (unsigned int)copiedBuffer[gIndex[i]],
+					  (unsigned int)originalBuffer[0], (unsigned int)copiedBuffer[bIndex[i]],
+					  (unsigned int)originalBuffer[3]);
 		[copy unlockBufferRepresentation];
 		[copy release];
 	}
