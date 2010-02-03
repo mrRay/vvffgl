@@ -218,8 +218,9 @@ FFGLImageRep *FFGLTextureRepCreateFromBufferRep(CGLContextObj cgl_ctx, const FFG
 	
 	glTexParameteri(targetGL, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(targetGL, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(targetGL, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(targetGL, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(targetGL, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(targetGL, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameteri(targetGL, GL_TEXTURE_WRAP_R, GL_CLAMP);
 	
 	glTexImage2D(targetGL, 0, GL_RGBA8, texWidth, texHeight, 0, format, type, fromBufferRep->repInfo.bufferInfo.buffer);
 	
@@ -309,8 +310,9 @@ FFGLImageRep *FFGLTextureRepCreateFromTextureRep(CGLContextObj cgl_ctx, const FF
 	// texture filtering and wrapping modes for FBO texture.
 	glTexParameteri(toGLTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(toGLTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(toGLTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(toGLTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	glTexParameteri(toGLTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(toGLTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameteri(toGLTarget, GL_TEXTURE_WRAP_R, GL_CLAMP);
 	
 	//	NSLog(@"new texture: %u, original texture: %u", newTex, fromTexture->texture);
 	
@@ -352,8 +354,9 @@ FFGLImageRep *FFGLTextureRepCreateFromTextureRep(CGLContextObj cgl_ctx, const FF
 		
 		glTexParameteri(fromGLTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(fromGLTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(fromGLTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(fromGLTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);				
+		glTexParameteri(fromGLTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(fromGLTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);				
+		glTexParameteri(fromGLTarget, GL_TEXTURE_WRAP_R, GL_CLAMP);				
 		
 		//				GLfloat texImageWidth, texImageHeight;
 		//
