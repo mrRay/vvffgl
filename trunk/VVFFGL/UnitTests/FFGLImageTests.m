@@ -123,7 +123,9 @@ void FFGLImageTestTextureReleaseCallback(GLuint name, CGLContextObj cgl_ctx, voi
 		GLStateRef before = GLStateCreateForContext(_CGLContext);
 		STAssertTrue([copied lockTextureRectRepresentation], @"FFGLImage couldn't lockTextureRectRepresentation from texture2D");
 		GLStateRef after = GLStateCreateForContext(_CGLContext);
-		STAssertTrue(GLStatesAreEqual(before, after), @"OpenGL state changed after call to lockTextureRectRepresentation");
+//		STAssertTrue(GLStatesAreEqual(before, after), @"OpenGL state changed after call to lockTextureRectRepresentation");
+		GLenum stumble = GLStatesFirstUnequalState(before, after);
+		STAssertFalse(stumble, @"OpenGL state changed after call to lockTextureRectRepresentation - first changed enum is %x (may be more)", stumble);
 		GLStateRelease(before);
 		GLStateRelease(after);
 	}
