@@ -564,7 +564,8 @@ static void finalizer()
 {
     FFSetParameterStruct param;
     param.ParameterNumber = index;
-	float f = [(NSNumber *)value floatValue];
+	float f = [value floatValue];
+	f = fminf(1.0, fmaxf(0.0, f));
 	param.NewParameterValue = (FFMixed)(uint32_t)*((uint32_t *)&f);
     ffglPPrivate(main)(FF_SETPARAMETER, (FFMixed)(void *)&param, instance);    
 }
