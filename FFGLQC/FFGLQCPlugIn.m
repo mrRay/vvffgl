@@ -11,6 +11,7 @@
 #import <OpenGL/CGLMacro.h>
 
 #import "FFGLQCPlugIn.h"
+#import <pthread.h>
 
 #define	kQCPlugIn_Name				@"FreeFrame Plugin"
 #define	kQCPlugIn_Description		@"Use FreeFrame Plugins in Quartz Composer."
@@ -425,8 +426,8 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
 		{
 			[output	retain]; // released in outputImageProvider callback
             provider = [context outputImageProviderFromTextureWithPixelFormat:qcPixelFormat 
-                                                                   pixelsWide:[output textureRectPixelsWide]
-                                                                   pixelsHigh:[output textureRectPixelsHigh]
+                                                                   pixelsWide:[output imagePixelsWide]
+                                                                   pixelsHigh:[output imagePixelsHigh]
                                                                          name:[output textureRectName]
                                                                       flipped:NO
                                                               releaseCallback:FFImageUnlockTexture
