@@ -14,8 +14,7 @@
 
 #define kGLGetEnumCount 248
 #define kGLGetValueCount 346
-//#define kGLGetIntCount 23
-//#define kGLGetBoolCount 9
+#define kGLGetPointerCount 6
 #define kGLGetTexParamIntCount 14
 #define kGLGetTexParamPointerCount 1
 #define kGLTargetCount 2
@@ -27,10 +26,8 @@ typedef struct GLState
 	CGLContextObj context;
 	GLfloat gotValues[kGLGetValueCount];
 	GLenum gotEnums[kGLGetValueCount];
-	/*
-	GLint gotInts[kGLGetIntCount];
-	GLboolean gotBools[kGLGetBoolCount];
-	 */
+	GLvoid *gotPointers[kGLGetPointerCount];
+	GLenum gotPointerEnums[kGLGetPointerCount];
 	GLint gotTexParamInts[kGLGetTexParamIntCount * kGLTargetCount];
 	GLenum gotTexParamIntEnums[kGLGetTexParamIntCount * kGLTargetCount];
 	GLvoid *gotTexParamPointers[kGLGetTexParamPointerCount * kGLTargetCount];
@@ -347,6 +344,19 @@ GLStateRef GLStateCreateForContext(CGLContextObj context)
 			offset+=getEnums[(i*2)+1];
 		}
 
+		GLenum getPointerEnums[kGLGetPointerCount] = {
+			GL_FEEDBACK_BUFFER_POINTER,
+			GL_INDEX_ARRAY_POINTER,
+			GL_NORMAL_ARRAY_POINTER,
+			GL_TEXTURE_COORD_ARRAY_POINTER,
+			GL_SELECTION_BUFFER_POINTER,
+			GL_VERTEX_ARRAY_POINTER
+		};
+		for (int i = 0; i < kGLGetPointerCount; i++) {
+			glGetPointerv(getPointerEnums[i], &state->gotPointers[i]);
+			state->gotPointerEnums[i] = getPointerEnums[i];
+		}
+		
 		GLenum targets[kGLTargetCount] = {kGLTargets};
 		GLenum getTexParamIntEnums[kGLGetTexParamIntCount] = {
 			GL_TEXTURE_STORAGE_HINT_APPLE,
@@ -407,22 +417,7 @@ void GLStateRelease(GLStateRef state)
 
 bool GLStatesAreEqual(GLStateRef a, GLStateRef b)
 {
-	for (int i = 0; i < kGLGetValueCount; i++) {
-		if (a->gotValues[i] != b->gotValues[i])
-			return false;
-	}
-
-	for (int i = 0; i < kGLTargetCount; i++) {
-		for (int j = 0; j < kGLGetTexParamIntCount; j++) {
-			if (a->gotTexParamInts[(i * kGLGetTexParamIntCount) + j] != b->gotTexParamInts[(i * kGLGetTexParamIntCount) + j])
-				return false;
-		}
-		for (int k = 0; k < kGLGetTexParamPointerCount; k++) {
-			if (a->gotTexParamPointers[(i * kGLGetTexParamPointerCount) + k] != b->gotTexParamPointers[(i * kGLGetTexParamPointerCount) + k])
-				return false;
-		}
-	}
-	return true;
+	return (GLStatesFirstUnequalState(a, b) == 0);
 }
 
 GLenum GLStatesFirstUnequalState(GLStateRef a, GLStateRef b)
@@ -432,7 +427,11 @@ GLenum GLStatesFirstUnequalState(GLStateRef a, GLStateRef b)
 			if (a->gotValues[i] != b->gotValues[i])
 				return a->gotEnums[i];
 		}
-
+		
+		for (int i = 0; i < kGLGetPointerCount; i++) {
+			if (a->gotPointers[i] != b->gotPointers[i])
+				return a->gotPointerEnums[i];
+		}
 		for (int i = 0; i < kGLTargetCount; i++) {
 			for (int j = 0; j < kGLGetTexParamIntCount; j++) {
 				if (a->gotTexParamInts[(i * kGLGetTexParamIntCount) + j] != b->gotTexParamInts[(i * kGLGetTexParamIntCount) + j])
