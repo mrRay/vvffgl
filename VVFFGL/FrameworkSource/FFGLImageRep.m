@@ -403,6 +403,10 @@ FFGLImageRep *FFGLTextureRepCreateFromTextureRep(CGLContextObj cgl_ctx, const FF
 			vdx, vdy
 		};
 		
+		glDisableClientState(GL_COLOR_ARRAY);
+		glDisableClientState(GL_EDGE_FLAG_ARRAY);
+		glDisableClientState(GL_INDEX_ARRAY);
+		glDisableClientState(GL_NORMAL_ARRAY);
 		glEnableClientState( GL_TEXTURE_COORD_ARRAY );
 		glTexCoordPointer(2, GL_FLOAT, 0, tex_coords );
 		glEnableClientState(GL_VERTEX_ARRAY);
