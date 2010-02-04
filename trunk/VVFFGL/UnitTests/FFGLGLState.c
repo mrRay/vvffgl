@@ -417,31 +417,54 @@ void GLStateRelease(GLStateRef state)
 
 bool GLStatesAreEqual(GLStateRef a, GLStateRef b)
 {
-	return (GLStatesFirstUnequalState(a, b) == 0);
+	unsigned int changeCount;
+	GLStatesUnequalStates(a, b, NULL, &changeCount);
+	return (changeCount == 0);
 }
 
-GLenum GLStatesFirstUnequalState(GLStateRef a, GLStateRef b)
+unsigned int GLStatesGetChangedEnumArrayMaximumCount()
 {
-	{
-		for (int i = 0; i < kGLGetValueCount; i++) {
-			if (a->gotValues[i] != b->gotValues[i])
-				return a->gotEnums[i];
+	return kGLGetValueCount + kGLGetPointerCount + ((kGLGetTexParamIntCount + kGLGetTexParamPointerCount) * kGLTargetCount);
+}
+
+void GLStatesUnequalStates(GLStateRef a, GLStateRef b, GLenum *array, unsigned int *changeCount)
+{
+	*changeCount = 0;
+	
+	for (int i = 0; i < kGLGetValueCount; i++) {
+		if (a->gotValues[i] != b->gotValues[i])
+		{
+			if (array != NULL)
+				array[*changeCount] = a->gotEnums[i];
+			(*changeCount)++;
 		}
-		
-		for (int i = 0; i < kGLGetPointerCount; i++) {
-			if (a->gotPointers[i] != b->gotPointers[i])
-				return a->gotPointerEnums[i];
+			
+	}
+	
+	for (int i = 0; i < kGLGetPointerCount; i++) {
+		if (a->gotPointers[i] != b->gotPointers[i])
+		{
+			if (array != NULL)
+				array[*changeCount] = a->gotPointerEnums[i];
+			(*changeCount)++;
 		}
-		for (int i = 0; i < kGLTargetCount; i++) {
-			for (int j = 0; j < kGLGetTexParamIntCount; j++) {
-				if (a->gotTexParamInts[(i * kGLGetTexParamIntCount) + j] != b->gotTexParamInts[(i * kGLGetTexParamIntCount) + j])
-					return a->gotTexParamIntEnums[i];
+			
+	}
+	for (int i = 0; i < kGLTargetCount; i++) {
+		for (int j = 0; j < kGLGetTexParamIntCount; j++) {
+			if (a->gotTexParamInts[(i * kGLGetTexParamIntCount) + j] != b->gotTexParamInts[(i * kGLGetTexParamIntCount) + j]) {
+				if (array != NULL)
+					array[*changeCount] = a->gotTexParamIntEnums[i];
+				(*changeCount)++;
 			}
-			for (int k = 0; k < kGLGetTexParamPointerCount; k++) {
-				if (a->gotTexParamPointers[(i * kGLGetTexParamPointerCount) + k] != b->gotTexParamPointers[(i * kGLGetTexParamPointerCount) + k])
-					return a->gotTexParamPointerEnums[i];
+		}
+		for (int k = 0; k < kGLGetTexParamPointerCount; k++) {
+			if (a->gotTexParamPointers[(i * kGLGetTexParamPointerCount) + k] != b->gotTexParamPointers[(i * kGLGetTexParamPointerCount) + k])
+			{
+				if (array != NULL)
+					array[*changeCount++] = a->gotTexParamPointerEnums[i];
+				(*changeCount)++;
 			}
 		}
-		return 0;
 	}
 }

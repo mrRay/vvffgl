@@ -16,4 +16,5 @@ GLStateRef GLStateCreateForContext(CGLContextObj context);
 GLStateRef GLStateRetain(GLStateRef state);
 void GLStateRelease(GLStateRef state);
 bool GLStatesAreEqual(GLStateRef a, GLStateRef b);
-GLenum GLStatesFirstUnequalState(GLStateRef a, GLStateRef b);
+unsigned int GLStatesGetChangedEnumArrayMaximumCount();
+void GLStatesUnequalStates(GLStateRef a, GLStateRef b, GLenum *array, unsigned int *changeCount);
