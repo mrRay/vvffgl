@@ -18,9 +18,6 @@
 	per CGLContext...
  */
 
-// This makes a noticable difference with large images. I'll ditch option at some stage... just here for testing
-#define FFGL_USE_TEXTURE_RANGE 1
-
 typedef NSUInteger FFGLImagePOT2DRule;
 enum {
 	FFGLImageUseNPOT2D = 0,

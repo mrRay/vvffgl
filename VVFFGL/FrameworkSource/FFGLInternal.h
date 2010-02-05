@@ -18,7 +18,12 @@
 // Buffer allocation from memory is costly, leave this defined to recycle buffers.
 #define FFGL_USE_BUFFER_POOLS 1
 
+// This causes problems on some cards for some plugins.
 #define FFGL_ALLOW_NPOT_2D 1
+
+// This is used for FFGLImage buffer-to-texture conversions
+// It makes a noticable difference with large images.
+#define FFGL_USE_TEXTURE_RANGE 1
 
 extern NSString * const FFGLParameterAttributeIndexKey;
 
