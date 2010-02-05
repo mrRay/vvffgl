@@ -181,10 +181,6 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 		{
             _frameStruct.inputTextures = NULL;
         }
-		
-		// Switch to our context
-		CGLContextObj prevContext;
-		ffglSetContext(context, prevContext);
 
 		if (_outputHint == FFGLRendererHintTextureRect)
 		{
@@ -195,6 +191,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 		else
 		{
 			_textureTarget = GL_TEXTURE_2D;
+#if defined(FFGL_ALLOW_NPOT_2D)
 			// In 10.5 some GPUs don't support non-power-of-two textures
 			if (ffglOpenGLSupportsExtension(context, "GL_ARB_texture_non_power_of_two"))
 			{
@@ -206,6 +203,10 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 				_textureWidth = ffglPOTDimension(_size.width);
 				_textureHeight = ffglPOTDimension(_size.height);
 			}
+#else
+			_textureWidth = ffglPOTDimension(_size.width);
+			_textureHeight = ffglPOTDimension(_size.height);
+#endif /* FFGL_ALLOW_NPOT_2D */
 		}
 		
 #if defined(FFGL_USE_TEXTURE_POOLS)
@@ -218,12 +219,9 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 			[self release];
 			return nil;
 		}
-#endif
+#endif /* FFGL_USE_TEXTURE_POOLS */
 		
 		BOOL success = FFGLGPURendererSetupFBO(context, _textureTarget, _textureWidth, _textureHeight, &_rendererFBO, &_rendererDepthBuffer);
-
-		// restore context
-		ffglRestoreContext(context, prevContext);
 		
         if(!success)
         {	
@@ -380,6 +378,8 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	glPushMatrix();
 	glLoadIdentity();
 	
+	glActiveTexture(GL_TEXTURE0);
+
 	// Some plugins get very upset if we don't do a glClear before rendering
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -14,8 +14,11 @@
 
 // This needs some more exploration... helps (a lot) or hinders (a bit), depending on circumstances
 //#define FFGL_USE_TEXTURE_POOLS 1
+
 // Buffer allocation from memory is costly, leave this defined to recycle buffers.
 #define FFGL_USE_BUFFER_POOLS 1
+
+#define FFGL_ALLOW_NPOT_2D 1
 
 extern NSString * const FFGLParameterAttributeIndexKey;
 

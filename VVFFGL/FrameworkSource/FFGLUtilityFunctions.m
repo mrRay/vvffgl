@@ -18,7 +18,8 @@ bool ffglOpenGLSupportsExtension(CGLContextObj cgl_ctx, const char *extension)
 
 {
 	// Adapted from http://www.opengl.org/resources/features/OGLextensions/
-	return false;
+	// Weirdly faster than gluCheckExtension()
+
 	const GLubyte *extensions = NULL;
 	const GLubyte *start;
 	GLubyte *where, *terminator;
