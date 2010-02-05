@@ -122,8 +122,13 @@ typedef struct FFGLImagePrivate {
     source.repInfo.textureInfo.texture = texture;
     source.repInfo.textureInfo.hardwareWidth = source.repInfo.textureInfo.width = width;
     source.repInfo.textureInfo.hardwareHeight = source.repInfo.textureInfo.height = height;
+#if defined(FFGL_ALLOW_NPOT_2D)
 	BOOL useNPOT = ffglOpenGLSupportsExtension(context, "GL_ARB_texture_non_power_of_two");
 	FFGLImagePOT2DRule POTRule = useNPOT ? FFGLImageUseNPOT2D : FFGLImageUsePOT2D;
+#else
+	BOOL useNPOT = NO;
+	FFGLImagePOT2DRule POTRule = FFGLImageUsePOT2D;
+#endif
     // copy to 2D to save doing it when images get used by a renderer.
     FFGLImageRep *new = FFGLTextureRepCreateFromTextureRep(context, &source, FFGLImageRepTypeTexture2D, useNPOT);
     return [self initWithCGLContext:context imageRep:new usePOT2D:POTRule];
@@ -139,8 +144,13 @@ typedef struct FFGLImagePrivate {
     source.repInfo.textureInfo.width = imageWidth;
     source.repInfo.textureInfo.hardwareHeight = textureHeight;
     source.repInfo.textureInfo.height = imageHeight;
+#if defined(FFGL_ALLOW_NPOT_2D)
 	BOOL useNPOT = ffglOpenGLSupportsExtension(context, "GL_ARB_texture_non_power_of_two");
 	FFGLImagePOT2DRule POTRule = useNPOT ? FFGLImageUseNPOT2D : FFGLImageUsePOT2D;
+#else
+	BOOL useNPOT = NO;
+	FFGLImagePOT2DRule POTRule = FFGLImageUsePOT2D;
+#endif
     FFGLImageRep *new = FFGLTextureRepCreateFromTextureRep(context, &source, FFGLImageRepTypeTexture2D, useNPOT);
     return [self initWithCGLContext:context imageRep:new usePOT2D:POTRule];
 }
@@ -193,11 +203,15 @@ typedef struct FFGLImagePrivate {
 - (BOOL)useNPOT2D
 {
 	// always called from within a lock, so no need to lock
+#if defined(FFGL_ALLOW_NPOT_2D)
 	if (ffglIPrivate(NPOTRule) == FFGLImagePOTUnknown)
 	{
 		ffglIPrivate(NPOTRule) = ffglOpenGLSupportsExtension(ffglIPrivate(context), "GL_ARB_texture_non_power_of_two") ? FFGLImageUseNPOT2D : FFGLImageUsePOT2D;
 	}
 	return ffglIPrivate(NPOTRule) == FFGLImageUseNPOT2D ? YES : NO;
+#else
+	return NO;
+#endif
 }
 
 #pragma mark GL_TEXTURE_2D
