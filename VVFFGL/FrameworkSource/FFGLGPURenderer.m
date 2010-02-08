@@ -107,9 +107,9 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	// Set these now because FBO-creation fails on some older ATI cards with non-clamped NPOT textures
 	glTexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	glTexParameteri(textureTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+	glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameteri(textureTarget, GL_TEXTURE_WRAP_R, GL_CLAMP);
 
 	// Some plugins require a depth buffer
 	glGenRenderbuffersEXT(1, depthBuffer);
@@ -346,9 +346,9 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	// texture filtering and wrapping modes. Do we actually want to fuck with this here? Hrm.
 	glTexParameteri(_textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(_textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+	glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_R, GL_CLAMP);
 	
 	// bind our FBO
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rendererFBO);
