@@ -12,6 +12,10 @@
 /*
  typedef void (*FFGLImageTextureReleaseCallback)(GLuint name, CGLContextObj cgl_ctx, void *userInfo)
  
+	name is the texture the FFGLImage was initted with
+	cgl_ctx is the CGLContext passed in at init. This context will be current and locked when your
+		callback is called.
+	userInfo is the same value as was passed to FFGLImage at init.
 	A texture release callback takes the form:
 
 		void myTextureReleaseCallback(GLuint name, CGLContextObj cgl_ctx, void *userInfo) {
@@ -48,7 +52,9 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *us
 	textureHeight is the vertical dimension of the texture. If the texture is larger than the image, the image's lower-left (or top-right, if flipped) corner should be at texture cooridinate 0,0.
 	isFlipped indicates the vertical orientation of the image. In some circumstances flipped textures will be copied to a new unflipped texture. To avoid this, pass in textures which are not flipped.
 	callback is the function which will be called when the texture is no longer required by the FFGLImage. This function should delete or recycle the texture and any associated resources. It receives as
-	its arguments the CGLContext, texture name and userInfo passed in at init.
+ its arguments the CGLContext, texture name and userInfo passed in at init. If you will manage the texture yourself you may pass in NULL here, but the texture must remain valid for the lifetime
+ of the FFGLImage.
+	userInfo is a pointer to any user data to be passed to the callback function. May be NULL.
  */
 - (id)initWithTexture2D:(GLuint)texture CGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight flipped:(BOOL)isFlipped releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo;
 
@@ -62,7 +68,8 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *us
 	height is the vertical dimension of the image (and texture)
 	isFlipped indicates the vertical orientation of the image.
 	callback is the function which will be called when the texture is no longer required by the FFGLImage. This function should delete or recycle the texture and any associated resources. It receives as
-	its arguments the CGLContext, texture name and userInfo passed in at init.
+	its arguments the CGLContext, texture name and userInfo passed in at init. If you will manage the texture yourself you may pass in NULL here, but the texture must remain valid for the lifetime
+	of the FFGLImage.
 	userInfo is a pointer to any user data to be passed to the callback function. May be NULL.
  */
 - (id)initWithTextureRect:(GLuint)texture CGLContext:(CGLContextObj)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height flipped:(BOOL)isFlipped releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo;
@@ -88,7 +95,8 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *us
 	rowBytes is the number of bytes in a row of pixels
 	isFlipped indicates the vertical orientation of the image. Flipped images may require an un-flipped copy to be made at init.
 	callback is the function which will be called when the buffer is no longer required by the FFGLImage. This function should free or recycle the memory and any associated resources. It receives as
-	its arguments the buffer address and userInfo passed in at init.
+ its arguments the buffer address and userInfo passed in at init. If you will manage the buffer yourself you may pass in NULL here, but the buffer must remain valid for the lifetime
+ of the FFGLImage.
 	userInfo is a pointer to any user data to be passed to the callback function. May be nil.
  */
 - (id)initWithBuffer:(const void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes flipped:(BOOL)isFlipped releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo;

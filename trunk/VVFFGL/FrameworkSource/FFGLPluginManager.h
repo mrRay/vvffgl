@@ -77,8 +77,10 @@
 /*
  - (FFGLPlugin *)pluginWithIdentifier:(NSString *)identifier
  
-	Returns the first instance of a FFGLPlugin with a matching identifier. If loadsPluginsAutomatically returns YES, this method will call
-	loadLibraryPlugins and loadApplicationPlugins if they haven't already been called.
+	Returns the first instance of a FFGLPlugin with a matching identifier, or nil if none exists. You can obtain the identifier for a plugin by querying the FFGLPluginAttributeIdentifierKey
+	of the plugins attributes dictionary. Note that there is no centralised control for plugin identifiers, and two FFGLPlugins may have the same identifier and may or
+	may not be instances of the same plugin.
+	If loadsPluginsAutomatically returns YES, this method will call loadLibraryPlugins and loadApplicationPlugins if they haven't already been called.
  */
 - (FFGLPlugin *)pluginWithIdentifier:(NSString *)identifier;
 

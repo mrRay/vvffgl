@@ -34,6 +34,7 @@ typedef NSUInteger FFGLRendererHint;
  - (id)initWithPlugin:(FFGLPlugin *)plugin context:(CGLContextObj)context pixelFormat:(NSString *)format outputHint:(FFGLRendererHint)hint size:(NSSize)size
     Initializes a new renderer.
 	plugin should be the FFGLPlugin to use for rendering.
+	context should be the CGLContext to use for rendering. See renderAtTime: below for guidance on using CGLContexts.
     pixelFormat must be one of the pixel-formats supported by plugin. If plugin is a GPU plugin, pixelFormat may be nil.
     hint should indicate your intentions for the output, and may be used to provide an FFGLImage optimized to suit.
     If you are passing the output of one FFGLRenderer into another FFGLRenderer as input for an image parameter, use FFGLRendererHintNone.
@@ -90,10 +91,18 @@ typedef NSUInteger FFGLRendererHint;
  - (BOOL)renderAtTime:(NSTimeInterval)time
 	Attempts to perform rendering using the currently set parameters at the specified time.
 	Returns YES if rendering succeeded, NO otherwise.
+ 
 	Rendering may fail if insufficient image parameters are set, if image parameters are set but they couldn't be used by
 	the renderer, or for other reasons.
-	Note that if you are rendering a chain of FFGLRenderers which share a CGLContext, making that context current (using CGLSetCurrentContext())
-	before rendering them will save the FFGLRenderers from having to switch and restore the current context for every render pass.
+	
+	FreeFrame GL plugins require OpenGL be in its default state before rendering. If the CGLContext used by the FFGLRenderer is the same as
+	is used by your drawing code, take care to restore the GL state after you make OpenGL calls. Alternatively, create a seperate CGLContext
+	shared with your drawing context to use with your FFGLRenderers. FFGL takes care to restore OpenGL state and multiple FFGLRenderers and FFGLImages can
+	share a single CGLContext.
+	
+	Note that if you are rendering a long chain of FFGLRenderers which share a CGLContext, making that context current (using CGLSetCurrentContext())
+	before rendering them will save the FFGLRenderers from having to switch and restore the current context for every render pass. This step is not
+	necessary, but may improve performance.
  */
 - (BOOL)renderAtTime:(NSTimeInterval)time;
 @end

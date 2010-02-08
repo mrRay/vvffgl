@@ -309,6 +309,7 @@ static FFGLPluginManager *_sharedPluginManager = nil;
 			return next;
 		}
 	}
+	return nil;
 }
 
 - (NSArray *)plugins
