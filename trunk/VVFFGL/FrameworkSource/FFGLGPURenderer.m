@@ -107,9 +107,9 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	// Set these now because FBO-creation fails on some older ATI cards with non-clamped NPOT textures
 	glTexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexParameteri(textureTarget, GL_TEXTURE_WRAP_R, GL_CLAMP);
+	glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(textureTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 	// Some plugins require a depth buffer
 	glGenRenderbuffersEXT(1, depthBuffer);
@@ -191,7 +191,8 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 		else
 		{
 			_textureTarget = GL_TEXTURE_2D;
-#if defined(FFGL_ALLOW_NPOT_2D)
+//#if defined(FFGL_ALLOW_NPOT_2D)
+#if FFGL_ALLOW_NPOT_2D
 			// In 10.5 some GPUs don't support non-power-of-two textures
 			if (ffglOpenGLSupportsExtension(context, "GL_ARB_texture_non_power_of_two"))
 			{
@@ -346,9 +347,9 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	// texture filtering and wrapping modes. Do we actually want to fuck with this here? Hrm.
 	glTexParameteri(_textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(_textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_R, GL_CLAMP);
+	glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	
 	// bind our FBO
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rendererFBO);
@@ -383,6 +384,9 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	// Some plugins get very upset if we don't do a glClear before rendering
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+//	glActiveTexture(GL_TEXTURE0);
+//	glEnable(GL_TEXTURE_2D);
 	
 	// render our plugin to our FBO
 	BOOL result = [_plugin _processFrameGL:&_frameStruct forInstance:_instance];
