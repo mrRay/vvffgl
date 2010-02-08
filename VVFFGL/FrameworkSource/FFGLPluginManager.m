@@ -299,6 +299,18 @@ static FFGLPluginManager *_sharedPluginManager = nil;
 	}
 }
 
+- (FFGLPlugin *)pluginWithIdentifier:(NSString *)identifier
+{
+	NSArray *plugins = self.plugins;
+	for (FFGLPlugin *next in plugins)
+	{
+		if ([[[next attributes] objectForKey:FFGLPluginAttributeIdentifierKey] isEqualToString:identifier])
+		{
+			return next;
+		}
+	}
+}
+
 - (NSArray *)plugins
 {
     return [[self sourcePlugins] arrayByAddingObjectsFromArray:[self effectPlugins]];        
