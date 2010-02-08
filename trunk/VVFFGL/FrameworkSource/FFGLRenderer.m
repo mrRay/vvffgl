@@ -76,6 +76,7 @@ typedef struct FFGLRendererPrivate
                 || (([plugin mode] == FFGLPluginModeCPU)
                     && ![[plugin supportedBufferPixelFormats] containsObject:format])
 				|| (hint > FFGLRendererHintBuffer)
+				|| (context == NULL)
 				)
 			{
 				[self release];
@@ -109,13 +110,13 @@ typedef struct FFGLRendererPrivate
                 ffglRPrivate(imageInputValidity)[i] = NO;
             }
 			CGLContextObj prev;
-			if (context != NULL)
+			if ([plugin mode] == FFGLPluginModeGPU)
 			{
 				ffglSetContext(context, prev);
-				CGLLockContext(context);
+				CGLLockContext(context);				
 			}
             _instance = [plugin _newInstanceWithSize:size pixelFormat:format];
-			if (context != NULL)
+			if ([plugin mode] == FFGLPluginModeGPU)
 			{
 				CGLUnlockContext(context);
 				ffglRestoreContext(context, prev);
@@ -128,10 +129,8 @@ typedef struct FFGLRendererPrivate
             }
             _plugin = [plugin retain];
 			
-            if (context != NULL)
-			{
-                _context = CGLRetainContext(context);                
-            }
+			_context = CGLRetainContext(context);                
+            
             _size = size;
             _pixelFormat = [format retain];
             ffglRPrivate(imageInputs) = [[NSMutableDictionary alloc] initWithCapacity:4];
@@ -152,13 +151,13 @@ typedef struct FFGLRendererPrivate
     if (_instance != 0)
 	{
 		CGLContextObj prev;
-		if (_context != NULL)
+		if ([_plugin mode] == FFGLPluginModeGPU)
 		{
 			ffglSetContext(_context, prev);
-			CGLLockContext(_context);			
+			CGLLockContext(_context);
 		}
         [_plugin _disposeInstance:_instance];
-		if (_context != NULL)
+		if ([_plugin mode] == FFGLPluginModeGPU)
 		{
 			CGLUnlockContext(_context);
 			ffglRestoreContext(_context, prev);
@@ -171,7 +170,9 @@ typedef struct FFGLRendererPrivate
 	if (_private != NULL)
 	{
 		if (ffglRPrivate(imageInputValidity) != NULL)
+		{
 			free(ffglRPrivate(imageInputValidity));
+		}
 		pthread_mutex_destroy(&ffglRPrivate(lock));
 		free(_private);
 	}
@@ -236,7 +237,18 @@ typedef struct FFGLRendererPrivate
             return YES;
         }
         pthread_mutex_lock(&ffglRPrivate(lock));
+		CGLContextObj prev;
+		if ([_plugin mode] == FFGLPluginModeGPU)
+		{
+			ffglSetContext(_context, prev);
+			CGLLockContext(_context);
+		}
         BOOL result = [_plugin _imageInputAtIndex:index willBeUsedByInstance:_instance];
+		if ([_plugin mode] == FFGLPluginModeGPU)
+		{
+			CGLUnlockContext(_context);
+			ffglRestoreContext(_context, prev);
+		}
         pthread_mutex_unlock(&ffglRPrivate(lock));
 		return result;
     } else {
@@ -251,7 +263,18 @@ typedef struct FFGLRendererPrivate
     if ([[[_plugin attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
         output = [ffglRPrivate(imageInputs) objectForKey:key];
     } else {
+		CGLContextObj prev;
+		if ([_plugin mode] == FFGLPluginModeGPU)
+		{
+			ffglSetContext(_context, prev);
+			CGLLockContext(_context);
+		}
         output = [_plugin _valueForNonImageParameterKey:key ofInstance:_instance];
+		if ([_plugin mode] == FFGLPluginModeGPU)
+		{
+			CGLUnlockContext(_context);
+			ffglRestoreContext(_context, prev);
+		}
     }
 	[[output retain] autorelease];
     pthread_mutex_unlock(&ffglRPrivate(lock));
@@ -292,16 +315,30 @@ typedef struct FFGLRendererPrivate
             ffglRPrivate(readyState) = FFGLRendererNeedsCheck;
         }
     }
-    else if ([type isEqualToString:FFGLParameterTypeString])
-    {
-        [_plugin _setValue:value forStringParameterAtIndex:index ofInstance:_instance];
-        ffglRPrivate(readyState) = FFGLRendererNeedsCheck;
-    }
-    else
-    {
-        [_plugin _setValue:value forNumberParameterAtIndex:index ofInstance:_instance];
-        ffglRPrivate(readyState) = FFGLRendererNeedsCheck;
-    }
+	else
+	{
+		CGLContextObj prev;
+		if ([_plugin mode] == FFGLPluginModeGPU)
+		{
+			ffglSetContext(_context, prev);
+			CGLLockContext(_context);
+		}
+		if ([type isEqualToString:FFGLParameterTypeString])
+		{
+			[_plugin _setValue:value forStringParameterAtIndex:index ofInstance:_instance];
+			ffglRPrivate(readyState) = FFGLRendererNeedsCheck;
+		}
+		else
+		{
+			[_plugin _setValue:value forNumberParameterAtIndex:index ofInstance:_instance];
+			ffglRPrivate(readyState) = FFGLRendererNeedsCheck;
+		}
+		if ([_plugin mode] == FFGLPluginModeGPU)
+		{
+			CGLUnlockContext(_context);
+			ffglRestoreContext(_context, prev);
+		}
+	}
     pthread_mutex_unlock(&ffglRPrivate(lock));
 }
 
