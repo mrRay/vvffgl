@@ -108,7 +108,18 @@ typedef struct FFGLRendererPrivate
 			{
                 ffglRPrivate(imageInputValidity)[i] = NO;
             }
+			CGLContextObj prev;
+			if (context != NULL)
+			{
+				ffglSetContext(context, prev);
+				CGLLockContext(context);
+			}
             _instance = [plugin _newInstanceWithSize:size pixelFormat:format];
+			if (context != NULL)
+			{
+				CGLUnlockContext(context);
+				ffglRestoreContext(context, prev);
+			}
             
 			if (_instance == 0)
 			{
@@ -138,10 +149,25 @@ typedef struct FFGLRendererPrivate
 }
 
 - (void)releaseResources {
-    if(_context != nil)
-        CGLReleaseContext(_context);
     if (_instance != 0)
+	{
+		CGLContextObj prev;
+		if (_context != NULL)
+		{
+			ffglSetContext(_context, prev);
+			CGLLockContext(_context);			
+		}
         [_plugin _disposeInstance:_instance];
+		if (_context != NULL)
+		{
+			CGLUnlockContext(_context);
+			ffglRestoreContext(_context, prev);
+		}
+	}
+	if(_context != nil)
+	{
+		CGLReleaseContext(_context);
+	}
 	if (_private != NULL)
 	{
 		if (ffglRPrivate(imageInputValidity) != NULL)
