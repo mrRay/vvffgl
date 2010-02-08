@@ -75,6 +75,14 @@
 - (void)unloadPlugin:(FFGLPlugin *)plugin;
 
 /*
+ - (FFGLPlugin *)pluginWithIdentifier:(NSString *)identifier
+ 
+	Returns the first instance of a FFGLPlugin with a matching identifier. If loadsPluginsAutomatically returns YES, this method will call
+	loadLibraryPlugins and loadApplicationPlugins if they haven't already been called.
+ */
+- (FFGLPlugin *)pluginWithIdentifier:(NSString *)identifier;
+
+/*
  @property (readonly) NSArray *plugins
 	
 	Returns an array of all FFGLPlugins currently loaded. If loadsPluginsAutomatically returns YES, this method will call
