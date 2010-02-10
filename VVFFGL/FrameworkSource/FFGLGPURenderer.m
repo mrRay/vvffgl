@@ -191,8 +191,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 		else
 		{
 			_textureTarget = GL_TEXTURE_2D;
-//#if defined(FFGL_ALLOW_NPOT_2D)
-#if FFGL_ALLOW_NPOT_2D
+#if defined(FFGL_ALLOW_NPOT_2D)
 			// In 10.5 some GPUs don't support non-power-of-two textures
 			if (ffglOpenGLSupportsExtension(context, "GL_ARB_texture_non_power_of_two"))
 			{
