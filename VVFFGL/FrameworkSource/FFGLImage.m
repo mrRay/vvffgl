@@ -161,6 +161,12 @@ typedef struct FFGLImagePrivate {
 - (void)releaseResources 
 {
 	if (_private) {
+		// Texture callbacks may not be using CGL macros, so switch to the context and lock it.
+		// We do this here rather than in FFGLImageRepDestroy() to save locking/unlocking the
+		// context twice.
+		CGLContextObj prevContext;
+		ffglSetContext(ffglIPrivate(context), prevContext);
+		CGLLockContext(ffglIPrivate(context));
 		if (ffglIPrivate(texture2D) != NULL)
 		{
 			FFGLImageRepDestroy(ffglIPrivate(context), (FFGLImageRep *)ffglIPrivate(texture2D));
@@ -169,6 +175,10 @@ typedef struct FFGLImagePrivate {
 		{
 			FFGLImageRepDestroy(ffglIPrivate(context), (FFGLImageRep *)ffglIPrivate(textureRect));
 		}
+		// Restore context
+		CGLUnlockContext(ffglIPrivate(context));
+		ffglRestoreContext(ffglIPrivate(context), prevContext);
+		
 		if (ffglIPrivate(buffer))
 		{
 			FFGLImageRepDestroy(ffglIPrivate(context), (FFGLImageRep *)ffglIPrivate(buffer));
@@ -335,18 +345,6 @@ typedef struct FFGLImagePrivate {
     return ffglIPrivate(textureRect)->repInfo.textureInfo.texture;
 }
 
-/*
-- (NSUInteger)textureRectPixelsWide
-{
-    return ffglIPrivate(textureRect)->repInfo.textureInfo.hardwareWidth;
-}
-
-- (NSUInteger)textureRectPixelsHigh
-{
-    return ffglIPrivate(textureRect)->repInfo.textureInfo.hardwareHeight;
-}
-*/
-
 - (BOOL)textureRectIsFlipped
 {
     return ffglIPrivate(textureRect)->flipped;
@@ -407,18 +405,6 @@ typedef struct FFGLImagePrivate {
 {
     return ffglIPrivate(buffer)->repInfo.bufferInfo.buffer;
 }
-
-/* Deprecated already
-- (NSUInteger)bufferPixelsWide
-{
-    return ffglIPrivate(imageWidth); // our buffers are never padded.
-}
-
-- (NSUInteger)bufferPixelsHigh
-{
-    return ffglIPrivate(imageHeight); // our buffers are never padded.
-}
-*/
 
 - (NSUInteger)bufferBytesPerRow
 {

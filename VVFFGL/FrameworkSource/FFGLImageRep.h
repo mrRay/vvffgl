@@ -57,4 +57,4 @@ FFGLImageRep *FFGLBufferRepCreateFromBuffer(const void *source, NSUInteger width
 FFGLImageRep *FFGLTextureRepCreateFromTextureRep(CGLContextObj cgl_ctx, const FFGLImageRep *fromTextureRep, FFGLImageRepType toTarget, BOOL useNPOT);
 FFGLImageRep *FFGLTextureRepCreateFromBufferRep(CGLContextObj cgl_ctx, const FFGLImageRep *fromBufferRep, FFGLImageRepType toTarget, BOOL useNPOT);
 FFGLImageRep *FFGLBufferRepCreateFromTextureRep(CGLContextObj cgl_ctx, const FFGLImageRep *fromTextureRep, NSString *pixelFormat);
-void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep);
+void FFGLImageRepDestroy(CGLContextObj lockedContext, FFGLImageRep *rep);
