@@ -517,10 +517,7 @@ void FFGLImageRepDestroy(CGLContextObj cgl_ctx, FFGLImageRep *rep)
 	{
 		if (rep->releaseCallback.textureCallback != NULL)
 		{
-			CGLContextObj prevContext;
-			ffglSetContext(cgl_ctx, prevContext);
 			rep->releaseCallback.textureCallback(rep->repInfo.textureInfo.texture, cgl_ctx, rep->releaseContext);
-			ffglRestoreContext(cgl_ctx, prevContext);
 		}
 			
     }
