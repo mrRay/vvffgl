@@ -9,6 +9,10 @@
 .objc_class_name_FFGLCPURenderer
 .objc_class_name_FFGLGPURenderer
 .objc_class_name_FFGLRendererParametersBindable
+.objc_class_name_FFGLBufferRep
+.objc_class_name_FFGLImageRep
+.objc_class_name_FFGLTextureRep
+
 _FFGLParameterAttributeIndexKey
 _FFGLPoolCreate
 _FFGLPoolObjectCreate
@@ -19,6 +23,7 @@ _FFGLPoolRelease
 _FFGLPoolRetain
 _ffglOpenGLSupportsExtension
 _ffglBytesPerPixelForPixelFormat
+_ffglGLInfoForPixelFormat
 _FFGLTextureRepCreateFromBufferRep
 _FFGLTextureRepCreateFromTexture
 _FFGLTextureRepCreateFromTextureRep

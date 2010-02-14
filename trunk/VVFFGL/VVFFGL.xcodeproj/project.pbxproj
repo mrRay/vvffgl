@@ -46,6 +46,10 @@
 		BDD437D911130B8600ADC32C /* FFGLImageTests.m in Sources */ = {isa = PBXBuildFile; fileRef = BDD437D811130B8600ADC32C /* FFGLImageTests.m */; };
 		BDD4382811132A6F00ADC32C /* VVFFGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9606B14D101761EF00CC50B7 /* VVFFGL.framework */; };
 		BDD4384611132AC800ADC32C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BCF31B0101A5AEC00D50A21 /* OpenGL.framework */; };
+		BDF7007E11246FCC007417D2 /* FFGLTextureRep.h in Headers */ = {isa = PBXBuildFile; fileRef = BDF7007C11246FCC007417D2 /* FFGLTextureRep.h */; };
+		BDF7007F11246FCC007417D2 /* FFGLTextureRep.m in Sources */ = {isa = PBXBuildFile; fileRef = BDF7007D11246FCC007417D2 /* FFGLTextureRep.m */; };
+		BDF7008211246FDC007417D2 /* FFGLBufferRep.h in Headers */ = {isa = PBXBuildFile; fileRef = BDF7008011246FDC007417D2 /* FFGLBufferRep.h */; };
+		BDF7008311246FDC007417D2 /* FFGLBufferRep.m in Sources */ = {isa = PBXBuildFile; fileRef = BDF7008111246FDC007417D2 /* FFGLBufferRep.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -130,6 +134,10 @@
 		BDD437D111130A2300ADC32C /* FFGLUnitTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "FFGLUnitTests-Info.plist"; path = "UnitTests/FFGLUnitTests-Info.plist"; sourceTree = "<group>"; };
 		BDD437D711130B8600ADC32C /* FFGLImageTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLImageTests.h; path = UnitTests/FFGLImageTests.h; sourceTree = "<group>"; };
 		BDD437D811130B8600ADC32C /* FFGLImageTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLImageTests.m; path = UnitTests/FFGLImageTests.m; sourceTree = "<group>"; };
+		BDF7007C11246FCC007417D2 /* FFGLTextureRep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLTextureRep.h; path = FrameworkSource/FFGLTextureRep.h; sourceTree = "<group>"; };
+		BDF7007D11246FCC007417D2 /* FFGLTextureRep.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLTextureRep.m; path = FrameworkSource/FFGLTextureRep.m; sourceTree = "<group>"; };
+		BDF7008011246FDC007417D2 /* FFGLBufferRep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLBufferRep.h; path = FrameworkSource/FFGLBufferRep.h; sourceTree = "<group>"; };
+		BDF7008111246FDC007417D2 /* FFGLBufferRep.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLBufferRep.m; path = FrameworkSource/FFGLBufferRep.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -269,6 +277,10 @@
 				BDAA2CCB107928A90053E947 /* FFGLImage.m */,
 				BD1BE75C1117776A00985023 /* FFGLImageRep.h */,
 				BD1BE75D1117776A00985023 /* FFGLImageRep.m */,
+				BDF7007C11246FCC007417D2 /* FFGLTextureRep.h */,
+				BDF7007D11246FCC007417D2 /* FFGLTextureRep.m */,
+				BDF7008011246FDC007417D2 /* FFGLBufferRep.h */,
+				BDF7008111246FDC007417D2 /* FFGLBufferRep.m */,
 				BDA64DA210A1006600E010AF /* FFGLPool.h */,
 				BDA64DA310A1006600E010AF /* FFGLPool.c */,
 				BD7A934510F6A2E1009A3D98 /* FFGLUtilityFunctions.m */,
@@ -312,6 +324,8 @@
 				BDA64DA410A1006600E010AF /* FFGLPool.h in Headers */,
 				BDA64DE710A1186500E010AF /* VVFFGL_Prefix.pch in Headers */,
 				BD1BE75E1117776A00985023 /* FFGLImageRep.h in Headers */,
+				BDF7007E11246FCC007417D2 /* FFGLTextureRep.h in Headers */,
+				BDF7008211246FDC007417D2 /* FFGLBufferRep.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -450,6 +464,8 @@
 				BDA64DA510A1006600E010AF /* FFGLPool.c in Sources */,
 				BD7A934610F6A2E1009A3D98 /* FFGLUtilityFunctions.m in Sources */,
 				BD1BE75F1117776A00985023 /* FFGLImageRep.m in Sources */,
+				BDF7007F11246FCC007417D2 /* FFGLTextureRep.m in Sources */,
+				BDF7008311246FDC007417D2 /* FFGLBufferRep.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -2,20 +2,33 @@
 //  FFGLImageRep.h
 //  VVFFGL
 //
-//  Created by Tom on 01/02/2010.
+//  Created by Tom on 11/02/2010.
 //
 
 #import <Cocoa/Cocoa.h>
 #import <OpenGL/OpenGL.h>
-#import "FFGLImage.h"
-#import "FFGLInternal.h"
-
 
 /*
- FFGLImageRep
  
-	These functions are NOT thread-safe. They must be used in a thread-safe manner from FFGLImage.
-	No functions for introspection, access the struct members directly.
+ FFGLImageRep, FFGLTextureRep, FFGLBufferRep
+ 
+ These are some immutable classes for buffer and texture storage.
+ 
+ They DO NOT perform CGLContext switching or locking, so do that before
+ calling any of their init methods.
+ 
+ They ARE NOT thread-safe, so make sure FFGLImage uses them in a thread-
+ safe manner - ie from within a lock and without sharing them between images.
+ Reading of readonly properties is thread-safe as those properties are immutable.
+ 
+ Some of the copy-at-init methods maintain the flippedness of the source representations where flipping would be costly,
+ or fail where copying would be costly. In those cases perform an intermediate conversion to another representation type.
+ See the various init methods for more details, or use copyAsType: pixelFormat: inContext: allowingNPOT2D asPrimaryRep:
+ which takes care of that for you.
+ 
+ Subscriber count is for external use by FFGLImage to track lock/unlock calls for the representation
+ It is at 0 after init
+ 
  */
 typedef NSUInteger FFGLImageRepType;
 enum {
@@ -24,37 +37,28 @@ enum {
     FFGLImageRepTypeBuffer = 2
 };
 
-// FFGLTextureInfo is in FFGLInternal.h as it's shared with plugins.
+@interface FFGLImageRep : NSObject <NSCopying> {
+@protected
+	NSUInteger _subscribers; // we need our own pseudo-retain-count
+	BOOL _isPrimary;
+	BOOL _isFlipped;
+	FFGLImageRepType _type;
+}
+// Designated initialiser. Subclasses call this.
+- (id)initAsType:(FFGLImageRepType)repType isFlipped:(BOOL)flipped asPrimaryRep:(BOOL)isPrimary;
 
-typedef struct FFGLBufferInfo {
-    unsigned int	width;
-    unsigned int    height;
-    NSString		*pixelFormat;
-    const void		*buffer;
-} FFGLBufferInfo;
+// We expose this as a seperate method so FFGLImage can set and lock the context once for several
+// FFGLImageReps, and be certain it is done when the image dies rather than when garbage-collection culls it.
+- (void)performCallbackPriorToRelease;
+- (NSUInteger)addSubscriber;
+- (NSUInteger)removeSubscriber;
+- (NSUInteger)subscriptionCount;
+@property (readonly) FFGLImageRepType type;
+@property (readonly) BOOL isFlipped;
+@property (readonly) BOOL isPrimaryRep;
+@end
 
-typedef union FFGLImageRepCallback {
-    FFGLImageTextureReleaseCallback	textureCallback;
-    FFGLImageBufferReleaseCallback	bufferCallback;
-} FFGLImageRepCallback;
-
-typedef union FFGLImageRepInfo {
-    FFGLBufferInfo	bufferInfo;
-    FFGLTextureInfo	textureInfo;
-} FFGLImageRepInfo;
-
-typedef struct FFGLImageRep
-{
-    FFGLImageRepType		type;
-    BOOL					flipped;
-    FFGLImageRepInfo		repInfo;
-    FFGLImageRepCallback    releaseCallback;
-    void					*releaseContext;
-} FFGLImageRep;
-
-FFGLImageRep *FFGLTextureRepCreateFromTexture(GLint texture, FFGLImageRepType type, NSUInteger imageWidth, NSUInteger imageHeight, NSUInteger textureWidth, NSUInteger textureHeight, BOOL isFlipped, FFGLImageTextureReleaseCallback callback, void *userInfo);
-FFGLImageRep *FFGLBufferRepCreateFromBuffer(const void *source, NSUInteger width, NSUInteger height, NSUInteger rowBytes, NSString *pixelFormat, BOOL isFlipped, FFGLImageBufferReleaseCallback callback, void *userInfo, BOOL forceCopy);
-FFGLImageRep *FFGLTextureRepCreateFromTextureRep(CGLContextObj cgl_ctx, const FFGLImageRep *fromTextureRep, FFGLImageRepType toTarget, BOOL useNPOT);
-FFGLImageRep *FFGLTextureRepCreateFromBufferRep(CGLContextObj cgl_ctx, const FFGLImageRep *fromBufferRep, FFGLImageRepType toTarget, BOOL useNPOT);
-FFGLImageRep *FFGLBufferRepCreateFromTextureRep(CGLContextObj cgl_ctx, const FFGLImageRep *fromTextureRep, NSString *pixelFormat);
-void FFGLImageRepDestroy(CGLContextObj lockedContext, FFGLImageRep *rep);
+@interface FFGLImageRep (Copying)
+// This may create (and destroy) intermediate representations needed to perform the fastest possible copy between types.
+- (id)copyAsType:(FFGLImageRepType)type pixelFormat:(NSString *)pixelFormat inContext:(CGLContextObj)context allowingNPOT2D:(BOOL)useNPOT asPrimaryRep:(BOOL)isPrimary;
+@end
