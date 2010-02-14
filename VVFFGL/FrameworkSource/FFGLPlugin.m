@@ -335,12 +335,12 @@ static void finalizer()
                 case FF_TYPE_EVENT:
                     [pAttributes setValue:FFGLParameterTypeEvent forKey:FFGLParameterAttributeTypeKey];
                     break;
-                case FF_TYPE_RED: // TODO: we may want to synthesize color inputs if we can reliably detect sets of RGBA inputs...
+                case FF_TYPE_RED:
                 case FF_TYPE_GREEN:
                 case FF_TYPE_BLUE:
                 case 11: // The standard defins an alpha value at 11, but it doesn't appear in the headers. Added it to my list of things to mention to FF folk...
                 case FF_TYPE_STANDARD:
-                case FF_TYPE_XPOS: // TODO: we may want to synthesize point inputs if we can reliably detect sets of X/YPOS inputs...
+                case FF_TYPE_XPOS:
                 case FF_TYPE_YPOS:
                     [pAttributes setValue:FFGLParameterTypeNumber forKey:FFGLParameterAttributeTypeKey];
                     [pAttributes setValue:[NSNumber numberWithFloat:0.0] forKey:FFGLParameterAttributeMinimumValueKey];
