@@ -61,6 +61,7 @@ static inline unsigned int ffglPOTDimension(unsigned int dimension)
 
 NSUInteger ffglBytesPerPixelForPixelFormat(NSString *format);
 bool ffglOpenGLSupportsExtension(CGLContextObj cgl_ctx, const char *extension);
+bool ffglGLInfoForPixelFormat(NSString *ffglFormat, GLenum *format, GLenum *type);
 
 #define FFGLLocalized(s) [[NSBundle bundleForClass:[self class]] localizedStringForKey:s value:s table:nil]
 
@@ -83,8 +84,8 @@ bool ffglOpenGLSupportsExtension(CGLContextObj cgl_ctx, const char *extension);
 /*
  Plugin properties
  */
-- (NSUInteger)_minimumInputFrameCount; // TODO: may not need this, could go
-- (NSUInteger)_maximumInputFrameCount; // TODO: beth ditto
+- (NSUInteger)_minimumInputFrameCount;
+- (NSUInteger)_maximumInputFrameCount;
 - (BOOL)_supportsSetTime;
 - (BOOL)_prefersFrameCopy;
 

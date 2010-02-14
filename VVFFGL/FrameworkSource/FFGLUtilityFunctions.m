@@ -63,3 +63,41 @@ NSUInteger ffglBytesPerPixelForPixelFormat(NSString *format)
         return 0;
     }
 }
+
+bool ffglGLInfoForPixelFormat(NSString *ffglFormat, GLenum *format, GLenum *type)
+{
+	if ([ffglFormat isEqualToString:FFGLPixelFormatRGB565])
+	{
+		*format = GL_RGB;
+		*type = GL_UNSIGNED_SHORT_5_6_5;
+	}
+	else if ([ffglFormat isEqualToString:FFGLPixelFormatRGB888])
+	{
+		*format = GL_RGB;
+		*type = GL_UNSIGNED_BYTE;
+	}
+	else if ([ffglFormat isEqualToString:FFGLPixelFormatARGB8888])
+	{ 
+		*format = GL_BGRA;
+		*type = GL_UNSIGNED_INT_8_8_8_8;
+	}
+	else if ([ffglFormat isEqualToString:FFGLPixelFormatBGR565])
+	{
+		*format = GL_RGB;
+		*type = GL_UNSIGNED_SHORT_5_6_5_REV;
+	}
+	else if ([ffglFormat isEqualToString:FFGLPixelFormatBGR888])
+	{
+		*format = GL_BGR;
+		*type = GL_UNSIGNED_BYTE;
+	}
+	else if ([ffglFormat isEqualToString:FFGLPixelFormatBGRA8888])
+	{ 
+		*format = GL_BGRA;
+		*type = GL_UNSIGNED_INT_8_8_8_8_REV;
+	}
+	else {
+		return false;
+	}
+	return true;
+}
