@@ -93,7 +93,7 @@ typedef struct FFGLRendererPrivate
 			
 			NSUInteger maxInputs = [plugin _maximumInputFrameCount];
             
-			ffglRPrivate(imageInputValidity) == NULL;
+			ffglRPrivate(imageInputValidity) = NULL;
 			ffglRPrivate(output) = nil;
 			ffglRPrivate(params) = nil;
 			ffglRPrivate(paramsBindableCreationLock) = OS_SPINLOCK_INIT;
