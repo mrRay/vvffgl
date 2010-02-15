@@ -21,7 +21,6 @@ enum FFGLRendererReadyState {
 
 typedef struct FFGLRendererPrivate
 {
-	NSMutableDictionary *imageInputs;
     BOOL                *imageInputValidity;
     NSInteger           readyState;
     FFGLImage           *output;
@@ -93,22 +92,31 @@ typedef struct FFGLRendererPrivate
 			}
 			
 			NSUInteger maxInputs = [plugin _maximumInputFrameCount];
-            ffglRPrivate(imageInputValidity) = malloc(sizeof(BOOL) * maxInputs);
-            ffglRPrivate(readyState) = FFGLRendererNeedsCheck;
             
-			if (ffglRPrivate(imageInputValidity) == NULL) 
-			{
-                [self release];
-                return nil;
-            }
-			
+			ffglRPrivate(imageInputValidity) == NULL;
 			ffglRPrivate(output) = nil;
 			ffglRPrivate(params) = nil;
-            NSUInteger i;
-            for (i = 0; i < maxInputs; i++)
+			ffglRPrivate(paramsBindableCreationLock) = OS_SPINLOCK_INIT;
+
+			if (maxInputs > 0)
 			{
-                ffglRPrivate(imageInputValidity)[i] = NO;
-            }
+				ffglRPrivate(imageInputValidity) = malloc(sizeof(BOOL) * maxInputs);	
+				_inputs = malloc(sizeof(FFGLImage *) * maxInputs);
+			
+				if (ffglRPrivate(imageInputValidity) == NULL || _inputs == NULL)
+				{
+					[self release];
+					return nil;
+				}
+				
+				for (unsigned int i = 0; i < maxInputs; i++)
+				{
+					ffglRPrivate(imageInputValidity)[i] = NO;
+					_inputs[i] = nil;
+				}
+			}
+			ffglRPrivate(readyState) = FFGLRendererNeedsCheck;
+
 			CGLContextObj prev;
 			if ([plugin mode] == FFGLPluginModeGPU)
 			{
@@ -133,7 +141,6 @@ typedef struct FFGLRendererPrivate
             
             _size = size;
             _pixelFormat = [format retain];
-            ffglRPrivate(imageInputs) = [[NSMutableDictionary alloc] initWithCapacity:4];
 			
             if (pthread_mutex_init(&ffglRPrivate(lock), NULL) != 0)
 			{
@@ -141,7 +148,6 @@ typedef struct FFGLRendererPrivate
                 return nil;
             }
 			_outputHint = hint;
-			ffglRPrivate(paramsBindableCreationLock) = OS_SPINLOCK_INIT;
         }
     }	
     return self;
@@ -189,8 +195,11 @@ typedef struct FFGLRendererPrivate
 	if (_private != NULL)
 	{
 		[ffglRPrivate(params) release];
-		[ffglRPrivate(imageInputs) release];
 		[ffglRPrivate(output) release];
+	}
+	NSUInteger inputCount = [_plugin _maximumInputFrameCount];
+	for (int i = 0; i < inputCount; i++) {
+		[_inputs[i] release];
 	}
     [_plugin release];
     [_pixelFormat release];
@@ -259,9 +268,16 @@ typedef struct FFGLRendererPrivate
 - (id)valueForParameterKey:(NSString *)key
 {
     id output;
+	NSDictionary *attributes = [_plugin attributesForParameterWithKey:key];
+    if (attributes == nil) {
+        [NSException raise:@"FFGLRendererException" format:@"No such key: %@"];
+        return nil;
+    }
+	NSUInteger index = [[attributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
+
     pthread_mutex_lock(&ffglRPrivate(lock));
-    if ([[[_plugin attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
-        output = [ffglRPrivate(imageInputs) objectForKey:key];
+    if ([[attributes objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
+        output = _inputs[index];
     } else {
 		CGLContextObj prev;
 		if ([_plugin mode] == FFGLPluginModeGPU)
@@ -295,7 +311,7 @@ typedef struct FFGLRendererPrivate
         [NSException raise:@"FFGLRendererException" format:@"No such key: %@"];
         return;
     }
-    NSUInteger index = [[attributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
+	NSUInteger index = [[attributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
     NSString *type = [attributes objectForKey:FFGLParameterAttributeTypeKey];
     pthread_mutex_lock(&ffglRPrivate(lock));
     if ([type isEqualToString:FFGLParameterTypeImage])
@@ -303,11 +319,14 @@ typedef struct FFGLRendererPrivate
         // check our subclass can use the image
         BOOL validity;
         if (value != nil) {
-			validity = [self _implementationReplaceImage:[ffglRPrivate(imageInputs) objectForKey:key] withImage:value forInputAtIndex:index];
-            [ffglRPrivate(imageInputs) setObject:value forKey:key];
+			validity = [self _implementationReplaceImage:_inputs[index] withImage:value forInputAtIndex:index];
+			[value retain];
+            [_inputs[index] release];
+			_inputs[index] = value;
         } else {
             validity = NO;
-            [ffglRPrivate(imageInputs) removeObjectForKey:key];
+            [_inputs[index] release];
+			_inputs[index] = nil;
         }
         if (ffglRPrivate(imageInputValidity)[index] != validity)
         {
