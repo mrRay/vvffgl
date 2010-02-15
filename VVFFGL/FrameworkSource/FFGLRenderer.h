@@ -27,6 +27,7 @@ typedef NSUInteger FFGLRendererHint;
     NSSize              _size;
     NSString            *_pixelFormat;
     void                *_instance;
+	FFGLImage			**_inputs;
 @private
 	void				*_private;
 }
