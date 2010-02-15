@@ -333,8 +333,10 @@ typedef struct FFGLImagePrivate {
 			result = YES;
 		}
 	}
-	
-	[ffglIPrivate(texture2D) addSubscriber];
+	if (result == YES)
+	{
+		[ffglIPrivate(texture2D) addSubscriber];
+	}
     pthread_mutex_unlock(&ffglIPrivate(conversionLock));
     return result;
 }
@@ -418,7 +420,10 @@ typedef struct FFGLImagePrivate {
 			result = YES;
 		}
     }
-	[ffglIPrivate(textureRect) addSubscriber];
+	if (result == YES)
+	{
+		[ffglIPrivate(textureRect) addSubscriber];
+	}
     pthread_mutex_unlock(&ffglIPrivate(conversionLock));
     return result;
 }
@@ -453,29 +458,32 @@ typedef struct FFGLImagePrivate {
 - (BOOL)lockBufferRepresentationWithPixelFormat:(NSString *)format {
     BOOL result = NO;
     pthread_mutex_lock(&ffglIPrivate(conversionLock));
-	// We don't support converting between different pixel-formats (yet?).
-    if (ffglIPrivate(buffer) && ![format isEqualToString:ffglIPrivate(buffer).pixelFormat])
+    if (ffglIPrivate(buffer))
     {
-		if (ffglIPrivate(buffer).isFlipped == YES)
+		// We don't support converting between different pixel-formats (yet?).
+		if ([format isEqualToString:ffglIPrivate(buffer).pixelFormat])
 		{
-			// We may have been initted with a flipped buffer. We turn it the right way up now.
-			
-			FFGLBufferRep *rep = [ffglIPrivate(buffer) copyAsType:FFGLImageRepTypeBuffer
-													  pixelFormat:ffglIPrivate(buffer).pixelFormat
-														inContext:NULL
-												   allowingNPOT2D:NO
-													 asPrimaryRep:YES];
-			if (rep != nil)
+			if (ffglIPrivate(buffer).isFlipped == YES)
 			{
-				// Swap our new buffer in
-				[ffglIPrivate(buffer) release];
-				ffglIPrivate(buffer) = rep;
+				// We may have been initted with a flipped buffer. We turn it the right way up now.
+				
+				FFGLBufferRep *rep = [ffglIPrivate(buffer) copyAsType:FFGLImageRepTypeBuffer
+														  pixelFormat:ffglIPrivate(buffer).pixelFormat
+															inContext:NULL
+													   allowingNPOT2D:NO
+														 asPrimaryRep:YES];
+				if (rep != nil)
+				{
+					// Swap our new buffer in
+					[ffglIPrivate(buffer) release];
+					ffglIPrivate(buffer) = rep;
+					result = YES;
+				}
+			}
+			else
+			{
 				result = YES;
 			}
-		}
-		else
-		{
-			result = YES;
 		}
     }
     else if (ffglIPrivate(textureRect))
@@ -511,7 +519,10 @@ typedef struct FFGLImagePrivate {
 			result = YES;
 		}		
 	}
-	[ffglIPrivate(buffer) addSubscriber];
+	if (result == YES)
+	{
+		[ffglIPrivate(buffer) addSubscriber];
+	}
     pthread_mutex_unlock(&ffglIPrivate(conversionLock));
     return result;
 }
