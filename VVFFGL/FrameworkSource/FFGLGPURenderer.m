@@ -97,8 +97,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	GLuint rendererFBOTexture;
 	glEnable(textureTarget);
 	glGenTextures(1, &rendererFBOTexture);
-	// TODO: here we are unbinding any previously bound texture. we need to push/pop attributes to catch that,
-	// or do it once we have bound our FBO if possible
+	
 	glBindTexture(textureTarget, rendererFBOTexture);
 	glTexImage2D(textureTarget, 0, GL_RGBA8, textureWidth, textureHeight, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, NULL);
 	
@@ -287,17 +286,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 #endif
 - (BOOL)_implementationReplaceImage:(FFGLImage *)prevImage withImage:(FFGLImage *)newImage forInputAtIndex:(NSUInteger)index
 {
-	if (_frameStruct.inputTextures[index] != NULL)
-	{
-		[prevImage unlockTexture2DRepresentation];
-	}
-    if ([newImage lockTexture2DRepresentation]) {
-        _frameStruct.inputTextures[index] = [newImage _texture2DInfo];
-        return YES;
-    } else {
-		_frameStruct.inputTextures[index] = NULL;
-        return NO;
-    }
+    return YES;
 }
 
 - (void)_implementationSetImageInputCount:(NSUInteger)count
@@ -311,160 +300,180 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	CGLContextObj prevContext;
 	ffglSetContext(cgl_ctx, prevContext);
     CGLLockContext(cgl_ctx);
-	    
-	// state vars
-	GLint previousFBO;	
-	GLint previousRenderBuffer;	// probably dont need this each frame, only during init? hrm.
-	GLint previousReadFBO;	
-	GLint previousDrawFBO;
 	
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &previousFBO);
-	glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &previousRenderBuffer);
-	glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &previousReadFBO);
-	glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &previousDrawFBO);
-	
-	// save our current GL state - 
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-		
-	// this texture is going to depend on whether or not we have a 2D or RECT texture.
-	glEnable(_textureTarget);
-	
-	// create a new texture for this frame
-#if defined(FFGL_USE_TEXTURE_POOLS)
-	FFGLPoolObjectRef obj = FFGLPoolObjectCreate(_pool);
-	FFGLGPURPoolObjectData *textureData = (FFGLGPURPoolObjectData *)FFGLPoolObjectGetData(obj);
-	GLuint rendererFBOTexture = textureData->texture;
-	glBindTexture(_textureTarget, rendererFBOTexture);
-#else
-	GLuint rendererFBOTexture;
-	glGenTextures(1, &rendererFBOTexture);
-	glBindTexture(_textureTarget, rendererFBOTexture);
-	//	NSLog(@"new implementationRender texture: %u", _rendererFBOTexture);
-	glTexImage2D(_textureTarget, 0, GL_RGBA8, _textureWidth, _textureHeight, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, NULL);
-#endif
-	
-	// texture filtering and wrapping modes. Do we actually want to fuck with this here? Hrm.
-	glTexParameteri(_textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(_textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	
-	// bind our FBO
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rendererFBO);
-	
-	// attach our new texture
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, _textureTarget, rendererFBOTexture, 0);
-	
-	// disable texturing
-	glBindTexture(_textureTarget, 0);
-	glDisable(_textureTarget);
-	
-	// set up viewport/projection matrices and coordinate system for FBO target.
-	glViewport(0, 0, _size.width, _size.height);
-	
-	GLint matrixMode;
-	glGetIntegerv(GL_MATRIX_MODE, &matrixMode);
-	
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
-	glPushMatrix();
-	
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	
-	glActiveTexture(GL_TEXTURE0);
-
-	// Some plugins get very upset if we don't do a glClear before rendering
-	glClearColor(0.0, 0.0, 0.0, 0.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
-//	glActiveTexture(GL_TEXTURE0);
-//	glEnable(GL_TEXTURE_2D);
-	
-	// render our plugin to our FBO
-	BOOL result = [_plugin _processFrameGL:&_frameStruct forInstance:_instance];
-	
-	if (result == NO)
-	{
-#if defined(FFGL_USE_TEXTURE_POOLS)
-		FFGLPoolObjectRelease(obj);
-#else
-		glDeleteTextures(1, &rendererFBOTexture);
-#endif
+	BOOL result = YES;
+	for (int i = 0; i < _frameStruct.inputTextureCount; i++) {
+		if ([_inputs[i] lockTexture2DRepresentation])
+		{
+			_frameStruct.inputTextures[i] = [_inputs[i] _texture2DInfo];
+		}
+		else
+		{
+			_frameStruct.inputTextures[i] = NULL;
+			result = NO;
+		}
 	}
-	// Restore OpenGL states 
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_TEXTURE);
-	glPopMatrix();
-
-	glMatrixMode(matrixMode);
-	
-	// restore states // assume this is balanced with above 
-	glPopAttrib();
-	
-	// this fixes apparent render issues with Bendoscope (and friends) during software fallback (?)
-	// If a plugin uses GL_TEXTURE_2D on some hardware with GL_REPEAT wrapping mode, fallback happens.
-	// This forces proper texture synchronization with the hardware (since this may happen on the CPU.)
-	glFlush();	
-	//glFlushRenderAPPLE(); // only will work if we remain on the GPU.
-	
-	// return FBO state
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previousFBO);
-	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, previousRenderBuffer);
-	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, previousReadFBO);
-	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, previousDrawFBO);
-	
-	CGLUnlockContext(cgl_ctx);
-	ffglRestoreContext(cgl_ctx, prevContext);
-	
 	if (result == YES)
 	{
-		//	NSLog(@"new FFGL image with texture: %u", _rendererFBOTexture);
-		FFGLImage *output = nil;
-#if defined(FFGL_USE_TEXTURE_POOLS)
+		// state vars
+		GLint previousFBO;	
+		GLint previousRenderBuffer;	// probably dont need this each frame, only during init? hrm.
+		GLint previousReadFBO;	
+		GLint previousDrawFBO;
 		
-		FFGLImageTextureReleaseCallback callback = FFGLGPURendererPoolObjectRelease;
-		void *info = obj;
-#else
+		glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &previousFBO);
+		glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &previousRenderBuffer);
+		glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING_EXT, &previousReadFBO);
+		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING_EXT, &previousDrawFBO);
 		
-		FFGLImageTextureReleaseCallback callback = FFGLGPURendererTextureDelete;
-		void *info = NULL;
-#endif
-		if(_textureTarget == GL_TEXTURE_2D)
+		// save our current GL state - 
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
+			
+		// this texture is going to depend on whether or not we have a 2D or RECT texture.
+		glEnable(_textureTarget);
+		
+		// create a new texture for this frame
+	#if defined(FFGL_USE_TEXTURE_POOLS)
+		FFGLPoolObjectRef obj = FFGLPoolObjectCreate(_pool);
+		FFGLGPURPoolObjectData *textureData = (FFGLGPURPoolObjectData *)FFGLPoolObjectGetData(obj);
+		GLuint rendererFBOTexture = textureData->texture;
+		glBindTexture(_textureTarget, rendererFBOTexture);
+	#else
+		GLuint rendererFBOTexture;
+		glGenTextures(1, &rendererFBOTexture);
+		glBindTexture(_textureTarget, rendererFBOTexture);
+		//	NSLog(@"new implementationRender texture: %u", _rendererFBOTexture);
+		glTexImage2D(_textureTarget, 0, GL_RGBA8, _textureWidth, _textureHeight, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, NULL);
+	#endif
+		
+		// texture filtering and wrapping modes. Do we actually want to fuck with this here? Hrm.
+		glTexParameteri(_textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(_textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(_textureTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		
+		// bind our FBO
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _rendererFBO);
+		
+		// attach our new texture
+		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, _textureTarget, rendererFBOTexture, 0);
+		
+		// disable texturing
+		glBindTexture(_textureTarget, 0);
+		glDisable(_textureTarget);
+		
+		// set up viewport/projection matrices and coordinate system for FBO target.
+		glViewport(0, 0, _size.width, _size.height);
+		
+		GLint matrixMode;
+		glGetIntegerv(GL_MATRIX_MODE, &matrixMode);
+		
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+		glPushMatrix();
+		
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+		
+		glActiveTexture(GL_TEXTURE0);
+
+		// Some plugins get very upset if we don't do a glClear before rendering
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			
+	//	glActiveTexture(GL_TEXTURE0);
+	//	glEnable(GL_TEXTURE_2D);
+		
+		// render our plugin to our FBO
+		result = [_plugin _processFrameGL:&_frameStruct forInstance:_instance];
+		
+		if (result == NO)
 		{
-			output = [[[FFGLImage alloc] initWithTexture2D:rendererFBOTexture
-												CGLContext:cgl_ctx
-										   imagePixelsWide:_size.width
-										   imagePixelsHigh:_size.height
-										 texturePixelsWide:_textureWidth
-										 texturePixelsHigh:_textureHeight
-												   flipped:NO
-										   releaseCallback:callback
-											   releaseInfo:info] autorelease];
+	#if defined(FFGL_USE_TEXTURE_POOLS)
+			FFGLPoolObjectRelease(obj);
+	#else
+			glDeleteTextures(1, &rendererFBOTexture);
+	#endif
 		}
-		else if(_textureTarget == GL_TEXTURE_RECTANGLE_ARB)
-		{
-			output = [[[FFGLImage alloc] initWithTextureRect:rendererFBOTexture
-												  CGLContext:cgl_ctx 
-												  pixelsWide:_size.width
-												  pixelsHigh:_size.height
-													 flipped:NO
-											 releaseCallback:callback
-												 releaseInfo:info] autorelease];						
-		}
+		// Restore OpenGL states 
+		glMatrixMode(GL_MODELVIEW);
+		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glMatrixMode(GL_TEXTURE);
+		glPopMatrix();
+
+		glMatrixMode(matrixMode);
 		
-		[self setOutputImage:output];		
+		// restore states // assume this is balanced with above 
+		glPopAttrib();
+		
+		// this fixes apparent render issues with Bendoscope (and friends) during software fallback (?)
+		// If a plugin uses GL_TEXTURE_2D on some hardware with GL_REPEAT wrapping mode, fallback happens.
+		// This forces proper texture synchronization with the hardware (since this may happen on the CPU.)
+		glFlush();	
+		//glFlushRenderAPPLE(); // only will work if we remain on the GPU.
+		
+		// return FBO state
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previousFBO);
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, previousRenderBuffer);
+		glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, previousReadFBO);
+		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, previousDrawFBO);
+		
+		CGLUnlockContext(cgl_ctx);
+		ffglRestoreContext(cgl_ctx, prevContext);
+		
+		if (result == YES)
+		{
+			//	NSLog(@"new FFGL image with texture: %u", _rendererFBOTexture);
+			FFGLImage *output = nil;
+	#if defined(FFGL_USE_TEXTURE_POOLS)
+			
+			FFGLImageTextureReleaseCallback callback = FFGLGPURendererPoolObjectRelease;
+			void *info = obj;
+	#else
+			
+			FFGLImageTextureReleaseCallback callback = FFGLGPURendererTextureDelete;
+			void *info = NULL;
+	#endif
+			if(_textureTarget == GL_TEXTURE_2D)
+			{
+				output = [[[FFGLImage alloc] initWithTexture2D:rendererFBOTexture
+													CGLContext:cgl_ctx
+											   imagePixelsWide:_size.width
+											   imagePixelsHigh:_size.height
+											 texturePixelsWide:_textureWidth
+											 texturePixelsHigh:_textureHeight
+													   flipped:NO
+											   releaseCallback:callback
+												   releaseInfo:info] autorelease];
+			}
+			else if(_textureTarget == GL_TEXTURE_RECTANGLE_ARB)
+			{
+				output = [[[FFGLImage alloc] initWithTextureRect:rendererFBOTexture
+													  CGLContext:cgl_ctx 
+													  pixelsWide:_size.width
+													  pixelsHigh:_size.height
+														 flipped:NO
+												 releaseCallback:callback
+													 releaseInfo:info] autorelease];						
+			}
+			
+			[self setOutputImage:output];		
+		}
 	}
-     
+	for (int i = 0; i < _frameStruct.inputTextureCount; i++) {
+		if (_frameStruct.inputTextures[i] != NULL)
+		{
+			[_inputs[i] unlockTexture2DRepresentation];
+		}
+	}
     return result;
 }
 
