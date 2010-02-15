@@ -182,6 +182,10 @@ typedef struct FFGLRendererPrivate
 		pthread_mutex_destroy(&ffglRPrivate(lock));
 		free(_private);
 	}
+	if (_inputs != NULL)
+	{
+		free(_inputs);
+	}
 }
 
 - (void)finalize
