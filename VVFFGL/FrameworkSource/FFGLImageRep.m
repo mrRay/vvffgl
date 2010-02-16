@@ -23,11 +23,6 @@
 	return self;
 }
 
-- (id)copyWithZone:(NSZone *)zone
-{
-	return [[FFGLImageRep allocWithZone:zone] initAsType:_type isFlipped:_isFlipped asPrimaryRep:NO];
-}
-
 - (void)performCallbackPriorToRelease
 {
 	// subclasses override this

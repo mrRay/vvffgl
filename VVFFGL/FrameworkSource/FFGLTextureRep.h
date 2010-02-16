@@ -11,7 +11,7 @@
 #import "FFGLImageRep.h"
 #import "FFGLImage.h"
 
-@interface FFGLTextureRep : FFGLImageRep <NSCopying> {
+@interface FFGLTextureRep : FFGLImageRep {
 @private
 	CGLContextObj _context;
 	FFGLTextureInfo _textureInfo;

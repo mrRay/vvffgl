@@ -16,21 +16,6 @@ static void FFGLTextureRepTextureRelease(GLuint name, CGLContextObj cgl_ctx, voi
 
 @implementation FFGLTextureRep
 
-- (id)copyWithZone:(NSZone *)zone
-{
-	return [[FFGLTextureRep alloc] initCopyingTexture:_textureInfo.texture
-											   ofType:_type
-											  context:_context
-										   imageWidth:_textureInfo.width
-										  imageHeight:_textureInfo.height
-										 textureWidth:_textureInfo.hardwareWidth
-										textureHeight:_textureInfo.hardwareHeight
-											isFlipped:_isFlipped
-											   toType:_type
-										 allowingNPOT:ffglOpenGLSupportsExtension(_context, "GL_ARB_texture_non_power_of_two")
-										 asPrimaryRep:NO];
-}
-
 - (id)copyAsType:(FFGLImageRepType)type pixelFormat:(NSString *)pixelFormat inContext:(CGLContextObj)context allowingNPOT2D:(BOOL)useNPOT asPrimaryRep:(BOOL)isPrimary
 {
 	FFGLTextureRep *source;
