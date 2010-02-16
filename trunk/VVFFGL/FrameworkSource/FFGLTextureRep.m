@@ -278,15 +278,24 @@ static void FFGLTextureRepTextureRelease(GLuint name, CGLContextObj cgl_ctx, voi
 	
 	// delete our FBO so we dont leak.
 	glDeleteFramebuffersEXT(1, &fboID);
-		
-	return [self initWithTexture:newTex
-						 context:cgl_ctx
-						  ofType:toType
-					  imageWidth:imageWidth imageHeight:imageHeight
-					textureWidth:fboWidth textureHeight:fboHeight
-					   isFlipped:NO
-						callback:FFGLTextureRepTextureRelease userInfo:NULL
-					asPrimaryRep:isPrimary];
+	
+	if (status == GL_FRAMEBUFFER_COMPLETE_EXT)
+	{
+		return [self initWithTexture:newTex
+							 context:cgl_ctx
+							  ofType:toType
+						  imageWidth:imageWidth imageHeight:imageHeight
+						textureWidth:fboWidth textureHeight:fboHeight
+						   isFlipped:NO
+							callback:FFGLTextureRepTextureRelease userInfo:NULL
+						asPrimaryRep:isPrimary];
+	}
+	else
+	{
+		[self release];
+		return nil;
+	}
+
 }
 
 - (id)initFromBuffer:(const void *)buffer context:(CGLContextObj)cgl_ctx width:(NSUInteger)width height:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes pixelFormat:(NSString *)pixelFormat isFlipped:(BOOL)flipped toType:(FFGLImageRepType)toType allowingNPOT:(BOOL)useNPOT asPrimaryRep:(BOOL)isPrimary
@@ -328,6 +337,7 @@ static void FFGLTextureRepTextureRelease(GLuint name, CGLContextObj cgl_ctx, voi
 	
 	glEnable(targetGL);
 	
+	glActiveTexture(GL_TEXTURE0);
 	// Make our new texture
 	GLuint tex;
 	glGenTextures(1, &tex);

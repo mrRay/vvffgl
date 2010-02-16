@@ -235,6 +235,7 @@ static void FFGLBufferRepBufferRelease(const void *baseAddress, void* context) {
 	
 	// Get the pixel data
 	glEnable(targetGL);
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(targetGL, texture);
 	glGetTexImage(targetGL, 0, format, type, buffer);
 	
