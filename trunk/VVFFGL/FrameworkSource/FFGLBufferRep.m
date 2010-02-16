@@ -13,16 +13,6 @@ static void FFGLBufferRepBufferRelease(const void *baseAddress, void* context) {
 }
 
 @implementation FFGLBufferRep
-- (id)copyWithZone:(NSZone *)zone
-{
-	return [[FFGLBufferRep alloc] initWithCopiedBuffer:_buffer
-												 width:_width
-												height:_height
-										   bytesPerRow:_rowBytes
-										   pixelFormat:_pixelFormat
-											 isFlipped:_isFlipped
-										  asPrimaryRep:NO];
-}
 
 - (id)copyAsType:(FFGLImageRepType)type pixelFormat:(NSString *)pixelFormat inContext:(CGLContextObj)context allowingNPOT2D:(BOOL)useNPOT asPrimaryRep:(BOOL)isPrimary
 {

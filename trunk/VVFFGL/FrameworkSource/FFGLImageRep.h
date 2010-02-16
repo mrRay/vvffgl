@@ -37,7 +37,7 @@ enum {
     FFGLImageRepTypeBuffer = 2
 };
 
-@interface FFGLImageRep : NSObject <NSCopying> {
+@interface FFGLImageRep : NSObject {
 @protected
 	NSUInteger _subscribers; // we need our own pseudo-retain-count
 	BOOL _isPrimary;

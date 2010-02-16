@@ -11,7 +11,7 @@
 #import "FFGLImageRep.h"
 
 
-@interface FFGLBufferRep : FFGLImageRep <NSCopying> {
+@interface FFGLBufferRep : FFGLImageRep {
 @private
 	const void *_buffer;
 	NSUInteger _width;
