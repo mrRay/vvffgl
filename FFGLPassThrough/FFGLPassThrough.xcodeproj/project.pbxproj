@@ -38,6 +38,13 @@
 			remoteGlobalIDString = 8D5B49AC048680CD000E48DA;
 			remoteInfo = FFGLPassThrough;
 		};
+		BD374531112A3BA000C0D782 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BD94DAF01099BD080008F720 /* VVFFGL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = BDD437D011130A2300ADC32C;
+			remoteInfo = FFGLUnitTests;
+		};
 		BD4A78AE109B92FB0018ABBD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BD94DAF01099BD080008F720 /* VVFFGL.xcodeproj */;
@@ -164,6 +171,7 @@
 			children = (
 				BD4A78AF109B92FB0018ABBD /* VVFFGL.framework */,
 				BD4A78B1109B92FB0018ABBD /* FFGLTestApp.app */,
+				BD374532112A3BA000C0D782 /* FFGLUnitTests.octest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -215,6 +223,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		BD374532112A3BA000C0D782 /* FFGLUnitTests.octest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = FFGLUnitTests.octest;
+			remoteRef = BD374531112A3BA000C0D782 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		BD4A78AF109B92FB0018ABBD /* VVFFGL.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
