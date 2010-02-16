@@ -116,12 +116,11 @@
     [self willChangeValueForKey:@"output"];
     [_lock lock];
 //    NSLog(@"--Render start--");
-    BOOL result;
-    result = [_source renderAtTime:time];
-    FFGLImage *image = [_source outputImage];
+
+    FFGLImage *image = [_source createOutputAtTime:time];
     for (FFGLRenderer *effect in _effects) 
 	{
-        if ((result == NO) || (image == nil))
+        if (image == nil)
 		{
 //            NSLog(@"Render failed");
             [_output release];
@@ -135,13 +134,12 @@
             if ([[[[effect plugin] attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage])
 			{
                 [effect setValue:image forParameterKey:key];
-                break;
             }
         }
-        result = [effect renderAtTime:time];
-        image = [effect outputImage];            
+		FFGLImage *next = [effect createOutputAtTime:time];
+		[image release];
+        image = next;
     }
-    [image retain];
     [_output release];
     _output = image;
     [_lock unlock];

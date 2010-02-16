@@ -118,13 +118,14 @@ typedef struct FFGLRendererPrivate
 			ffglRPrivate(readyState) = FFGLRendererNeedsCheck;
 
 			CGLContextObj prev;
-			if ([plugin mode] == FFGLPluginModeGPU)
+			FFGLPluginMode mode = [_plugin mode];
+			if (mode == FFGLPluginModeGPU)
 			{
 				ffglSetContext(context, prev);
 				CGLLockContext(context);				
 			}
             _instance = [plugin _newInstanceWithSize:size pixelFormat:format];
-			if ([plugin mode] == FFGLPluginModeGPU)
+			if (mode == FFGLPluginModeGPU)
 			{
 				CGLUnlockContext(context);
 				ffglRestoreContext(context, prev);
@@ -157,13 +158,14 @@ typedef struct FFGLRendererPrivate
     if (_instance != 0)
 	{
 		CGLContextObj prev;
-		if ([_plugin mode] == FFGLPluginModeGPU)
+		FFGLPluginMode mode = [_plugin mode];
+		if (mode == FFGLPluginModeGPU)
 		{
 			ffglSetContext(_context, prev);
 			CGLLockContext(_context);
 		}
         [_plugin _disposeInstance:_instance];
-		if ([_plugin mode] == FFGLPluginModeGPU)
+		if (mode == FFGLPluginModeGPU)
 		{
 			CGLUnlockContext(_context);
 			ffglRestoreContext(_context, prev);
@@ -251,13 +253,14 @@ typedef struct FFGLRendererPrivate
         }
         pthread_mutex_lock(&ffglRPrivate(lock));
 		CGLContextObj prev;
-		if ([_plugin mode] == FFGLPluginModeGPU)
+		FFGLPluginMode mode = [_plugin mode];
+		if (mode == FFGLPluginModeGPU)
 		{
 			ffglSetContext(_context, prev);
 			CGLLockContext(_context);
 		}
         BOOL result = [_plugin _imageInputAtIndex:index willBeUsedByInstance:_instance];
-		if ([_plugin mode] == FFGLPluginModeGPU)
+		if (mode == FFGLPluginModeGPU)
 		{
 			CGLUnlockContext(_context);
 			ffglRestoreContext(_context, prev);
@@ -284,13 +287,14 @@ typedef struct FFGLRendererPrivate
         output = _inputs[index];
     } else {
 		CGLContextObj prev;
-		if ([_plugin mode] == FFGLPluginModeGPU)
+		FFGLPluginMode mode = [_plugin mode];
+		if (mode == FFGLPluginModeGPU)
 		{
 			ffglSetContext(_context, prev);
 			CGLLockContext(_context);
 		}
         output = [_plugin _valueForNonImageParameterKey:key ofInstance:_instance];
-		if ([_plugin mode] == FFGLPluginModeGPU)
+		if (mode == FFGLPluginModeGPU)
 		{
 			CGLUnlockContext(_context);
 			ffglRestoreContext(_context, prev);
@@ -341,7 +345,8 @@ typedef struct FFGLRendererPrivate
 	else
 	{
 		CGLContextObj prev;
-		if ([_plugin mode] == FFGLPluginModeGPU)
+		FFGLPluginMode mode = [_plugin mode];
+		if (mode == FFGLPluginModeGPU)
 		{
 			ffglSetContext(_context, prev);
 			CGLLockContext(_context);
@@ -356,7 +361,7 @@ typedef struct FFGLRendererPrivate
 			[_plugin _setValue:value forNumberParameterAtIndex:index ofInstance:_instance];
 			ffglRPrivate(readyState) = FFGLRendererNeedsCheck;
 		}
-		if ([_plugin mode] == FFGLPluginModeGPU)
+		if (mode == FFGLPluginModeGPU)
 		{
 			CGLUnlockContext(_context);
 			ffglRestoreContext(_context, prev);
@@ -376,26 +381,9 @@ typedef struct FFGLRendererPrivate
     return ffglRPrivate(params);
 }
 
-- (FFGLImage *)outputImage
+- (FFGLImage *)createOutputAtTime:(NSTimeInterval)time
 {
-	pthread_mutex_lock(&ffglRPrivate(lock));
-	FFGLImage *output = ffglRPrivate(output);
-	[[output retain] autorelease];
-	pthread_mutex_unlock(&ffglRPrivate(lock));
-    return output;
-}
-
-- (void)setOutputImage:(FFGLImage *)image
-{
-    // This is called by subclasses from _implementationRender, so we already have the lock.
-    [image retain];
-    [ffglRPrivate(output) release];
-    ffglRPrivate(output) = image;
-}
-
-- (BOOL)renderAtTime:(NSTimeInterval)time
-{
-    BOOL success;
+    FFGLImage *result;
     pthread_mutex_lock(&ffglRPrivate(lock));
     if (ffglRPrivate(readyState) == FFGLRendererNeedsCheck)
     {
@@ -426,18 +414,14 @@ typedef struct FFGLRendererPrivate
 		{
             [_plugin _setTime:time ofInstance:_instance];
         }
-        success = [self _implementationRender];        
+        result = [self _implementationCreateOutput];        
     }
 	else 
 	{
-        success = NO;
+        result = nil;
     }
-	if (success == NO)
-	{
-		[self setOutputImage:nil];
-	}
     pthread_mutex_unlock(&ffglRPrivate(lock));
-    return success;
+    return result;
 }
 @end
 
