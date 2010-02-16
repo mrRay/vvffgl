@@ -167,8 +167,8 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
 				if ([output lockTextureRectRepresentation])
 				{     
 					self.outputImage = [context outputImageProviderFromTextureWithPixelFormat:qcPixelFormat
-																				   pixelsWide:[output textureRectPixelsWide]
-																				   pixelsHigh:[output textureRectPixelsHigh]
+																				   pixelsWide:[output imagePixelsWide]
+																				   pixelsHigh:[output imagePixelsHigh]
 																						 name:[output textureRectName]
 																					  flipped:NO
 																			  releaseCallback:FFImageUnlockTextureAndRelease
@@ -176,11 +176,14 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
 																				   colorSpace:_cspace
 																			 shouldColorMatch:YES];		    
 				} 
-				else 
+				else
 				{
-					NSLog(@"FFGLImage creation or locking failed");
+					self.outputImage = nil;
 				}
-
+			}
+			else
+			{
+				self.outputImage = nil;
 			}
 		}
 		else
@@ -199,8 +202,8 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
 				if ([output lockBufferRepresentationWithPixelFormat:ffPixelFormat])
 				{
 					self.outputImage = [context outputImageProviderFromBufferWithPixelFormat:qcPixelFormat
-																				  pixelsWide:[output bufferPixelsWide]
-																				  pixelsHigh:[output bufferPixelsHigh]
+																				  pixelsWide:[output imagePixelsWide]
+																				  pixelsHigh:[output imagePixelsHigh]
 																				 baseAddress:[output bufferBaseAddress]
 																				 bytesPerRow:[output bufferBytesPerRow]
 																			 releaseCallback:FFGLImageUnlockBufferAndRelease
@@ -208,6 +211,14 @@ Here you need to declare the input / output properties as dynamic as Quartz Comp
 																				  colorSpace:_cspace
 																			shouldColorMatch:YES];
 				}
+				else
+				{
+					self.outputImage = nil;
+				}
+			}
+			else
+			{
+				self.outputImage = nil;
 			}
 		}
 	}
