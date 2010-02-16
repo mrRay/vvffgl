@@ -17,7 +17,12 @@
 #define	kQCPlugIn_Description		@"Use FreeFrame Plugins in Quartz Composer."
 
 
-static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* context)
+static void FFImageUnlockQCInput(GLuint name, CGLContextObj cgl_ctx, void *userInfo)
+{
+	[(id <QCPlugInInputImageSource>)userInfo unlockTextureRepresentation];
+}
+
+static void FFImageUnlockAndReleaseFFGLTexture(CGLContextObj cgl_ctx, GLuint name, void* context)
 {
     [(FFGLImage *)context unlockTextureRectRepresentation];
     [(FFGLImage *)context release];
@@ -373,64 +378,59 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
     }
     
     NSString *key;
+	NSMutableArray *imageInputs = [NSMutableArray arrayWithCapacity:4];
     for (key in keys)
     {
-        if (needsAllInputs || [self didValueForInputKeyChange:key])
-        {
-            if ([[[plugin attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage])
-            {
-                id <QCPlugInInputImageSource> input = [self valueForInputKey:key];
-                FFGLImage *image;
-                // prep the QC images texture for being turned into a FFGL image.
-                // our QCTexureRelease will unbind/unlock for us.
-                if(input && [input lockTextureRepresentationWithColorSpace:_cspace forBounds:[input imageBounds]])
-                {	
-                    
-                    //NSLog(@"have QCimage for key %@ and locked rep", key);
-                                    
-//					[input bindTextureRepresentationToCGLContext:cgl_ctx textureUnit:GL_TEXTURE0 normalizeCoordinates:NO];
-                    
-                    //NSLog(@"new FFGL based on rect texture: %u", [input textureName]);
-                    
-					// We copy the image as we can't retain it.
-					
-                    image = [[FFGLImage alloc] initWithCopiedTextureRect:[input textureName]
-                                                              CGLContext:cgl_ctx
-                                                              pixelsWide:[input imageBounds].size.width
-                                                              pixelsHigh:[input imageBounds].size.height
-                                                                 flipped:[input textureFlipped]];
-                    [image autorelease];
-//					[input unbindTextureRepresentationFromCGLContext:cgl_ctx textureUnit:GL_TEXTURE0];
-                    [input unlockTextureRepresentation];
-                }
-                else
-                {
-                image = nil;
-                }
-                [_renderer setValue:image forParameterKey:key];
-            }
-            else 
-            {
-				[_renderer setValue:[self valueForInputKey:key] forParameterKey:key];
-            }
-        }
+		if ([[[plugin attributesForParameterWithKey:key] objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage])
+		{
+			// We need to set image inputs every time we render, as we set them to nil after rendering to avoid keeping textures around
+			[imageInputs addObject:key];
+			id <QCPlugInInputImageSource> input = [self valueForInputKey:key];
+			FFGLImage *image;
+			// prep the QC images texture for being turned into a FFGL image.
+			// our FFImageUnlockQCInput callback will unlock for us.
+			if(input && [input lockTextureRepresentationWithColorSpace:_cspace forBounds:[input imageBounds]])
+			{	
+				
+				//NSLog(@"have QCimage for key %@ and locked rep", key);
+								
+				
+				//NSLog(@"new FFGL based on rect texture: %u", [input textureName]);
+				
+				
+				image = [[FFGLImage alloc] initWithTextureRect:[input textureName]
+													CGLContext:cgl_ctx
+													pixelsWide:[input imageBounds].size.width
+													pixelsHigh:[input imageBounds].size.height
+													   flipped:[input textureFlipped]
+											   releaseCallback:FFImageUnlockQCInput
+												   releaseInfo:input];
+			}
+			else
+			{
+				image = nil;
+			}
+			[_renderer setValue:image forParameterKey:key];
+			[image release];
+		}
+		else if (needsAllInputs || [self didValueForInputKeyChange:key])
+		{
+			[_renderer setValue:[self valueForInputKey:key] forParameterKey:key];
+		}
     }
-	
-    BOOL result;
-    if (result = [_renderer renderAtTime:time])
-    {
-        FFGLImage *output = [_renderer outputImage];
-		
+	BOOL result;
+    FFGLImage *output;
+    if (output = [_renderer createOutputAtTime:time])
+    {		
         id <QCPlugInOutputImageProvider> provider;
         if ([output lockTextureRectRepresentation])
 		{
-			[output	retain]; // released in outputImageProvider callback
             provider = [context outputImageProviderFromTextureWithPixelFormat:qcPixelFormat 
                                                                    pixelsWide:[output imagePixelsWide]
                                                                    pixelsHigh:[output imagePixelsHigh]
                                                                          name:[output textureRectName]
                                                                       flipped:NO
-                                                              releaseCallback:FFImageUnlockTexture
+                                                              releaseCallback:FFImageUnlockAndReleaseFFGLTexture
                                                                releaseContext:output
                                                                    colorSpace:_cspace
                                                              shouldColorMatch:YES];
@@ -446,8 +446,12 @@ static void FFImageUnlockTexture(CGLContextObj cgl_ctx, GLuint name, void* conte
     else
     {
         result = YES;
-	self.outputImage = nil;
+		self.outputImage = nil;
     }
+	for (key in imageInputs)
+	{
+		[_renderer setValue:nil forParameterKey:key];
+	}
     pthread_mutex_unlock(&_lock);
 	CGLUnlockContext(cgl_ctx);
 	return result;
