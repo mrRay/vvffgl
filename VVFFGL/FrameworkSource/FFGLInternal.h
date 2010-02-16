@@ -12,6 +12,15 @@
 #import "FFGLPlugin.h"
 #import "FFGLRenderer.h"
 
+#ifndef NS_RETURNS_RETAINED
+#if defined(__clang__)
+#define NS_RETURNS_RETAINED __attribute__((ns_returns_retained))
+#else
+#define NS_RETURNS_RETAINED
+#endif
+#endif
+
+
 //Comment lines out to disable them - compilation checks for definition
 
 // This needs some more exploration... helps (a lot) or hinders (a bit), depending on circumstances
@@ -109,7 +118,7 @@ bool ffglGLInfoForPixelFormat(NSString *ffglFormat, GLenum *format, GLenum *type
 /* Subclasses must implement these methods */
 - (void)_implementationSetImageInputCount:(NSUInteger)count;
 - (BOOL)_implementationReplaceImage:(FFGLImage *)prevImage withImage:(FFGLImage *)newImage forInputAtIndex:(NSUInteger)index;
-- (BOOL)_implementationRender;
+- (FFGLImage *)_implementationCreateOutput NS_RETURNS_RETAINED;
 
 /* Subclasses should emit output after render using this */
 - (void)setOutputImage:(FFGLImage *)image; // using a setter for our public outputImage method makes it play friendly with KVO.

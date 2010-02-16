@@ -289,7 +289,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
     _frameStruct.inputTextureCount = count;
 }
 
-- (BOOL)_implementationRender
+- (FFGLImage *)_implementationCreateOutput
 {
     CGLContextObj cgl_ctx = _context;
 	CGLContextObj prevContext;
@@ -297,6 +297,8 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
     CGLLockContext(cgl_ctx);
 	
 	BOOL result = YES;
+	FFGLImage *output = nil;
+	
 	for (int i = 0; i < _frameStruct.inputTextureCount; i++) {
 		if ([_inputs[i] lockTexture2DRepresentation])
 		{
@@ -308,6 +310,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 			result = NO;
 		}
 	}
+	
 	if (result == YES)
 	{
 		// state vars
@@ -423,11 +426,10 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 		
 		CGLUnlockContext(cgl_ctx);
 		ffglRestoreContext(cgl_ctx, prevContext);
-		
+				
 		if (result == YES)
 		{
 			//	NSLog(@"new FFGL image with texture: %u", _rendererFBOTexture);
-			FFGLImage *output = nil;
 	#if defined(FFGL_USE_TEXTURE_POOLS)
 			
 			FFGLImageTextureReleaseCallback callback = FFGLGPURendererPoolObjectRelease;
@@ -439,37 +441,37 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	#endif
 			if(_textureTarget == GL_TEXTURE_2D)
 			{
-				output = [[[FFGLImage alloc] initWithTexture2D:rendererFBOTexture
-													CGLContext:cgl_ctx
-											   imagePixelsWide:_size.width
-											   imagePixelsHigh:_size.height
-											 texturePixelsWide:_textureWidth
-											 texturePixelsHigh:_textureHeight
-													   flipped:NO
-											   releaseCallback:callback
-												   releaseInfo:info] autorelease];
+				output = [[FFGLImage alloc] initWithTexture2D:rendererFBOTexture
+												   CGLContext:cgl_ctx
+											  imagePixelsWide:_size.width
+											  imagePixelsHigh:_size.height
+											texturePixelsWide:_textureWidth
+											texturePixelsHigh:_textureHeight
+													  flipped:NO
+											  releaseCallback:callback
+												  releaseInfo:info];
 			}
 			else if(_textureTarget == GL_TEXTURE_RECTANGLE_ARB)
 			{
-				output = [[[FFGLImage alloc] initWithTextureRect:rendererFBOTexture
-													  CGLContext:cgl_ctx 
-													  pixelsWide:_size.width
-													  pixelsHigh:_size.height
-														 flipped:NO
-												 releaseCallback:callback
-													 releaseInfo:info] autorelease];						
+				output = [[FFGLImage alloc] initWithTextureRect:rendererFBOTexture
+													 CGLContext:cgl_ctx 
+													 pixelsWide:_size.width
+													 pixelsHigh:_size.height
+														flipped:NO
+												releaseCallback:callback
+													releaseInfo:info];
 			}
-			
-			[self setOutputImage:output];		
 		}
 	}
+	
 	for (int i = 0; i < _frameStruct.inputTextureCount; i++) {
 		if (_frameStruct.inputTextures[i] != NULL)
 		{
 			[_inputs[i] unlockTexture2DRepresentation];
 		}
 	}
-    return result;
+	
+    return output;
 }
 
 @end

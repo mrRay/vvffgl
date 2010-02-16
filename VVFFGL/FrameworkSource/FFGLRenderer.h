@@ -8,6 +8,14 @@
 #import <Cocoa/Cocoa.h>
 #import <OpenGL/OpenGL.h>
 
+#ifndef NS_RETURNS_RETAINED
+#if defined(__clang__)
+#define NS_RETURNS_RETAINED __attribute__((ns_returns_retained))
+#else
+#define NS_RETURNS_RETAINED
+#endif
+#endif
+
 @class FFGLPlugin, FFGLImage;
 
 enum {
@@ -83,15 +91,9 @@ typedef NSUInteger FFGLRendererHint;
 @property (readonly) id parameters;
 
 /*
- @property (readonly) FFGLImage *outputImage
-	Returns the product of the last call to renderAtTime: if such a call was made and succeeded, otherwise nil.
- */
-@property (readonly) FFGLImage *outputImage;
-
-/*
- - (BOOL)renderAtTime:(NSTimeInterval)time
+ - (FFGLImage *)createOutputAtTime:(NSTimeInterval)time
 	Attempts to perform rendering using the currently set parameters at the specified time.
-	Returns YES if rendering succeeded, NO otherwise.
+	Returns an FFGLImage if rendering succeeded, nil otherwise. You are responsible for releasing this image when you no longer need it.
  
 	Rendering may fail if insufficient image parameters are set, if image parameters are set but they couldn't be used by
 	the renderer, or for other reasons.
@@ -105,5 +107,5 @@ typedef NSUInteger FFGLRendererHint;
 	before rendering them will save the FFGLRenderers from having to switch and restore the current context for every render pass. This step is not
 	necessary, but may improve performance.
  */
-- (BOOL)renderAtTime:(NSTimeInterval)time;
+- (FFGLImage *)createOutputAtTime:(NSTimeInterval)time NS_RETURNS_RETAINED;
 @end
