@@ -48,12 +48,9 @@ static void FFGLGPURendererTextureDelete(const void *item, const void *userInfo)
 {
 	FFGLGPURPoolObjectData *data = (FFGLGPURPoolObjectData *)item;
     CGLContextObj cgl_ctx = data->context;
-	CGLContextObj prev;
-	ffglSetContext(cgl_ctx, prev);
     CGLLockContext(cgl_ctx);
     glDeleteTextures(1, &data->texture);
     CGLUnlockContext(cgl_ctx);
-	ffglRestoreContext(cgl_ctx, prev);
 	CGLReleaseContext(data->context);
     free(data);
 }
@@ -69,9 +66,7 @@ static void FFGLGPURendererPoolObjectRelease(GLuint name, CGLContextObj cgl_ctx,
 // to pass to FFGLImage
 static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, void *object)
 {
-    CGLLockContext(cgl_ctx);
     glDeleteTextures(1, &name);
-    CGLUnlockContext(cgl_ctx);
 }
 
 #endif /* FFGL_USE_TEXTURE_POOLS */
