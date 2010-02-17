@@ -118,7 +118,7 @@ typedef struct FFGLRendererPrivate
 			ffglRPrivate(readyState) = FFGLRendererNeedsCheck;
 
 			CGLContextObj prev;
-			FFGLPluginMode mode = [_plugin mode];
+			FFGLPluginMode mode = [plugin mode];
 			if (mode == FFGLPluginModeGPU)
 			{
 				ffglSetContext(context, prev);
@@ -142,13 +142,12 @@ typedef struct FFGLRendererPrivate
             
             _size = size;
             _pixelFormat = [format retain];
-			
+			_outputHint = hint;
             if (pthread_mutex_init(&ffglRPrivate(lock), NULL) != 0)
 			{
                 [self release];
                 return nil;
             }
-			_outputHint = hint;
         }
     }	
     return self;
@@ -207,9 +206,9 @@ typedef struct FFGLRendererPrivate
 	for (int i = 0; i < inputCount; i++) {
 		[_inputs[i] release];
 	}
-    [_plugin release];
     [_pixelFormat release];
     [self releaseResources];
+	[_plugin release];
     [super dealloc];
 }
 
