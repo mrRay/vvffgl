@@ -13,12 +13,6 @@
 
 #if defined(FFGL_USE_TEXTURE_POOLS)
 
-typedef struct FFGLGPURPoolObjectData FFGLGPURPoolObjectData;
-struct FFGLGPURPoolObjectData {
-	CGLContextObj	context;
-	GLuint			texture;
-};
-
 @interface FFGLGPURenderer (Private)
 - (GLenum)textureTarget;
 - (NSSize)textureSize;
@@ -27,32 +21,27 @@ struct FFGLGPURPoolObjectData {
 // to pass to FFGLPool
 static const void *FFGLGPURendererTextureCreate(const void *userInfo)
 {
-	FFGLGPURenderer *renderer = (FFGLGPURenderer *)userInfo;
-    CGLContextObj cgl_ctx = [renderer context];
-	CGLRetainContext(cgl_ctx);
-	GLenum target = [renderer textureTarget];
-	NSSize dimensions = [renderer textureSize];
+    CGLContextObj cgl_ctx = [(FFGLGPURenderer *)userInfo context];
+	GLenum target = [(FFGLGPURenderer *)userInfo textureTarget];
+	NSSize dimensions = [(FFGLGPURenderer *)userInfo textureSize];
     // This is only ever called (by FFGLPoolObjectCreate())
     // in _implementationRender. GL context and state are
     // already set up.
-	FFGLGPURPoolObjectData *data = malloc(sizeof(FFGLGPURPoolObjectData));
-	data->context = cgl_ctx;
-    glGenTextures(1, &data->texture);
-	glBindTexture(target, data->texture);
+	GLuint *tex = malloc(sizeof(GLuint));
+    glGenTextures(1, tex);
+	glBindTexture(target, *tex);
 	glTexImage2D(target, 0, GL_RGBA8, dimensions.width, dimensions.height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, NULL);
-    return data;
+    return tex;
 }
 
 // to pass to FFGLPool
 static void FFGLGPURendererTextureDelete(const void *item, const void *userInfo)
 {
-	FFGLGPURPoolObjectData *data = (FFGLGPURPoolObjectData *)item;
-    CGLContextObj cgl_ctx = data->context;
-    CGLLockContext(cgl_ctx);
-    glDeleteTextures(1, &data->texture);
-    CGLUnlockContext(cgl_ctx);
-	CGLReleaseContext(data->context);
-    free(data);
+	// This is only going to be called in an FFGLImage callback or when we are released, at which
+	// time the context is locked.
+    CGLContextObj cgl_ctx = [(FFGLGPURenderer *)userInfo context];
+    glDeleteTextures(1, (GLuint *)item);
+	free((void *)item);
 }
 
 // to pass to FFGLImage
@@ -209,7 +198,6 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 		_pool = FFGLPoolCreate(&callbacks, 3, self);
 		if (_pool == NULL)
 		{
-			ffglRestoreContext(context, prevContext);
 			[self release];
 			return nil;
 		}
@@ -237,12 +225,12 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	
 	ffglSetContext(cgl_ctx, prevContext);
 	
+	CGLLockContext(cgl_ctx);
+
 #if defined(FFGL_USE_TEXTURE_POOLS)
     FFGLPoolRelease(_pool);
 #endif
-	
-    CGLLockContext(cgl_ctx);
-    
+	    
     glDeleteFramebuffersEXT(1, &_rendererFBO);
     glDeleteRenderbuffersEXT(1, &_rendererDepthBuffer);
 	
@@ -331,8 +319,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 		// create a new texture for this frame
 	#if defined(FFGL_USE_TEXTURE_POOLS)
 		FFGLPoolObjectRef obj = FFGLPoolObjectCreate(_pool);
-		FFGLGPURPoolObjectData *textureData = (FFGLGPURPoolObjectData *)FFGLPoolObjectGetData(obj);
-		GLuint rendererFBOTexture = textureData->texture;
+		GLuint rendererFBOTexture = *((GLuint *)FFGLPoolObjectGetData(obj));
 		glBindTexture(_textureTarget, rendererFBOTexture);
 	#else
 		GLuint rendererFBOTexture;
