@@ -218,7 +218,6 @@ typedef struct FFGLImagePrivate {
 		
 		CGLReleaseContext(ffglIPrivate(context));
 		pthread_mutex_destroy(&ffglIPrivate(conversionLock));
-		free(_private);
 	}
 }
 
@@ -227,11 +226,13 @@ typedef struct FFGLImagePrivate {
 	[ffglIPrivate(texture2D) release];
 	[ffglIPrivate(textureRect) release];
 	[ffglIPrivate(buffer) release];
+	free(_private);
     [super dealloc];
 }
 
 - (void)finalize {
     [self releaseResources];
+	free(_private);
     [super finalize];
 }
 
