@@ -7,6 +7,7 @@
 
 #import "FFGLBufferRep.h"
 #import "FFGLTextureRep.h"
+#import <OpenGL/CGLMacro.h>
 
 static void FFGLBufferRepBufferRelease(const void *baseAddress, void* context) {
     free((void *)baseAddress);
