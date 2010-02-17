@@ -12,6 +12,11 @@ static void FFGLBufferRepBufferRelease(const void *baseAddress, void* context) {
     free((void *)baseAddress);
 }
 
+static void FFGLBufferRepBufferRepReleaseForTexture(const void *baseAddress, void *userInfo)
+{
+	[(FFGLBufferRep *)userInfo release];
+}
+
 @implementation FFGLBufferRep
 
 - (id)copyAsType:(FFGLImageRepType)type pixelFormat:(NSString *)pixelFormat inContext:(CGLContextObj)context allowingNPOT2D:(BOOL)useNPOT asPrimaryRep:(BOOL)isPrimary
@@ -41,6 +46,8 @@ static void FFGLBufferRepBufferRelease(const void *baseAddress, void* context) {
 											   pixelFormat:_pixelFormat
 												 isFlipped:_isFlipped
 													toType:FFGLImageRepTypeTexture2D
+												  callback:FFGLBufferRepBufferRepReleaseForTexture
+												  userInfo:[self retain]
 											  allowingNPOT:useNPOT
 											  asPrimaryRep:isPrimary];
 			
@@ -56,6 +63,8 @@ static void FFGLBufferRepBufferRelease(const void *baseAddress, void* context) {
 																  pixelFormat:_pixelFormat
 																	isFlipped:_isFlipped
 																	   toType:FFGLImageRepTypeTextureRect
+																	 callback:NULL
+																	 userInfo:NULL
 																 allowingNPOT:useNPOT
 																 asPrimaryRep:isPrimary];
 				
@@ -105,6 +114,8 @@ static void FFGLBufferRepBufferRelease(const void *baseAddress, void* context) {
 												 pixelFormat:_pixelFormat
 												   isFlipped:_isFlipped
 													  toType:FFGLImageRepTypeTextureRect
+													callback:FFGLBufferRepBufferRepReleaseForTexture
+													userInfo:[self retain]
 												allowingNPOT:useNPOT
 												asPrimaryRep:isPrimary];
 			return repRect;
