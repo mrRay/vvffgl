@@ -250,9 +250,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	
 	ffglRestoreContext(cgl_ctx, prevContext);
     
-	if (_frameStruct.inputTextures != NULL) {
-        free(_frameStruct.inputTextures);
-    }
+	free(_frameStruct.inputTextures);
 }
 
 - (void)dealloc
