@@ -66,8 +66,7 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
 
 - (void)releaseNonGCResources
 {
-    if (_buffers != NULL)
-        free(_buffers);
+	free(_buffers);
 #if defined(FFGL_USE_BUFFER_POOLS)
     FFGLPoolRelease(_pool);
 #endif
