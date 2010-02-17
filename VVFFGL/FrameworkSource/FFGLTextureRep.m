@@ -9,9 +9,27 @@
 #import "FFGLBufferRep.h"
 #import <OpenGL/CGLMacro.h>
 
-static void FFGLTextureRepTextureRelease(GLuint name, CGLContextObj cgl_ctx, void *context)
+static void FFGLTextureRepTextureDelete(GLuint name, CGLContextObj cgl_ctx, void *context)
 {
     glDeleteTextures(1, &name);
+}
+
+typedef struct FFGLTextureRepPackedBufferCallback
+{
+	const void *baseAddress;
+	FFGLImageBufferReleaseCallback callback;
+	void *userInfo;
+} FFGLTextureRepPackedBufferCallback;
+
+static void FFGLTextureRepBufferPerformCallback(GLuint name, CGLContextObj cgl_ctx, void *packedCallback)
+{
+	if (((FFGLTextureRepPackedBufferCallback *)packedCallback)->callback != NULL)
+	{
+		((FFGLTextureRepPackedBufferCallback *)packedCallback)->callback(((FFGLTextureRepPackedBufferCallback *)packedCallback)->baseAddress,
+																		 ((FFGLTextureRepPackedBufferCallback *)packedCallback)->userInfo);
+	}
+	free(packedCallback);
+	glDeleteTextures(1, &name);
 }
 
 @implementation FFGLTextureRep
@@ -287,7 +305,7 @@ static void FFGLTextureRepTextureRelease(GLuint name, CGLContextObj cgl_ctx, voi
 						  imageWidth:imageWidth imageHeight:imageHeight
 						textureWidth:fboWidth textureHeight:fboHeight
 						   isFlipped:NO
-							callback:FFGLTextureRepTextureRelease userInfo:NULL
+							callback:FFGLTextureRepTextureDelete userInfo:NULL
 						asPrimaryRep:isPrimary];
 	}
 	else
@@ -298,7 +316,7 @@ static void FFGLTextureRepTextureRelease(GLuint name, CGLContextObj cgl_ctx, voi
 
 }
 
-- (id)initFromBuffer:(const void *)buffer context:(CGLContextObj)cgl_ctx width:(NSUInteger)width height:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes pixelFormat:(NSString *)pixelFormat isFlipped:(BOOL)flipped toType:(FFGLImageRepType)toType allowingNPOT:(BOOL)useNPOT asPrimaryRep:(BOOL)isPrimary
+- (id)initFromBuffer:(const void *)buffer context:(CGLContextObj)cgl_ctx width:(NSUInteger)width height:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes pixelFormat:(NSString *)pixelFormat isFlipped:(BOOL)flipped toType:(FFGLImageRepType)toType callback:(FFGLImageBufferReleaseCallback)callback userInfo:(void *)userInfo allowingNPOT:(BOOL)useNPOT asPrimaryRep:(BOOL)isPrimary
 {
 	GLenum targetGL;
 	
@@ -388,6 +406,19 @@ static void FFGLTextureRepTextureRelease(GLuint name, CGLContextObj cgl_ctx, voi
 		return nil;
 	}
 
+	// Pack the buffer callback into a struct so we can pass it to our own callback...
+	// The struct is freed in the callback, along with the texture we created
+	
+	FFGLTextureRepPackedBufferCallback *packed = malloc(sizeof(FFGLTextureRepPackedBufferCallback));
+	if (packed == NULL)
+	{
+		[self release];
+		return nil;
+	}
+	packed->baseAddress = buffer;
+	packed->callback = callback;
+	packed->userInfo = userInfo;
+	
 	return [self initWithTexture:tex
 						 context:cgl_ctx
 						  ofType:toType
@@ -396,8 +427,8 @@ static void FFGLTextureRepTextureRelease(GLuint name, CGLContextObj cgl_ctx, voi
 					textureWidth:texWidth
 				   textureHeight:texHeight
 					   isFlipped:flipped
-						callback:FFGLTextureRepTextureRelease
-						userInfo:NULL
+						callback:FFGLTextureRepBufferPerformCallback
+						userInfo:packed
 					asPrimaryRep:isPrimary];
 	
 }

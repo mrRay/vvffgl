@@ -37,8 +37,11 @@
  Fails if all the following are true: toType is FFGLImageRepTypeTexture2D, useNPOT is NO, and width or height is not a POT number.
  If that is the case, create a FFGLImageRepTypeTextureRect representation, then use initCopyingTexture... with the result of this
  
+ Needs to hold on to the buffer, so pass a callback to be called when the texture is finished with it.
+ 
+ This is maybe getting silly, we only call this when the buffer is already in its own rep...
  */
-- (id)initFromBuffer:(const void *)buffer context:(CGLContextObj)cgl_ctx width:(NSUInteger)width height:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes pixelFormat:(NSString *)pixelFormat isFlipped:(BOOL)flipped toType:(FFGLImageRepType)toType allowingNPOT:(BOOL)useNPOT asPrimaryRep:(BOOL)isPrimary;
+- (id)initFromBuffer:(const void *)buffer context:(CGLContextObj)cgl_ctx width:(NSUInteger)width height:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes pixelFormat:(NSString *)pixelFormat isFlipped:(BOOL)flipped toType:(FFGLImageRepType)toType callback:(FFGLImageBufferReleaseCallback)callback userInfo:(void *)userInfo allowingNPOT:(BOOL)useNPOT asPrimaryRep:(BOOL)isPrimary;
 
 - (id)copyAsType:(FFGLImageRepType)type pixelFormat:(NSString *)pixelFormat inContext:(CGLContextObj)context allowingNPOT2D:(BOOL)useNPOT asPrimaryRep:(BOOL)isPrimary;
 
