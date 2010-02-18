@@ -322,7 +322,6 @@ static void FFImageUnlockAndReleaseFFGLTexture(CGLContextObj cgl_ctx, GLuint nam
 #endif
     
     CGLContextObj cgl_ctx = [context CGLContextObj];
-	CGLSetCurrentContext(cgl_ctx); // no idea why we need this.
 	CGLLockContext(cgl_ctx);
 	
     pthread_mutex_lock(&_lock);
