@@ -61,9 +61,7 @@ static void FFGLGPURendererTextureDelete(GLuint name, CGLContextObj cgl_ctx, voi
 #endif /* FFGL_USE_TEXTURE_POOLS */
 
 static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget, GLuint textureWidth, GLuint textureHeight, GLuint *fbo, GLuint *depthBuffer)
-{
-	CGLLockContext(cgl_ctx);
-	
+{	
 	// state vars
 	GLint previousFBO;
 	GLint previousRenderBuffer;
@@ -134,9 +132,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	}
 
 	glPopAttrib();
-	
-	CGLUnlockContext(cgl_ctx);
-	
+		
 	return result;
 }
 
@@ -164,7 +160,21 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 		{
             _frameStruct.inputTextures = NULL;
         }
-
+		
+#if defined(FFGL_USE_TEXTURE_POOLS)
+		// set up our texture pool
+		FFGLPoolCallBacks callbacks = {FFGLGPURendererTextureCreate, FFGLGPURendererTextureDelete};
+		_pool = FFGLPoolCreate(&callbacks, 3, self);
+		if (_pool == NULL)
+		{
+			[self release];
+			return nil;
+		}
+#endif /* FFGL_USE_TEXTURE_POOLS */
+		
+		// Lock now in case we call ffglOpenGLSupportsExtension and for FFGLGPURendererSetupFBO soon
+		CGLLockContext(context);
+		
 		if (_outputHint == FFGLRendererHintTextureRect)
 		{
 			_textureTarget = GL_TEXTURE_RECTANGLE_ARB;
@@ -192,18 +202,10 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 #endif /* FFGL_ALLOW_NPOT_2D */
 		}
 		
-#if defined(FFGL_USE_TEXTURE_POOLS)
-		// set up our texture pool
-		FFGLPoolCallBacks callbacks = {FFGLGPURendererTextureCreate, FFGLGPURendererTextureDelete};
-		_pool = FFGLPoolCreate(&callbacks, 3, self);
-		if (_pool == NULL)
-		{
-			[self release];
-			return nil;
-		}
-#endif /* FFGL_USE_TEXTURE_POOLS */
-		
 		BOOL success = FFGLGPURendererSetupFBO(context, _textureTarget, _textureWidth, _textureHeight, &_rendererFBO, &_rendererDepthBuffer);
+		
+		// Unlock context
+		CGLUnlockContext(context);
 		
         if(!success)
         {	

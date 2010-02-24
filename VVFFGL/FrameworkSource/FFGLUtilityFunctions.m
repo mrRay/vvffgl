@@ -29,9 +29,8 @@ bool ffglOpenGLSupportsExtension(CGLContextObj cgl_ctx, const char *extension)
 	if (where || *extension == '\0')
 		return false;
 	
-	CGLLockContext(cgl_ctx);
 	extensions = glGetString(GL_EXTENSIONS);
-	CGLUnlockContext(cgl_ctx);
+
 	start = extensions;
 	for (;;) {
 		

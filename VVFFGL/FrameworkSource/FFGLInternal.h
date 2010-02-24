@@ -69,7 +69,14 @@ static inline unsigned int ffglPOTDimension(unsigned int dimension)
 }
 
 NSUInteger ffglBytesPerPixelForPixelFormat(NSString *format);
+
+/*
+ bool ffglOpenGLSupportsExtension(CGLContextObj cgl_ctx, const char *extension)
+ 
+ cgl_ctx must be locked before calling this
+ */
 bool ffglOpenGLSupportsExtension(CGLContextObj cgl_ctx, const char *extension);
+
 bool ffglGLInfoForPixelFormat(NSString *ffglFormat, GLenum *format, GLenum *type);
 
 #define FFGLLocalized(s) [[NSBundle bundleForClass:[self class]] localizedStringForKey:s value:s table:nil]
