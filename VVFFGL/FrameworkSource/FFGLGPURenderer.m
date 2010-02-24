@@ -279,6 +279,7 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 {
     CGLContextObj cgl_ctx = _context;
 	CGLContextObj prevContext;
+	
 	ffglSetContext(cgl_ctx, prevContext);
     CGLLockContext(cgl_ctx);
 	
@@ -408,9 +409,6 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, previousRenderBuffer);
 		glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, previousReadFBO);
 		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, previousDrawFBO);
-		
-		CGLUnlockContext(cgl_ctx);
-		ffglRestoreContext(cgl_ctx, prevContext);
 				
 		if (result == YES)
 		{
@@ -448,6 +446,9 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 			}
 		}
 	}
+	
+	CGLUnlockContext(cgl_ctx);
+	ffglRestoreContext(cgl_ctx, prevContext);
 	
 	for (int i = 0; i < _frameStruct.inputTextureCount; i++) {
 		if (_frameStruct.inputTextures[i] != NULL)

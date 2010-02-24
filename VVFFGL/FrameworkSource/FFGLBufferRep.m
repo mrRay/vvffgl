@@ -257,9 +257,7 @@ static void FFGLBufferRepBufferRepReleaseForTexture(const void *baseAddress, voi
 	// Restore state
 	glPopClientAttrib();
 	glPopAttrib();
-	
-	CGLUnlockContext(cgl_ctx);
-	
+		
 	if (error != GL_NO_ERROR)
 	{
 		free(buffer);
