@@ -234,6 +234,11 @@ static void FFGLBufferRepBufferRepReleaseForTexture(const void *baseAddress, voi
 	glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
 	glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
 	
+	// Bind our texture
+	glEnable(targetGL);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(targetGL, texture);
+	
 	// Make sure pixel-storage is set up as we need it
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 	glPixelStorei(GL_PACK_ROW_LENGTH, 0);
@@ -246,9 +251,6 @@ static void FFGLBufferRepBufferRepReleaseForTexture(const void *baseAddress, voi
 	glPixelStorei(GL_PACK_SWAP_BYTES, GL_FALSE);
 	
 	// Get the pixel data
-	glEnable(targetGL);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(targetGL, texture);
 	glGetTexImage(targetGL, 0, format, type, buffer);
 	
 	// Check for error
