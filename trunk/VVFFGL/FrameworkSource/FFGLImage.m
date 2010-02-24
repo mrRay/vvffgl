@@ -43,7 +43,14 @@ typedef struct FFGLImagePrivate {
 @interface FFGLImage (Private)
 - (id)initWithCGLContext:(CGLContextObj)context retainedImageRep:(FFGLImageRep *)rep usePOT2D:(FFGLImagePOT2DRule)POT;
 - (void)releaseResources;
+
+/*
+ - (BOOL)useNPOT2D
+ 
+ The FFGLImage's CGLContext must be locked before calling this.
+ */
 - (BOOL)useNPOT2D;
+
 @end
 
 @implementation FFGLImage
