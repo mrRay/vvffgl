@@ -234,9 +234,10 @@ static void FFGLBufferRepBufferRepReleaseForTexture(const void *baseAddress, voi
 	glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
 	glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
 	
+	glActiveTexture(GL_TEXTURE0);
+
 	// Bind our texture
 	glEnable(targetGL);
-	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(targetGL, texture);
 	
 	// Make sure pixel-storage is set up as we need it
