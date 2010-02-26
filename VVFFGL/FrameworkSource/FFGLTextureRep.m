@@ -412,6 +412,7 @@ static void FFGLTextureRepBufferPerformCallback(GLuint name, CGLContextObj cgl_c
 	FFGLTextureRepPackedBufferCallback *packed = malloc(sizeof(FFGLTextureRepPackedBufferCallback));
 	if (packed == NULL)
 	{
+		glDeleteTextures(1, &tex);
 		[self release];
 		return nil;
 	}
