@@ -217,12 +217,13 @@ static void FFGLBufferRepBufferRepReleaseForTexture(const void *baseAddress, voi
 	}
 	
 	GLenum format, type;
-	if (ffglGLInfoForPixelFormat(pixelFormat, &format, &type) == NO)
+	unsigned int bytesPerPixel;
+	if (ffglGLInfoForPixelFormat(pixelFormat, &format, &type, &bytesPerPixel) == NO)
 	{
 		[self release];
 		return nil;
 	}
-	unsigned int rowBytes = textureWidth * ffglBytesPerPixelForPixelFormat(pixelFormat);
+	unsigned int rowBytes = textureWidth * bytesPerPixel;
 	GLvoid *buffer = valloc(rowBytes * textureHeight);
 	if (buffer == NULL)
 	{

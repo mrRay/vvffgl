@@ -77,7 +77,7 @@ NSUInteger ffglBytesPerPixelForPixelFormat(NSString *format);
  */
 bool ffglOpenGLSupportsExtension(CGLContextObj cgl_ctx, const char *extension);
 
-bool ffglGLInfoForPixelFormat(NSString *ffglFormat, GLenum *format, GLenum *type);
+bool ffglGLInfoForPixelFormat(NSString *ffglFormat, GLenum *format, GLenum *type, unsigned int *bytesPerPixel);
 
 #define FFGLLocalized(s) [[NSBundle bundleForClass:[self class]] localizedStringForKey:s value:s table:nil]
 

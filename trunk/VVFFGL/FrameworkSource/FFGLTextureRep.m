@@ -323,7 +323,7 @@ static void FFGLTextureRepBufferPerformCallback(GLuint name, CGLContextObj cgl_c
 	// We fail if the image does not fill the texture (eg some POT-dimensioned 2D textures)
 	// because it is quicker to do buffer->rect->2d than to create a temporary scaled buffer
 	
-	unsigned int texWidth, texHeight;
+	unsigned int texWidth, texHeight, bytesPerPixel;
 	texWidth = width;
 	texHeight = height;
 	GLenum format;
@@ -331,7 +331,7 @@ static void FFGLTextureRepBufferPerformCallback(GLuint name, CGLContextObj cgl_c
 	
 	if (
 		( (toType != FFGLImageRepTypeTexture2D) && (toType != FFGLImageRepTypeTextureRect) )
-		|| (ffglGLInfoForPixelFormat(pixelFormat, &format, &type) == false)
+		|| (ffglGLInfoForPixelFormat(pixelFormat, &format, &type, &bytesPerPixel) == false)
 		|| ( (toType == FFGLImageRepTypeTexture2D) && !useNPOT
 			&& ( (texWidth != ffglPOTDimension(texWidth)) || (texHeight != ffglPOTDimension(texHeight)) )
 			)
@@ -364,7 +364,7 @@ static void FFGLTextureRepBufferPerformCallback(GLuint name, CGLContextObj cgl_c
 	// Set up the environment for unpacking
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, rowBytes / ffglBytesPerPixelForPixelFormat(pixelFormat));
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, rowBytes / bytesPerPixel);
 	glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0);
 	glPixelStorei(GL_UNPACK_LSB_FIRST, GL_FALSE);
 	glPixelStorei(GL_UNPACK_SKIP_IMAGES, 0);
