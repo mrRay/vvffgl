@@ -80,10 +80,12 @@
 - (void)testRenderingStatePreservation
 {
 	GLStateRef before = GLStateCreateForContext(_CGLContext);
-	STAssertTrue([_renderer renderAtTime:0.0], @"FFGLRenderer renderAtTime failed");
+	FFGLImage *output = [_renderer createOutputAtTime:0.0];
+	STAssertNotNil(output, @"FFGLRenderer renderAtTime failed");
 	GLStateRef after = GLStateCreateForContext(_CGLContext);
 	STAssertTrue(GLStatesAreEqual(before, after), @"OpenGL state changed after call to renderAtTime:");
 	GLStateRelease(before);
 	GLStateRelease(after);
+	[output release];
 }
 @end
