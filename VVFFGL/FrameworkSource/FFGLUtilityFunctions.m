@@ -50,53 +50,100 @@ bool ffglOpenGLSupportsExtension(CGLContextObj cgl_ctx, const char *extension)
 	return false;
 }
 
-NSUInteger ffglBytesPerPixelForPixelFormat(NSString *format)
+bool ffglGLInfoForPixelFormat(NSString *ffglFormat, GLenum *format, GLenum *type, unsigned int *bytesPerPixel)
 {
-     if ([format isEqualToString:FFGLPixelFormatBGRA8888] || [format isEqualToString:FFGLPixelFormatARGB8888]) {
-        return 4;
-    } else if ([format isEqualToString:FFGLPixelFormatBGR888] || [format isEqualToString:FFGLPixelFormatRGB888]) {
-        return 3;
-    } else if ([format isEqualToString:FFGLPixelFormatBGR565] || [format isEqualToString:FFGLPixelFormatRGB565]) {
-        return 2;
-    } else {
-        return 0;
-    }
-}
-
-bool ffglGLInfoForPixelFormat(NSString *ffglFormat, GLenum *format, GLenum *type)
-{
-	if ([ffglFormat isEqualToString:FFGLPixelFormatRGB565])
-	{
-		*format = GL_RGB;
-		*type = GL_UNSIGNED_SHORT_5_6_5;
+	// Check platform-endian pixel-formats first to minimise string comparisons
+#if __BIG_ENDIAN__
+	if ([ffglFormat isEqualToString:FFGLPixelFormatARGB8888])
+	{ 
+		*format = GL_BGRA;
+		*type = GL_UNSIGNED_INT_8_8_8_8;
+		*bytesPerPixel = 4;
 	}
 	else if ([ffglFormat isEqualToString:FFGLPixelFormatRGB888])
 	{
 		*format = GL_RGB;
 		*type = GL_UNSIGNED_BYTE;
+		*bytesPerPixel = 3;
 	}
-	else if ([ffglFormat isEqualToString:FFGLPixelFormatARGB8888])
-	{ 
-		*format = GL_BGRA;
-		*type = GL_UNSIGNED_INT_8_8_8_8;
-	}
-	else if ([ffglFormat isEqualToString:FFGLPixelFormatBGR565])
+	else if ([ffglFormat isEqualToString:FFGLPixelFormatRGB565])
 	{
 		*format = GL_RGB;
-		*type = GL_UNSIGNED_SHORT_5_6_5_REV;
-	}
-	else if ([ffglFormat isEqualToString:FFGLPixelFormatBGR888])
-	{
-		*format = GL_BGR;
-		*type = GL_UNSIGNED_BYTE;
+		*type = GL_UNSIGNED_SHORT_5_6_5;
+		*bytesPerPixel = 2;
 	}
 	else if ([ffglFormat isEqualToString:FFGLPixelFormatBGRA8888])
 	{ 
 		*format = GL_BGRA;
 		*type = GL_UNSIGNED_INT_8_8_8_8_REV;
+		*bytesPerPixel = 4;
 	}
+	else if ([ffglFormat isEqualToString:FFGLPixelFormatBGR888])
+	{
+		*format = GL_BGR;
+		*type = GL_UNSIGNED_BYTE;
+		*bytesPerPixel = 3;
+	}
+	else if ([ffglFormat isEqualToString:FFGLPixelFormatBGR565])
+	{
+		*format = GL_RGB;
+		*type = GL_UNSIGNED_SHORT_5_6_5_REV;
+		*bytesPerPixel = 2;
+	}	
+#else
+	if ([ffglFormat isEqualToString:FFGLPixelFormatBGRA8888])
+	{ 
+		*format = GL_BGRA;
+		*type = GL_UNSIGNED_INT_8_8_8_8_REV;
+		*bytesPerPixel = 4;
+	}
+	else if ([ffglFormat isEqualToString:FFGLPixelFormatBGR888])
+	{
+		*format = GL_BGR;
+		*type = GL_UNSIGNED_BYTE;
+		*bytesPerPixel = 3;
+	}
+	else if ([ffglFormat isEqualToString:FFGLPixelFormatBGR565])
+	{
+		*format = GL_RGB;
+		*type = GL_UNSIGNED_SHORT_5_6_5_REV;
+		*bytesPerPixel = 2;
+	}
+	else if ([ffglFormat isEqualToString:FFGLPixelFormatARGB8888])
+	{ 
+		*format = GL_BGRA;
+		*type = GL_UNSIGNED_INT_8_8_8_8;
+		*bytesPerPixel = 4;
+	}
+	else if ([ffglFormat isEqualToString:FFGLPixelFormatRGB888])
+	{
+		*format = GL_RGB;
+		*type = GL_UNSIGNED_BYTE;
+		*bytesPerPixel = 3;
+	}
+	else if ([ffglFormat isEqualToString:FFGLPixelFormatRGB565])
+	{
+		*format = GL_RGB;
+		*type = GL_UNSIGNED_SHORT_5_6_5;
+		*bytesPerPixel = 2;
+	}
+#endif
 	else {
 		return false;
 	}
 	return true;
+}
+
+NSUInteger ffglBytesPerPixelForPixelFormat(NSString *pixelFormat)
+{
+	GLenum format, type;
+	unsigned int bpp;
+	if (ffglGLInfoForPixelFormat(pixelFormat, &format, &type, &bpp) == true)
+	{
+		return bpp;
+	}
+	else
+	{
+		return 0;
+	}
 }
