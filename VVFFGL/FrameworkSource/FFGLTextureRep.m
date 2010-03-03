@@ -36,9 +36,7 @@ static void FFGLTextureRepBufferPerformCallback(GLuint name, CGLContextObj cgl_c
 
 - (id)copyAsType:(FFGLImageRepType)type pixelFormat:(NSString *)pixelFormat inContext:(CGLContextObj)context allowingNPOT2D:(BOOL)useNPOT asPrimaryRep:(BOOL)isPrimary
 {
-	FFGLTextureRep *source;
 	FFGLTextureRep *temp;
-	FFGLImageRepType sourceType;
 	switch (type) {
 		case FFGLImageRepTypeTexture2D:
 		case FFGLImageRepTypeTextureRect:
@@ -57,35 +55,25 @@ static void FFGLTextureRepBufferPerformCallback(GLuint name, CGLContextObj cgl_c
 												 asPrimaryRep:isPrimary];
 			break;
 		case FFGLImageRepTypeBuffer:
-			if (_isFlipped
-				|| (_textureInfo.hardwareWidth != _textureInfo.width)
-				|| (_textureInfo.hardwareHeight != _textureInfo.height))
-			{
-				// In these cases it's quickest to create an intermediary rect texture
-				source = [[FFGLTextureRep alloc] initCopyingTexture:_textureInfo.texture
-															 ofType:_type
-															context:context
-														 imageWidth:_textureInfo.width
-														imageHeight:_textureInfo.height
-													   textureWidth:_textureInfo.hardwareWidth
-													  textureHeight:_textureInfo.hardwareHeight
-														  isFlipped:_isFlipped
-															 toType:FFGLImageRepTypeTextureRect
-													   allowingNPOT:useNPOT
-													   asPrimaryRep:isPrimary];
-				temp = source;
-				sourceType = FFGLImageRepTypeTextureRect;
-			}
-			else
-			{
-				// Otherwise just create the buffer directly from ourself
-				source = self;
-				temp = nil;
-				sourceType = _type;
-			}
-			FFGLTextureInfo *texInfo = source.textureInfo;
+			// We ALWAYS do a texture copy first. This is to work around a weird issue with
+			// some textures from CoreVideo which won't glGetTexImage their content.
+			// If we find a solution to that problem, then we only need to do a texture copy
+			// if a) we have texture dimensions beyond our image dimensions (POT 2D),
+			// OR b) are flipped.
+			temp = [[FFGLTextureRep alloc] initCopyingTexture:_textureInfo.texture
+													   ofType:_type
+													  context:context
+												   imageWidth:_textureInfo.width
+												  imageHeight:_textureInfo.height
+												 textureWidth:_textureInfo.hardwareWidth
+												textureHeight:_textureInfo.hardwareHeight
+													isFlipped:_isFlipped
+													   toType:FFGLImageRepTypeTextureRect
+												 allowingNPOT:useNPOT
+												 asPrimaryRep:isPrimary];
+			FFGLTextureInfo *texInfo = temp.textureInfo;
 			FFGLBufferRep *rep = [[FFGLBufferRep alloc] initFromNonFlippedTexture:texInfo->texture
-																		   ofType:sourceType
+																		   ofType:FFGLImageRepTypeTextureRect
 																		  context:context
 																	   imageWidth:texInfo->width
 																	  imageHeight:texInfo->height
