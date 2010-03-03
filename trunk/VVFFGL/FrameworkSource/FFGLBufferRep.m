@@ -29,7 +29,13 @@ static void FFGLBufferRepBufferRepReleaseForTexture(const void *baseAddress, voi
 			// Easy-peasy
 			if ([_pixelFormat isEqualToString:pixelFormat])
 			{
-				return [self copy];
+				return [[FFGLBufferRep alloc] initWithCopiedBuffer:_buffer
+															 width:_width
+															height:_height
+													   bytesPerRow:_rowBytes
+													   pixelFormat:_pixelFormat
+														 isFlipped:_isFlipped
+													  asPrimaryRep:isPrimary];
 			}
 			// We don't support pixel-format conversion
 			return nil;
