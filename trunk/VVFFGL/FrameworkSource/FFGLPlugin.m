@@ -87,7 +87,7 @@ static pthread_mutex_t  _FFGLPluginInstancesLock;
 {
     /*
      We keep track of all instances using a dictionary, returning an existing instance for a path passed in at init if one exists.
-     Our dictionary doesn't retain its contents, so FFGLPlugins can still be released.
+     Our dictionary doesn't retain its content, so FFGLPlugins can still be released.
      */
     if (self == [FFGLPlugin class]) { // so we only do this once (not for a subclass)
         if (pthread_mutex_init(&_FFGLPluginInstancesLock, NULL) == 0) {
@@ -387,18 +387,23 @@ static void finalizer()
 
 - (void)unregisterAndRelease
 {
-    if (_pluginPrivate != NULL) {
+    if (_pluginPrivate != NULL)
+	{
         pthread_mutex_lock(&_FFGLPluginInstancesLock);
         NSString *path = [ffglPPrivate(attributes) objectForKey:FFGLPluginAttributePathKey];
-        if (path != nil) {
+        if (path != nil)
+		{
             [_FFGLPluginInstances removeObjectForKey:path];
         }
         pthread_mutex_unlock(&_FFGLPluginInstancesLock); 
-        if (ffglPPrivate(initted) == YES) {
+        if (ffglPPrivate(initted) == YES)
+		{
             ffglPPrivate(main)(FF_DEINITIALISE, (FFMixed)0U, 0);
         }
 		if (ffglPPrivate(handle) != NULL)
+		{
 			dlclose(ffglPPrivate(handle));
+		}
         [ffglPPrivate(bufferPixelFormats) release];
         [ffglPPrivate(parameters) release];
         [ffglPPrivate(attributes) release];
@@ -495,31 +500,40 @@ static void finalizer()
 
 - (FFGLPluginInstance)_newInstanceWithSize:(NSSize)size pixelFormat:(NSString *)format
 {
-    if (ffglPPrivate(mode) == FFGLPluginModeGPU) {
+    if (ffglPPrivate(mode) == FFGLPluginModeGPU)
+	{
         FFGLViewportStruct viewport = {0, 0, size.width, size.height};
         return ffglPPrivate(main)(FF_INSTANTIATEGL, (FFMixed)(void *)&viewport, 0).PointerValue;
-    } else if (ffglPPrivate(mode) == FFGLPluginModeCPU) {
+    }
+	else if (ffglPPrivate(mode) == FFGLPluginModeCPU)
+	{
         FFVideoInfoStruct videoInfo;
         if ([format isEqualToString:FFGLPixelFormatBGRA8888] || [format isEqualToString:FFGLPixelFormatARGB8888])
+		{
             videoInfo.BitDepth = FF_CAP_32BITVIDEO;
+		}
         else if ([format isEqualToString:FFGLPixelFormatBGR888] || [format isEqualToString:FFGLPixelFormatRGB888])
+		{
             videoInfo.BitDepth = FF_CAP_24BITVIDEO;
+		}
         else if ([format isEqualToString:FFGLPixelFormatBGR565] || [format isEqualToString:FFGLPixelFormatRGB565])
+		{
             videoInfo.BitDepth = FF_CAP_16BITVIDEO;
-        else {
+		}
+        else
+		{
             [NSException raise:@"FFGLPluginException" format:@"Unrecognized pixelFormat."];
             return 0;
         }
-        videoInfo.Orientation = FF_ORIENTATION_TL; // I think ;) If it's upside down then FF_ORIENTATION_BL.
+        videoInfo.Orientation = FF_ORIENTATION_TL;
         videoInfo.FrameHeight = size.height;
         videoInfo.FrameWidth = size.width;
 		FFGLPluginInstance instance = ffglPPrivate(main)(FF_INSTANTIATE, (FFMixed)(void *)&videoInfo, 0).PointerValue;
-		if (instance == NULL) {
-			NSLog(@"instance zero, if we see this log, we need a rethink");
-		}
 		return instance;
-    } else {
-        return 0; // Yikes
+    }
+	else
+	{
+        return FFGLInvalidInstance;
     }
 }
 
