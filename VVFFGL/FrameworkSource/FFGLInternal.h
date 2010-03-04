@@ -40,6 +40,12 @@ extern NSString * const FFGLParameterAttributeIndexKey;
 
 typedef void *FFGLPluginInstance; // According to FF standard, do not modify.
 
+#if __LP64__
+#define FFGLInvalidInstance (FFGLPluginInstance)0x00000000
+#else
+#define	FFGLInvalidInstance (FFGLPluginInstance)0xFFFFFFFF
+#endif
+
 typedef struct FFGLProcessFrameCopyStruct {
     unsigned int        inputFrameCount;
     void**              inputFrames;
