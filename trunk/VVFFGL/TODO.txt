@@ -19,5 +19,3 @@ The following plugins have issues with NPOT 2D textures:
 Bendoscope
 Recolour
 Twisted
-
-We need to check for failed plugin instantiation, with different code for 32 and 64 bit.

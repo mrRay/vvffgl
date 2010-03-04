@@ -131,7 +131,7 @@ typedef struct FFGLRendererPrivate
 				ffglRestoreContext(context, prev);
 			}
             
-			if (_instance == 0)
+			if (_instance == FFGLInvalidInstance)
 			{
                 [self release];
                 return nil;
