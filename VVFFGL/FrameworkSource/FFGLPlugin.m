@@ -206,7 +206,7 @@ static void finalizer()
          */
         
         // Set type from the PluginInfoStruct.
-        ffglPPrivate(type) = info->PluginType;
+        ffglPPrivate(type) = (info->PluginType == FF_PLUGIN_EFFECT ? FFGLPluginTypeEffect : FFGLPluginTypeSource);
         
         ffglPPrivate(attributes) = [[NSMutableDictionary alloc] initWithCapacity:6];
         // Get our identifier to store in the attributes dictionary.

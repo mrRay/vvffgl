@@ -74,8 +74,8 @@ typedef enum {
 } FFParameterType;
 
 typedef enum {
-    FF_PLUGIN_SOURCE		= 0,
-    FF_PLUGIN_EFFECT		= 1
+    FF_PLUGIN_EFFECT		= 0,
+    FF_PLUGIN_SOURCE		= 1
 } FFPluginType;
 
 typedef struct FFPluginInfoStruct {
