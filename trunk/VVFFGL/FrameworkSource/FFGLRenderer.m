@@ -406,10 +406,7 @@ typedef struct FFGLRendererPrivate
     }
     if (ffglRPrivate(readyState) == FFGLRendererReady)
 	{
-        if ([_plugin _supportsSetTime])
-		{
-            [_plugin _setTime:time ofInstance:_instance];
-        }
+		[_plugin _setTime:time ofInstance:_instance];
         result = [self _implementationCreateOutput];        
     }
 	else 
