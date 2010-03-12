@@ -58,11 +58,12 @@ NSString * const FFGLPixelFormatRGB565 = @"FFGLPixelFormatRGB565";
 NSString * const FFGLPixelFormatBGR565 = @"FFGLPixelFormatBGR565";
 
 NSString * const FFGLPluginAttributeNameKey = @"FFGLPluginAttributeNameKey";
-NSString * const FFGLPluginAttributeVersionKey = @"FFGLPluginAttributeVersionKey";
 NSString * const FFGLPluginAttributeDescriptionKey = @"FFGLPluginAttributeDescriptionKey";
 NSString * const FFGLPluginAttributeIdentifierKey = @"FFGLPluginAttributeIdentifierKey";
 NSString * const FFGLPluginAttributeAuthorKey = @"FFGLPluginAttributeAuthorKey";
 NSString * const FFGLPluginAttributePathKey = @"FFGLPluginAttributePathKey";
+NSString * const FFGLPluginAttributeMajorVersionKey = @"FFGLPluginAttributeMajorVersionKey";
+NSString * const FFGLPluginAttributeMinorVersionKey = @"FFGLPluginAttributeMinorVersionKey";
 
 NSString * const FFGLParameterAttributeTypeKey = @"FFGLParameterAttributeTypeKey";
 NSString * const FFGLParameterAttributeNameKey = @"FFGLParameterAttributeNameKey";
@@ -230,9 +231,10 @@ static void finalizer()
         result = ffglPPrivate(main)(FF_GETEXTENDEDINFO, (FFMixed)0U, 0);
         FFPluginExtendedInfoStruct *extendedInfo = (FFPluginExtendedInfoStruct *)result.PointerValue;
         if (extendedInfo != NULL) {
-            NSNumber *version = [NSNumber numberWithFloat:extendedInfo->PluginMajorVersion + (extendedInfo->PluginMinorVersion * 0.001)];
-            [(NSMutableDictionary *)ffglPPrivate(attributes) setObject:version forKey:FFGLPluginAttributeVersionKey];
-            
+            [(NSMutableDictionary *)ffglPPrivate(attributes) setObject:[NSNumber numberWithUnsignedInt:extendedInfo->PluginMajorVersion]
+																forKey:FFGLPluginAttributeMajorVersionKey];
+			[(NSMutableDictionary *)ffglPPrivate(attributes) setObject:[NSNumber numberWithUnsignedInt:extendedInfo->PluginMinorVersion]
+																forKey:FFGLPluginAttributeMinorVersionKey];
             NSString *description;
             if (extendedInfo->Description) {
                 description = [NSString stringWithCString:extendedInfo->Description encoding:NSASCIIStringEncoding];
@@ -570,6 +572,7 @@ static void finalizer()
     }
     FFSetParameterStruct param;
     param.ParameterNumber = index;
+	// TODO: This isn't going to work - cString won't stick around long enough
     param.NewParameterValue = (FFMixed)(void *)[(NSString *)value cStringUsingEncoding:NSASCIIStringEncoding];
     ffglPPrivate(main)(FF_SETPARAMETER, (FFMixed)(void *)&param, instance);
 }

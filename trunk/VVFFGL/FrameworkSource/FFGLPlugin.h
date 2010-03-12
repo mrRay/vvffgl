@@ -31,13 +31,37 @@ enum {
 };
 
 #pragma mark Plugin Attributes
+/*
+ FFGLPluginAttributeNameKey
+ FFGLPluginAttributeDescriptionKey
+ FFGLPluginAttributeAuthorKey
+ FFGLPluginAttributePathKey
+ 
+	These objects returned for these keys are all NSStrings.
+ */
 extern NSString * const FFGLPluginAttributeNameKey;
-extern NSString * const FFGLPluginAttributeVersionKey;
 extern NSString * const FFGLPluginAttributeDescriptionKey;
-extern NSString * const FFGLPluginAttributeIdentifierKey;
 extern NSString * const FFGLPluginAttributeAuthorKey;
 extern NSString * const FFGLPluginAttributePathKey;
 
+/*
+ FFGLPluginAttributeIdentifierKey
+
+	The object returned for this key is a NSString four characters long. It is possible two different
+	FreeFrame plugins could return the same identifier, so it should not be depended on to determine
+	identity.
+ */
+extern NSString * const FFGLPluginAttributeIdentifierKey;
+
+/*
+ FFGLPluginAttributeMajorVersionKey
+ FFGLPluginAttributeMinorVersionKey
+
+	The objects returned for this key are NSNumbers with integer values representing the major and minor
+	version of the plugin.
+ */
+extern NSString * const FFGLPluginAttributeMajorVersionKey;
+extern NSString * const FFGLPluginAttributeMinorVersionKey;
 
 #pragma mark Parameter Attributes
 /*
