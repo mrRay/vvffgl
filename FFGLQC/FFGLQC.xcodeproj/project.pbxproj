@@ -60,6 +60,13 @@
 			remoteGlobalIDString = 9606B14C101761EF00CC50B7;
 			remoteInfo = VVFFGL;
 		};
+		BDD00700111AF8CA005D00B6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BD9237F5108349F10036739C /* VVFFGL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = BDD437D011130A2300ADC32C;
+			remoteInfo = FFGLUnitTests;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -165,6 +172,7 @@
 			children = (
 				BD4A786A109B90B60018ABBD /* VVFFGL.framework */,
 				BD4A786C109B90B60018ABBD /* FFGLTestApp.app */,
+				BDD00701111AF8CA005D00B6 /* FFGLUnitTests.octest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -229,6 +237,13 @@
 			fileType = wrapper.application;
 			path = FFGLTestApp.app;
 			remoteRef = BD4A786B109B90B60018ABBD /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BDD00701111AF8CA005D00B6 /* FFGLUnitTests.octest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = FFGLUnitTests.octest;
+			remoteRef = BDD00700111AF8CA005D00B6 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
