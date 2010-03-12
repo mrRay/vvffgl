@@ -12,8 +12,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="567"/>
 			<integer value="368"/>
-			<integer value="451"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1404,7 +1404,7 @@
 								<object class="NSTabViewItem" id="36106101">
 									<string key="NSIdentifier">1</string>
 									<object class="NSView" key="NSView" id="1055275406">
-										<reference key="NSNextResponder" ref="855860773"/>
+										<nil key="NSNextResponder"/>
 										<int key="NSvFlags">256</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1727,7 +1727,6 @@
 											</object>
 										</object>
 										<string key="NSFrame">{{10, 33}, {521, 299}}</string>
-										<reference key="NSSuperview" ref="855860773"/>
 									</object>
 									<string key="NSLabel">Sources</string>
 									<reference key="NSColor" ref="775673247"/>
@@ -1736,7 +1735,7 @@
 								<object class="NSTabViewItem" id="893833310">
 									<string key="NSIdentifier">2</string>
 									<object class="NSView" key="NSView" id="951225431">
-										<nil key="NSNextResponder"/>
+										<reference key="NSNextResponder" ref="855860773"/>
 										<int key="NSvFlags">274</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2051,20 +2050,21 @@
 											</object>
 										</object>
 										<string key="NSFrame">{{10, 33}, {521, 299}}</string>
+										<reference key="NSSuperview" ref="855860773"/>
 									</object>
 									<string key="NSLabel">Effects</string>
 									<reference key="NSColor" ref="775673247"/>
 									<reference key="NSTabView" ref="855860773"/>
 								</object>
 							</object>
-							<reference key="NSSelectedTabViewItem" ref="36106101"/>
+							<reference key="NSSelectedTabViewItem" ref="893833310"/>
 							<reference key="NSFont" ref="1052143821"/>
 							<int key="NSTvFlags">0</int>
 							<bool key="NSAllowTruncatedLabels">YES</bool>
 							<bool key="NSDrawsBackground">YES</bool>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
-								<reference ref="1055275406"/>
+								<reference ref="951225431"/>
 							</object>
 						</object>
 					</object>
@@ -2091,6 +2091,8 @@
 					<string>attributes.FFGLPluginAttributeVersionKey</string>
 					<string>attributes.FFGLPluginAttributeAuthorKey</string>
 					<string>attributes.FFGLPluginAttributeDescriptionKey</string>
+					<string>attributes.FFGLPluginAttributeMajorVersionKey</string>
+					<string>attributes.FFGLPluginAttributeMinorVersionKey</string>
 				</object>
 				<bool key="NSEditable">YES</bool>
 				<object class="_NSManagedProxy" key="_NSManagedProxy"/>
@@ -2113,6 +2115,8 @@
 					<string>attributes.FFGLPluginAttributeVersionKey</string>
 					<string>attributes.FFGLPluginAttributeAuthorKey</string>
 					<string>attributes.FFGLPluginAttributeDescriptionKey</string>
+					<string>attributes.FFGLPluginAttributeMajorVersionKey</string>
+					<string>attributes.FFGLPluginAttributeMinorVersionKey</string>
 				</object>
 				<bool key="NSEditable">YES</bool>
 				<object class="_NSManagedProxy" key="_NSManagedProxy"/>
@@ -2723,22 +2727,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: selection.attributes.FFGLPluginAttributeVersionKey</string>
-						<reference key="source" ref="20234525"/>
-						<reference key="destination" ref="905230302"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="20234525"/>
-							<reference key="NSDestination" ref="905230302"/>
-							<string key="NSLabel">value: selection.attributes.FFGLPluginAttributeVersionKey</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">selection.attributes.FFGLPluginAttributeVersionKey</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">680</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
 						<string key="label">value: selection.attributes.FFGLPluginAttributeAuthorKey</string>
 						<reference key="source" ref="463516360"/>
 						<reference key="destination" ref="905230302"/>
@@ -2840,22 +2828,6 @@
 						</object>
 					</object>
 					<int key="connectionID">686</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: selection.attributes.FFGLPluginAttributeVersionKey</string>
-						<reference key="source" ref="774269832"/>
-						<reference key="destination" ref="642816925"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="774269832"/>
-							<reference key="NSDestination" ref="642816925"/>
-							<string key="NSLabel">value: selection.attributes.FFGLPluginAttributeVersionKey</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">selection.attributes.FFGLPluginAttributeVersionKey</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">687</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
@@ -3020,6 +2992,88 @@
 						</object>
 					</object>
 					<int key="connectionID">780</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">displayPatternValue1: selection.attributes.FFGLPluginAttributeMajorVersionKey</string>
+						<reference key="source" ref="774269832"/>
+						<reference key="destination" ref="642816925"/>
+						<object class="NSNibBindingConnector" key="connector" id="99600306">
+							<reference key="NSSource" ref="774269832"/>
+							<reference key="NSDestination" ref="642816925"/>
+							<string key="NSLabel">displayPatternValue1: selection.attributes.FFGLPluginAttributeMajorVersionKey</string>
+							<string key="NSBinding">displayPatternValue1</string>
+							<string key="NSKeyPath">selection.attributes.FFGLPluginAttributeMajorVersionKey</string>
+							<object class="NSDictionary" key="NSOptions">
+								<string key="NS.key.0">NSDisplayPattern</string>
+								<string key="NS.object.0">%{value1}@.%{value2}@</string>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">790</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">displayPatternValue2: selection.attributes.FFGLPluginAttributeMinorVersionKey</string>
+						<reference key="source" ref="774269832"/>
+						<reference key="destination" ref="642816925"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="774269832"/>
+							<reference key="NSDestination" ref="642816925"/>
+							<string key="NSLabel">displayPatternValue2: selection.attributes.FFGLPluginAttributeMinorVersionKey</string>
+							<string key="NSBinding">displayPatternValue2</string>
+							<string key="NSKeyPath">selection.attributes.FFGLPluginAttributeMinorVersionKey</string>
+							<object class="NSDictionary" key="NSOptions">
+								<string key="NS.key.0">NSDisplayPattern</string>
+								<string key="NS.object.0">%{value1}@.%{value2}@</string>
+							</object>
+							<reference key="NSPreviousConnector" ref="99600306"/>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">791</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">displayPatternValue1: selection.attributes.FFGLPluginAttributeMajorVersionKey</string>
+						<reference key="source" ref="20234525"/>
+						<reference key="destination" ref="905230302"/>
+						<object class="NSNibBindingConnector" key="connector" id="165461328">
+							<reference key="NSSource" ref="20234525"/>
+							<reference key="NSDestination" ref="905230302"/>
+							<string key="NSLabel">displayPatternValue1: selection.attributes.FFGLPluginAttributeMajorVersionKey</string>
+							<string key="NSBinding">displayPatternValue1</string>
+							<string key="NSKeyPath">selection.attributes.FFGLPluginAttributeMajorVersionKey</string>
+							<object class="NSDictionary" key="NSOptions">
+								<string key="NS.key.0">NSDisplayPattern</string>
+								<string key="NS.object.0">%{value1}@.%{value2}@</string>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">797</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">displayPatternValue2: selection.attributes.FFGLPluginAttributeMinorVersionKey</string>
+						<reference key="source" ref="20234525"/>
+						<reference key="destination" ref="905230302"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="20234525"/>
+							<reference key="NSDestination" ref="905230302"/>
+							<string key="NSLabel">displayPatternValue2: selection.attributes.FFGLPluginAttributeMinorVersionKey</string>
+							<string key="NSBinding">displayPatternValue2</string>
+							<string key="NSKeyPath">selection.attributes.FFGLPluginAttributeMinorVersionKey</string>
+							<object class="NSDictionary" key="NSOptions">
+								<string key="NS.key.0">NSDisplayPattern</string>
+								<string key="NS.object.0">%{value1}@.%{value2}@</string>
+							</object>
+							<reference key="NSPreviousConnector" ref="165461328"/>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">798</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -5152,7 +5206,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">785</int>
+			<int key="maxID">798</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
