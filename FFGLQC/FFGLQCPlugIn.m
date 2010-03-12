@@ -385,32 +385,38 @@ static void FFImageUnlockAndReleaseFFGLTexture(CGLContextObj cgl_ctx, GLuint nam
 			// We need to set image inputs every time we render, as we set them to nil after rendering to avoid keeping textures around
 			[imageInputs addObject:key];
 			id <QCPlugInInputImageSource> input = [self valueForInputKey:key];
-			FFGLImage *image;
-			// prep the QC images texture for being turned into a FFGL image.
-			// our FFImageUnlockQCInput callback will unlock for us.
-			if(input && [input lockTextureRepresentationWithColorSpace:_cspace forBounds:[input imageBounds]])
-			{	
-				
-				//NSLog(@"have QCimage for key %@ and locked rep", key);
-								
-				
-				//NSLog(@"new FFGL based on rect texture: %u", [input textureName]);
-				
-				
-				image = [[FFGLImage alloc] initWithTextureRect:[input textureName]
-													CGLContext:cgl_ctx
-													pixelsWide:[input imageBounds].size.width
-													pixelsHigh:[input imageBounds].size.height
-													   flipped:[input textureFlipped]
-											   releaseCallback:FFImageUnlockQCInput
-												   releaseInfo:input];
-			}
-			else
+			
+			// Just now VVFFGL doesn't support scaling images, and CPU renderers don't support mis-matched inputs, so...
+			if ((_renderer.plugin.mode == FFGLPluginModeGPU)
+				|| (([input imageBounds].size.width == _renderer.size.width) && ([input imageBounds].size.height == _renderer.size.height)))
 			{
-				image = nil;
+				FFGLImage *image;
+				// prep the QC images texture for being turned into a FFGL image.
+				// our FFImageUnlockQCInput callback will unlock for us.
+				if(input && [input lockTextureRepresentationWithColorSpace:_cspace forBounds:[input imageBounds]])
+				{	
+					
+					//NSLog(@"have QCimage for key %@ and locked rep", key);
+									
+					
+					//NSLog(@"new FFGL based on rect texture: %u", [input textureName]);
+					
+					
+					image = [[FFGLImage alloc] initWithTextureRect:[input textureName]
+														CGLContext:cgl_ctx
+														pixelsWide:[input imageBounds].size.width
+														pixelsHigh:[input imageBounds].size.height
+														   flipped:[input textureFlipped]
+												   releaseCallback:FFImageUnlockQCInput
+													   releaseInfo:input];
+				}
+				else
+				{
+					image = nil;
+				}
+				[_renderer setValue:image forParameterKey:key];
+				[image release];
 			}
-			[_renderer setValue:image forParameterKey:key];
-			[image release];
 		}
 		else if (needsAllInputs || [self didValueForInputKeyChange:key])
 		{
