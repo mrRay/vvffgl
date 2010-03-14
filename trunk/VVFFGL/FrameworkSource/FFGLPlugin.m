@@ -565,15 +565,11 @@ static void finalizer()
     }
 }
 
-- (void)_setValue:(NSString *)value forStringParameterAtIndex:(NSUInteger)index ofInstance:(FFGLPluginInstance)instance
+- (void)_setValue:(char *)value forStringParameterAtIndex:(NSUInteger)index ofInstance:(FFGLPluginInstance)instance
 {
-    if (value == nil) {
-        value = @"";
-    }
     FFSetParameterStruct param;
     param.ParameterNumber = index;
-	// TODO: This isn't going to work - cString won't stick around long enough
-    param.NewParameterValue = (FFMixed)(void *)[(NSString *)value cStringUsingEncoding:NSASCIIStringEncoding];
+    param.NewParameterValue = (FFMixed)(void *)value;
     ffglPPrivate(main)(FF_SETPARAMETER, (FFMixed)(void *)&param, instance);
 }
 

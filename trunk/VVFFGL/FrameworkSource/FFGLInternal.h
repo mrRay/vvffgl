@@ -117,7 +117,7 @@ bool ffglGLInfoForPixelFormat(NSString *ffglFormat, GLenum *format, GLenum *type
 - (FFGLPluginInstance)_newInstanceWithSize:(NSSize)dimensions pixelFormat:(NSString *)format; // GPU renderers can pass in nil for pixelFormat
 - (void)_disposeInstance:(FFGLPluginInstance)instance;
 - (id)_valueForNonImageParameterKey:(NSString *)key ofInstance:(FFGLPluginInstance)instance;
-- (void)_setValue:(NSString *)value forStringParameterAtIndex:(NSUInteger)index ofInstance:(FFGLPluginInstance)instance;
+- (void)_setValue:(char *)value forStringParameterAtIndex:(NSUInteger)index ofInstance:(FFGLPluginInstance)instance;
 - (void)_setValue:(NSNumber *)value forNumberParameterAtIndex:(NSUInteger)index ofInstance:(FFGLPluginInstance)instance;
 - (void)_setTime:(NSTimeInterval)time ofInstance:(FFGLPluginInstance)instance;
 - (BOOL)_imageInputAtIndex:(uint32_t)index willBeUsedByInstance:(FFGLPluginInstance)instance;

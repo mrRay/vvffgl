@@ -23,8 +23,8 @@ typedef struct FFGLRendererPrivate
 {
     BOOL                *imageInputValidity;
     NSInteger           readyState;
-    FFGLImage           *output;
-    id                  params;
+    id                  paramsBindable;
+	char				**stringParams;
     pthread_mutex_t     lock;
     OSSpinLock          paramsBindableCreationLock;
 } FFGLRendererPrivate;
@@ -94,8 +94,8 @@ typedef struct FFGLRendererPrivate
 			NSUInteger maxInputs = [plugin _maximumInputFrameCount];
             
 			ffglRPrivate(imageInputValidity) = NULL;
-			ffglRPrivate(output) = nil;
-			ffglRPrivate(params) = nil;
+			ffglRPrivate(stringParams) = nil;
+			ffglRPrivate(paramsBindable) = nil;
 			ffglRPrivate(paramsBindableCreationLock) = OS_SPINLOCK_INIT;
 
 			if (maxInputs > 0)
@@ -113,6 +113,20 @@ typedef struct FFGLRendererPrivate
 				{
 					ffglRPrivate(imageInputValidity)[i] = NO;
 					_inputs[i] = nil;
+				}
+			}
+			
+			unsigned int paramCount = [[plugin parameterKeys] count];
+			if (paramCount > 0)
+			{
+				ffglRPrivate(stringParams) = malloc(sizeof(char *) * paramCount);
+				if (ffglRPrivate(stringParams) == NULL)
+				{
+					[self release];
+					return nil;
+				}
+				for (unsigned int i = 0; i < paramCount; i++) {
+					ffglRPrivate(stringParams)[i] = NULL;
 				}
 			}
 			ffglRPrivate(readyState) = FFGLRendererNeedsCheck;
@@ -181,6 +195,14 @@ typedef struct FFGLRendererPrivate
 			free(ffglRPrivate(imageInputValidity));
 		}
 		pthread_mutex_destroy(&ffglRPrivate(lock));
+		if (ffglRPrivate(stringParams) != NULL)
+		{
+			unsigned int paramCount = [[_plugin parameterKeys] count];
+			for (unsigned int i = 0; i < paramCount; i++) {
+				free(ffglRPrivate(stringParams)[i]);
+			}
+			free(ffglRPrivate(stringParams));
+		}
 		free(_private);
 	}
 	free(_inputs);
@@ -196,8 +218,7 @@ typedef struct FFGLRendererPrivate
 {
 	if (_private != NULL)
 	{
-		[ffglRPrivate(params) release];
-		[ffglRPrivate(output) release];
+		[ffglRPrivate(paramsBindable) release];
 	}
 	NSUInteger inputCount = [_plugin _maximumInputFrameCount];
 	for (int i = 0; i < inputCount; i++) {
@@ -303,9 +324,9 @@ typedef struct FFGLRendererPrivate
 
 - (void)setValue:(id)value forParameterKey:(NSString *)key
 {
-    [ffglRPrivate(params) willChangeValueForKey:key];
+    [ffglRPrivate(paramsBindable) willChangeValueForKey:key];
     [self _performSetValue:value forParameterKey:key];
-    [ffglRPrivate(params) didChangeValueForKey:key];
+    [ffglRPrivate(paramsBindable) didChangeValueForKey:key];
 }
 
 - (void)_performSetValue:(id)value forParameterKey:(NSString *)key
@@ -349,7 +370,16 @@ typedef struct FFGLRendererPrivate
 		}
 		if ([type isEqualToString:FFGLParameterTypeString])
 		{
-			[_plugin _setValue:value forStringParameterAtIndex:index ofInstance:_instance];
+			free(ffglRPrivate(stringParams)[index]);
+			if (value == nil)
+			{
+				ffglRPrivate(stringParams)[index] = NULL;
+			}
+			else
+			{
+				ffglRPrivate(stringParams)[index] = strdup([value cStringUsingEncoding:NSASCIIStringEncoding]);
+			}
+			[_plugin _setValue:ffglRPrivate(stringParams)[index] forStringParameterAtIndex:index ofInstance:_instance];
 			ffglRPrivate(readyState) = FFGLRendererNeedsCheck;
 		}
 		else
@@ -369,12 +399,12 @@ typedef struct FFGLRendererPrivate
 - (id)parameters
 {
     OSSpinLockLock(&ffglRPrivate(paramsBindableCreationLock));
-    if (ffglRPrivate(params) == nil)
+    if (ffglRPrivate(paramsBindable) == nil)
     {
-        ffglRPrivate(params) = [[FFGLRendererParametersBindable alloc] initWithRenderer:self]; // released in dealloc
+        ffglRPrivate(paramsBindable) = [[FFGLRendererParametersBindable alloc] initWithRenderer:self]; // released in dealloc
     }
     OSSpinLockUnlock(&ffglRPrivate(paramsBindableCreationLock));
-    return ffglRPrivate(params);
+    return ffglRPrivate(paramsBindable);
 }
 
 - (FFGLImage *)createOutputAtTime:(NSTimeInterval)time
