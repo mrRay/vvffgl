@@ -82,14 +82,14 @@
                 [(NSButton *)control setButtonType:NSMomentaryLightButton];
                 [(NSButton *)control setTitle:@"Trigger"];
             } else if ([type isEqualToString:FFGLParameterTypeString]) {
-                control = [[[NSTextField alloc] initWithFrame:NSMakeRect(origin.x, origin.y, 100, 96)] autorelease];
+                control = [[[NSTextField alloc] initWithFrame:NSMakeRect(origin.x, origin.y-2, [self frame].size.width - 40 - [label frame].size.width - 8, 19)] autorelease];
+				[(NSTextField *)control setFont:[NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSSmallControlSize]]];
             } else if ([type isEqualToString:FFGLParameterTypeImage]) {
                 control = [[[NSTextField alloc] initWithFrame:NSMakeRect(origin.x, origin.y, 100.0, 14.0)] autorelease];
                 [(NSTextField *)control setBordered:NO];
                 [(NSTextField *)control setEditable:NO];
                 [(NSTextField *)control setDrawsBackground:NO];
                 [(NSTextField *)control setFont:[NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSSmallControlSize]]];
-                [[(NSTextField *)control cell] setControlSize:NSSmallControlSize];                
                 [(NSTextField *)control setStringValue:@"-"];
                 [(NSTextField *)control sizeToFit];
             }

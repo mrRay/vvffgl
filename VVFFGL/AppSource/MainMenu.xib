@@ -12,8 +12,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="567"/>
 			<integer value="368"/>
+			<integer value="452"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1404,7 +1404,7 @@
 								<object class="NSTabViewItem" id="36106101">
 									<string key="NSIdentifier">1</string>
 									<object class="NSView" key="NSView" id="1055275406">
-										<nil key="NSNextResponder"/>
+										<reference key="NSNextResponder" ref="855860773"/>
 										<int key="NSvFlags">256</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1727,6 +1727,7 @@
 											</object>
 										</object>
 										<string key="NSFrame">{{10, 33}, {521, 299}}</string>
+										<reference key="NSSuperview" ref="855860773"/>
 									</object>
 									<string key="NSLabel">Sources</string>
 									<reference key="NSColor" ref="775673247"/>
@@ -1735,7 +1736,7 @@
 								<object class="NSTabViewItem" id="893833310">
 									<string key="NSIdentifier">2</string>
 									<object class="NSView" key="NSView" id="951225431">
-										<reference key="NSNextResponder" ref="855860773"/>
+										<nil key="NSNextResponder"/>
 										<int key="NSvFlags">274</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2050,21 +2051,20 @@
 											</object>
 										</object>
 										<string key="NSFrame">{{10, 33}, {521, 299}}</string>
-										<reference key="NSSuperview" ref="855860773"/>
 									</object>
 									<string key="NSLabel">Effects</string>
 									<reference key="NSColor" ref="775673247"/>
 									<reference key="NSTabView" ref="855860773"/>
 								</object>
 							</object>
-							<reference key="NSSelectedTabViewItem" ref="893833310"/>
+							<reference key="NSSelectedTabViewItem" ref="36106101"/>
 							<reference key="NSFont" ref="1052143821"/>
 							<int key="NSTvFlags">0</int>
 							<bool key="NSAllowTruncatedLabels">YES</bool>
 							<bool key="NSDrawsBackground">YES</bool>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
-								<reference ref="951225431"/>
+								<reference ref="1055275406"/>
 							</object>
 						</object>
 					</object>
