@@ -264,10 +264,6 @@ typedef struct FFGLRendererPrivate
     }
     if ([[attributes objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
         NSUInteger index = [[attributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
-        NSUInteger min = [_plugin _minimumInputFrameCount];
-        if (index < min) {
-            return YES;
-        }
         pthread_mutex_lock(&ffglRPrivate(lock));
 		CGLContextObj prev;
 		FFGLPluginMode mode = [_plugin mode];
