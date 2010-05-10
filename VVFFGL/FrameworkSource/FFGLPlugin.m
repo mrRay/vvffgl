@@ -590,6 +590,10 @@ static void finalizer()
 
 - (BOOL)_imageInputAtIndex:(uint32_t)index willBeUsedByInstance:(FFGLPluginInstance)instance
 {
+	if (index < ffglPPrivate(minFrames))
+	{
+		return YES;
+	}
     return ffglPPrivate(main)(FF_GETINPUTSTATUS, (FFMixed)index, instance).UIntValue;
 }
 
