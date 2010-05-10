@@ -89,23 +89,19 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
 	if (_buffers[index] != NULL)
 	{
 		[prevImage unlockBufferRepresentation];
-	}
-    if ([newImage lockBufferRepresentationWithPixelFormat:_pixelFormat]) {
-        if (([newImage imagePixelsHigh] != _size.height) || ([newImage imagePixelsWide] != _size.width))
-		{
-			[newImage unlockBufferRepresentation];
-			_buffers[index] = NULL;
-            // Not sure what we do here - for now raise exception, could just return NO.
-            // But that failure is only used within FFGLRenderer, not transmitted to client.
-            [NSException raise:@"FFGLRendererException" format:@"Input image dimensions or format do not match renderer."];
-            return NO;
-        }
-        _buffers[index] = (void *)[newImage bufferBaseAddress];
-        return YES;
-    } else {
 		_buffers[index] = NULL;
-        return NO;
-    }
+	}
+	if (([newImage imagePixelsHigh] != _size.height) || ([newImage imagePixelsWide] != _size.width))
+	{
+		// Not sure what we do here - for now raise exception, could just return NO.
+		// But that failure is only used within FFGLRenderer, not transmitted outside framework.
+		[NSException raise:@"FFGLRendererException" format:@"Input image dimensions or format do not match renderer."];
+		return NO;
+	}
+	else
+	{
+		return YES;
+	}
 }
 
 - (void)_implementationSetImageInputCount:(NSUInteger)count
@@ -119,12 +115,31 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
 #if defined(FFGL_USE_BUFFER_POOLS)
     FFGLPoolObjectRef obj = FFGLPoolObjectCreate(_pool);
     _fcStruct.outputFrame = (void *)FFGLPoolObjectGetData(obj);
-#else
-    _fcStruct.outputFrame = valloc(_bytesPerBuffer);
-#endif
-    if (_fcStruct.outputFrame == NULL) {
+	if (_fcStruct.outputFrame == NULL) {
+		FFGLPoolObjectRelease(obj);
         return nil;
     }
+#else
+    _fcStruct.outputFrame = valloc(_bytesPerBuffer);
+	if (_fcStruct.outputFrame == NULL) {
+        return nil;
+    }
+#endif
+	for (int i = 0; i < _fcStruct.inputFrameCount; i++) {
+		if (_buffers[i] == NULL && [_plugin _imageInputAtIndex:i willBeUsedByInstance:_instance])
+		{
+			if ([_inputs[i] lockBufferRepresentationWithPixelFormat:_pixelFormat]) {
+				_buffers[i] = (void *)[_inputs[i] bufferBaseAddress];
+			} else {
+#if defined(FFGL_USE_BUFFER_POOLS)
+				FFGLPoolObjectRelease(obj);
+#else
+				free(_fcStruct.outputFrame);
+#endif
+				return nil;
+			}
+		}
+	}
     if (_frameCopies) {
         result = [_plugin _processFrameCopy:&_fcStruct forInstance:_instance];
     } else {

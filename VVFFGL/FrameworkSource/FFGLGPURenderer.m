@@ -289,14 +289,17 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 	FFGLImage *output = nil;
 	
 	for (int i = 0; i < _frameStruct.inputTextureCount; i++) {
-		if ([_inputs[i] lockTexture2DRepresentation])
+		if ([_plugin _imageInputAtIndex:i willBeUsedByInstance:_instance])
 		{
-			_frameStruct.inputTextures[i] = [_inputs[i] _texture2DInfo];
-		}
-		else
-		{
-			_frameStruct.inputTextures[i] = NULL;
-			result = NO;
+			if ([_inputs[i] lockTexture2DRepresentation])
+			{
+				_frameStruct.inputTextures[i] = [_inputs[i] _texture2DInfo];
+			}
+			else
+			{
+				_frameStruct.inputTextures[i] = NULL;
+				result = NO;
+			}
 		}
 	}
 	
