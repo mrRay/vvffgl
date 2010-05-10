@@ -409,24 +409,17 @@ typedef struct FFGLRendererPrivate
     pthread_mutex_lock(&ffglRPrivate(lock));
     if (ffglRPrivate(readyState) == FFGLRendererNeedsCheck)
     {
-        NSUInteger i;
-        NSUInteger min = [_plugin _minimumInputFrameCount];
         NSUInteger max = [_plugin _maximumInputFrameCount];
-        NSUInteger got = 0;
+        NSUInteger got;
         ffglRPrivate(readyState) = FFGLRendererReady;
-        for (i = 0; i < min; i++) {
-            if (ffglRPrivate(imageInputValidity)[i] == NO) {
-                ffglRPrivate(readyState) = FFGLRendererNotReady;
-                break;
+        for (got = 0; got < max; got++) {
+            if (ffglRPrivate(imageInputValidity)[got] == NO) {
+				if ([_plugin _imageInputAtIndex:got willBeUsedByInstance:_instance])
+				{
+					ffglRPrivate(readyState) = FFGLRendererNotReady;
+				}
+				break;
             }
-            got++;
-        }
-        for (; i < max; i++) {
-            if ((ffglRPrivate(imageInputValidity)[i] == NO) && [_plugin _imageInputAtIndex:i willBeUsedByInstance:_instance]) {
-                ffglRPrivate(readyState) = FFGLRendererNotReady;
-                break;
-            }
-            got++;
         }
         [self _implementationSetImageInputCount:got];
     }
