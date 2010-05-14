@@ -86,6 +86,9 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
 
 - (BOOL)_implementationReplaceImage:(FFGLImage *)prevImage withImage:(FFGLImage *)newImage forInputAtIndex:(NSUInteger)index
 {
+	// We lock buffer representation once the first time we render with the input. That input remains locked until it's
+	// replaced (because generating a buffer can be expensive) so here we unlock the image being replaced but don't lock the new image yet
+	// The presence of the buffer address doubles as a flag to indicate if it's locked or not (NOT NULL == locked)
 	if (_buffers[index] != NULL)
 	{
 		[prevImage unlockBufferRepresentation];
@@ -128,9 +131,11 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
 	for (int i = 0; i < _fcStruct.inputFrameCount; i++) {
 		if (_buffers[i] == NULL && [_plugin _imageInputAtIndex:i willBeUsedByInstance:_instance])
 		{
+			// This is the first render with this input, so lock the buffer. Unlocked in _implementationReplaceImage...
 			if ([_inputs[i] lockBufferRepresentationWithPixelFormat:_pixelFormat]) {
 				_buffers[i] = (void *)[_inputs[i] bufferBaseAddress];
 			} else {
+				// Couldn't lock so bail
 #if defined(FFGL_USE_BUFFER_POOLS)
 				FFGLPoolObjectRelease(obj);
 #else

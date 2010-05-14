@@ -14,8 +14,7 @@
  
  These are some immutable classes for buffer and texture storage.
  
- They DO NOT perform CGLContext switching or locking, so do that before
- calling any of their init methods.
+ They DO NOT perform CGLContext locking, so do that before calling any of their init methods.
  
  They ARE NOT thread-safe, so make sure FFGLImage uses them in a thread-
  safe manner - ie from within a lock and without sharing them between images.

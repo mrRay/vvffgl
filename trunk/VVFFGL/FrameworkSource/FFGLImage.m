@@ -41,7 +41,7 @@ typedef struct FFGLImagePrivate {
 #define ffglIPrivate(x) ((FFGLImagePrivate *)_private)->x
 
 @interface FFGLImage (Private)
-- (id)initWithCGLContext:(CGLContextObj)context retainedImageRep:(FFGLImageRep *)rep usePOT2D:(FFGLImagePOT2DRule)POT;
+- (id)initWithCGLContext:(CGLContextObj)context imageRep:(FFGLImageRep *)rep usePOT2D:(FFGLImagePOT2DRule)POT;
 - (void)releaseResources;
 
 /*
@@ -59,7 +59,7 @@ typedef struct FFGLImagePrivate {
  Our private designated initializer
  */
 
-- (id)initWithCGLContext:(CGLContextObj)context retainedImageRep:(FFGLImageRep *)rep usePOT2D:(FFGLImagePOT2DRule)POT
+- (id)initWithCGLContext:(CGLContextObj)context imageRep:(FFGLImageRep *)rep usePOT2D:(FFGLImagePOT2DRule)POT
 {
     if (self = [super init]) {
         if (rep == nil
@@ -74,7 +74,7 @@ typedef struct FFGLImagePrivate {
 				
 		if (rep.type == FFGLImageRepTypeTexture2D)
 		{
-			ffglIPrivate(texture2D) = ((FFGLTextureRep *)rep);
+			ffglIPrivate(texture2D) = [((FFGLTextureRep *)rep) retain];
 			ffglIPrivate(textureRect) = nil;
 			ffglIPrivate(buffer) = nil;
 			ffglIPrivate(imageWidth) = ((FFGLTextureRep *)rep).textureInfo->width;
@@ -82,7 +82,7 @@ typedef struct FFGLImagePrivate {
 		}
 		else if (rep.type == FFGLImageRepTypeTextureRect)
 		{
-			ffglIPrivate(textureRect) = ((FFGLTextureRep *)rep);
+			ffglIPrivate(textureRect) = [((FFGLTextureRep *)rep) retain];
 			ffglIPrivate(texture2D) = nil;
 			ffglIPrivate(buffer) = nil;
 			ffglIPrivate(imageWidth) = ((FFGLTextureRep *)rep).textureInfo->width;
@@ -90,7 +90,7 @@ typedef struct FFGLImagePrivate {
 		}
 		else if (rep.type == FFGLImageRepTypeBuffer)
 		{
-			ffglIPrivate(buffer) = ((FFGLBufferRep *)rep);
+			ffglIPrivate(buffer) = [((FFGLBufferRep *)rep) retain];
 			ffglIPrivate(textureRect) = ffglIPrivate(texture2D) = NULL;
 			ffglIPrivate(imageWidth) = ((FFGLBufferRep *)rep).imageWidth;
 			ffglIPrivate(imageHeight) = ((FFGLBufferRep *)rep).imageHeight;
@@ -114,7 +114,9 @@ typedef struct FFGLImagePrivate {
 														isFlipped:isFlipped
 														 callback:callback userInfo:userInfo
 													 asPrimaryRep:YES];
-    return [self initWithCGLContext:context retainedImageRep:rep usePOT2D:FFGLImagePOTUnknown];
+	id image = [self initWithCGLContext:context imageRep:rep usePOT2D:FFGLImagePOTUnknown];
+	[rep release];
+    return image;
 }
 
 - (id)initWithTextureRect:(GLuint)texture CGLContext:(CGLContextObj)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height flipped:(BOOL)isFlipped releaseCallback:(FFGLImageTextureReleaseCallback)callback releaseInfo:(void *)userInfo
@@ -130,7 +132,9 @@ typedef struct FFGLImagePrivate {
 														 callback:callback
 														 userInfo:userInfo
 													 asPrimaryRep:YES];
-    return [self initWithCGLContext:context retainedImageRep:rep usePOT2D:FFGLImagePOTUnknown];
+    id image = [self initWithCGLContext:context imageRep:rep usePOT2D:FFGLImagePOTUnknown];
+	[rep release];
+    return image;
 }
 
 - (id)initWithBuffer:(const void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes flipped:(BOOL)isFlipped releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo
@@ -144,7 +148,10 @@ typedef struct FFGLImagePrivate {
 													  callback:callback
 													  userInfo:userInfo
 												  asPrimaryRep:YES];
-    return [self initWithCGLContext:context retainedImageRep:rep usePOT2D:FFGLImagePOTUnknown];
+	
+    id image = [self initWithCGLContext:context imageRep:rep usePOT2D:FFGLImagePOTUnknown];
+	[rep release];
+    return image;
 }
 
 - (id)initWithCopiedTextureRect:(GLuint)texture CGLContext:(CGLContextObj)context pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height flipped:(BOOL)isFlipped
@@ -170,7 +177,9 @@ typedef struct FFGLImagePrivate {
 														allowingNPOT:useNPOT
 														asPrimaryRep:YES];
 	CGLUnlockContext(context);
-    return [self initWithCGLContext:context retainedImageRep:rep usePOT2D:POTRule];
+	id image = [self initWithCGLContext:context imageRep:rep usePOT2D:POTRule];
+	[rep release];
+    return image;
 }
 
 - (id)initWithCopiedTexture2D:(GLuint)texture CGLContext:(CGLContextObj)context imagePixelsWide:(NSUInteger)imageWidth imagePixelsHigh:(NSUInteger)imageHeight texturePixelsWide:(NSUInteger)textureWidth texturePixelsHigh:(NSUInteger)textureHeight flipped:(BOOL)isFlipped
@@ -194,7 +203,9 @@ typedef struct FFGLImagePrivate {
 														allowingNPOT:useNPOT
 														asPrimaryRep:YES];
 	CGLUnlockContext(context);
-    return [self initWithCGLContext:context retainedImageRep:rep usePOT2D:POTRule];
+    id image = [self initWithCGLContext:context imageRep:rep usePOT2D:POTRule];
+	[rep release];
+    return image;
 }
 
 - (id)initWithCopiedBuffer:(const void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes flipped:(BOOL)isFlipped
@@ -205,7 +216,9 @@ typedef struct FFGLImagePrivate {
 														 pixelFormat:format
 														   isFlipped:isFlipped
 														asPrimaryRep:YES];
-    return [self initWithCGLContext:context retainedImageRep:rep usePOT2D:FFGLImagePOTUnknown];
+    id image = [self initWithCGLContext:context imageRep:rep usePOT2D:FFGLImagePOTUnknown];
+	[rep release];
+    return image;
 }
 
 - (void)releaseResources 
