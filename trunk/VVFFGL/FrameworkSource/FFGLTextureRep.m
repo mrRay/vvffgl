@@ -446,4 +446,17 @@ static void FFGLTextureRepBufferPerformCallback(GLuint name, CGLContextObj cgl_c
 {
 	return &_textureInfo;
 }
+
+-(BOOL)conformsToFreeFrame
+{
+	if (_type == FFGLImageRepTypeTextureRect
+		|| _isFlipped)
+	{
+		return NO;
+	}
+	else
+	{
+		return YES;
+	}
+}
 @end

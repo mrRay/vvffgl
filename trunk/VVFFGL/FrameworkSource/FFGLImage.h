@@ -79,8 +79,8 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *us
  releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo
  
     Creates a new FFGLImage with the provided buffer. The buffer should remain valid and its content unchanged (FFGLImages are immutable) until the function at callback is called.
-    Note that due to limitations in FreeFrame plugins, if there are padding pixels in the buffer (ie if rowBytes != ((the number of bytes per pixel for format) * width)),
-    the buffer will be copied at init. In this case the function provided in callback will be called immediately.
+    Note that due to limitations in FreeFrame plugins, if there are padding pixels in the buffer (ie if rowBytes != ((the number of bytes per pixel for format) * width)) or the buffer
+	is flipped, the buffer will be copied before it is used by a FreeFrame plugin.
 	buffer should be the address of the pixel data in memory
 	context is the CGLContext to be used for texture operations on the image
 	format describes the pixel format of the buffer. It should be one of:
@@ -93,10 +93,10 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *us
 	width is the horizontal dimension of the image
 	height is the vertical dimension of the image
 	rowBytes is the number of bytes in a row of pixels
-	isFlipped indicates the vertical orientation of the image. Flipped images may require an un-flipped copy to be made at init.
-	callback is the function which will be called when the buffer is no longer required by the FFGLImage. This function should free or recycle the memory and any associated resources. It receives as
- its arguments the buffer address and userInfo passed in at init. If you will manage the buffer yourself you may pass in NULL here, but the buffer must remain valid for the lifetime
- of the FFGLImage.
+	isFlipped indicates the vertical orientation of the image.
+	callback is the function which will be called when the buffer is no longer required by the FFGLImage. This function should free or recycle the memory and any associated resources.
+	It receives as its arguments the buffer address and userInfo passed in at init. If you will manage the buffer yourself you may pass in NULL here, but the buffer must remain valid
+	for the lifetime of the FFGLImage.
 	userInfo is a pointer to any user data to be passed to the callback function. May be nil.
  */
 - (id)initWithBuffer:(const void *)buffer CGLContext:(CGLContextObj)context pixelFormat:(NSString *)format pixelsWide:(NSUInteger)width pixelsHigh:(NSUInteger)height bytesPerRow:(NSUInteger)rowBytes flipped:(BOOL)isFlipped releaseCallback:(FFGLImageBufferReleaseCallback)callback releaseInfo:(void *)userInfo;

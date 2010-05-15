@@ -59,4 +59,9 @@
 {
 	return _isPrimary;
 }
+-(BOOL)conformsToFreeFrame
+{
+	// Subclasses override this
+	return NO;
+}
 @end
