@@ -74,8 +74,6 @@
 	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, _greenTexture);
 	
 	// Set up the environment for unpacking
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, kCVTTBTexWidth);
 	
 	glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_TRUE);
 
@@ -207,7 +205,6 @@
 			glPushAttrib(GL_TEXTURE_BIT | GL_ENABLE_BIT);
 			glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
 			
-			glActiveTexture(GL_TEXTURE0);
 			glEnable(targetGL);
 			
 			
@@ -221,21 +218,12 @@
 			// Bind our texture
 			glBindTexture(targetGL, sourceTexture);
 			// Make sure pixel-storage is set up as we need it
-			glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-			glPixelStorei(GL_PACK_ROW_LENGTH, size.width);
-			glPixelStorei(GL_PACK_IMAGE_HEIGHT, 0);
-			glPixelStorei(GL_PACK_ALIGNMENT, 1);
-			glPixelStorei(GL_PACK_LSB_FIRST, GL_FALSE);
-			glPixelStorei(GL_PACK_SKIP_IMAGES, 0);
-			glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-			glPixelStorei(GL_PACK_SKIP_ROWS, 0);
-			glPixelStorei(GL_PACK_SWAP_BYTES, GL_FALSE);
 			
-			glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+			glTexParameteri(targetGL, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(targetGL, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(targetGL, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(targetGL, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(targetGL, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 			
 			// Get the pixel data
 			glGetTexImage(targetGL, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, newBuffer);
@@ -257,15 +245,6 @@
 			glBindTexture(targetGL, newBufferTexture);
 			
 			// Set up the environment for unpacking
-			glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-			glPixelStorei(GL_UNPACK_ROW_LENGTH, size.width);
-			glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0);
-			glPixelStorei(GL_UNPACK_LSB_FIRST, GL_FALSE);
-			glPixelStorei(GL_UNPACK_SKIP_IMAGES, 0);
-			glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
-			glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
-			glPixelStorei(GL_UNPACK_SWAP_BYTES, GL_FALSE);
 			
 			glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_TRUE);
 
