@@ -330,4 +330,16 @@ static void FFGLBufferRepBufferRepReleaseForTexture(const void *baseAddress, voi
 {
 	return _pixelFormat;
 }
+-(BOOL)conformsToFreeFrame
+{
+	if (_isFlipped == YES
+	|| _rowBytes != ffglBytesPerPixelForPixelFormat(_pixelFormat) * _width)
+	{
+		return NO;
+	}
+	else
+	{
+		return YES;
+	}
+}
 @end

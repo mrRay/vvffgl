@@ -55,6 +55,7 @@ enum {
 @property (readonly) FFGLImageRepType type;
 @property (readonly) BOOL isFlipped;
 @property (readonly) BOOL isPrimaryRep;
+@property (readonly) BOOL conformsToFreeFrame;
 @end
 
 @interface FFGLImageRep (Copying)

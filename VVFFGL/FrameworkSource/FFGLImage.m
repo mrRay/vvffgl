@@ -285,11 +285,8 @@ typedef struct FFGLImagePrivate {
 	BOOL result = NO;
     if (ffglIPrivate(texture2D))
     {
-		if (ffglIPrivate(texture2D).isFlipped == YES)
+		if (ffglIPrivate(texture2D).conformsToFreeFrame == NO)
 		{
-			// An FFGLImage may be initted with a flipped texture, but we always lock with it not flipped
-			// as plugins don't support flipping
-			
 			CGLLockContext(ffglIPrivate(context));
 			
 			FFGLTextureRep *rep = [ffglIPrivate(texture2D) copyAsType:FFGLImageRepTypeTexture2D
@@ -484,9 +481,9 @@ typedef struct FFGLImagePrivate {
 		// We don't support converting between different pixel-formats (yet?).
 		if ([format isEqualToString:ffglIPrivate(buffer).pixelFormat])
 		{
-			if (ffglIPrivate(buffer).isFlipped == YES)
+			if (ffglIPrivate(buffer).conformsToFreeFrame == NO)
 			{
-				// We may have been initted with a flipped buffer. We turn it the right way up now.
+				// We may have been initted with a flipped buffer or padded rows. We fix that now.
 				
 				FFGLBufferRep *rep = [ffglIPrivate(buffer) copyAsType:FFGLImageRepTypeBuffer
 														  pixelFormat:ffglIPrivate(buffer).pixelFormat
