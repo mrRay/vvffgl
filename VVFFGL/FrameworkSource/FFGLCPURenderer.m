@@ -158,7 +158,7 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
     if (result)
 	{
         output = [[FFGLImage alloc] initWithBuffer:_fcStruct.outputFrame
-										CGLContext:_context
+										CGLContext:cgl_ctx
 									   pixelFormat:_pixelFormat
 										pixelsWide:_size.width
 										pixelsHigh:_size.height
@@ -176,7 +176,7 @@ static void FFGLCPURendererFree(const void *baseAddress, void *context)
 	if (result)
 	{
         output = [[FFGLImage alloc] initWithBuffer:_fcStruct.outputFrame
-										CGLContext:_context
+										CGLContext:cgl_ctx
 									   pixelFormat:_pixelFormat
 										pixelsWide:_size.width
 										pixelsHigh:_size.height

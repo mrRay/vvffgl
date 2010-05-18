@@ -152,7 +152,7 @@ typedef struct FFGLRendererPrivate
             }
             _plugin = [plugin retain];
 			
-			_context = CGLRetainContext(context);                
+			cgl_ctx = CGLRetainContext(context);                
             
             _size = size;
             _pixelFormat = [format retain];
@@ -174,19 +174,19 @@ typedef struct FFGLRendererPrivate
 		FFGLPluginMode mode = [_plugin mode];
 		if (mode == FFGLPluginModeGPU)
 		{
-			ffglSetContext(_context, prev);
-			CGLLockContext(_context);
+			ffglSetContext(cgl_ctx, prev);
+			CGLLockContext(cgl_ctx);
 		}
         [_plugin _disposeInstance:_instance];
 		if (mode == FFGLPluginModeGPU)
 		{
-			CGLUnlockContext(_context);
-			ffglRestoreContext(_context, prev);
+			CGLUnlockContext(cgl_ctx);
+			ffglRestoreContext(cgl_ctx, prev);
 		}
 	}
-	if(_context != nil)
+	if(cgl_ctx != nil)
 	{
-		CGLReleaseContext(_context);
+		CGLReleaseContext(cgl_ctx);
 	}
 	if (_private != NULL)
 	{
@@ -237,7 +237,7 @@ typedef struct FFGLRendererPrivate
 
 - (CGLContextObj)context
 {
-    return _context;
+    return cgl_ctx;
 }
 
 - (NSSize)size
@@ -265,19 +265,24 @@ typedef struct FFGLRendererPrivate
     if ([[attributes objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
         NSUInteger index = [[attributes objectForKey:FFGLParameterAttributeIndexKey] unsignedIntValue];
         pthread_mutex_lock(&ffglRPrivate(lock));
+		/*
+		 // This is probably over-cautious and isn't required by the spec, so let's try not doing it
 		CGLContextObj prev;
 		FFGLPluginMode mode = [_plugin mode];
 		if (mode == FFGLPluginModeGPU)
 		{
-			ffglSetContext(_context, prev);
-			CGLLockContext(_context);
+			ffglSetContext(cgl_ctx, prev);
+			CGLLockContext(cgl_ctx);
 		}
+		 */
         BOOL result = [_plugin _imageInputAtIndex:index willBeUsedByInstance:_instance];
+		/*
 		if (mode == FFGLPluginModeGPU)
 		{
-			CGLUnlockContext(_context);
-			ffglRestoreContext(_context, prev);
+			CGLUnlockContext(cgl_ctx);
+			ffglRestoreContext(cgl_ctx, prev);
 		}
+		 */
         pthread_mutex_unlock(&ffglRPrivate(lock));
 		return result;
     } else {
@@ -299,19 +304,25 @@ typedef struct FFGLRendererPrivate
     if ([[attributes objectForKey:FFGLParameterAttributeTypeKey] isEqualToString:FFGLParameterTypeImage]) {
         output = _inputs[index];
     } else {
+		/*
+		 // This is probably over-cautious and isn't required by the spec, so let's try not doing it
 		CGLContextObj prev;
 		FFGLPluginMode mode = [_plugin mode];
 		if (mode == FFGLPluginModeGPU)
 		{
-			ffglSetContext(_context, prev);
-			CGLLockContext(_context);
+			ffglSetContext(cgl_ctx, prev);
+			CGLLockContext(cgl_ctx);
 		}
+		 */
+		// TODO: change this method to accept the index, not key, to save the double index lookup
         output = [_plugin _valueForNonImageParameterKey:key ofInstance:_instance];
+		/*
 		if (mode == FFGLPluginModeGPU)
 		{
-			CGLUnlockContext(_context);
-			ffglRestoreContext(_context, prev);
+			CGLUnlockContext(cgl_ctx);
+			ffglRestoreContext(cgl_ctx, prev);
 		}
+		 */
     }
 	[[output retain] autorelease];
     pthread_mutex_unlock(&ffglRPrivate(lock));
@@ -357,13 +368,16 @@ typedef struct FFGLRendererPrivate
     }
 	else
 	{
+		/*
+		 // This is probably over-cautious and isn't required by the spec, so let's try not doing it
 		CGLContextObj prev;
 		FFGLPluginMode mode = [_plugin mode];
 		if (mode == FFGLPluginModeGPU)
 		{
-			ffglSetContext(_context, prev);
-			CGLLockContext(_context);
+			ffglSetContext(cgl_ctx, prev);
+			CGLLockContext(cgl_ctx);
 		}
+		 */
 		if ([type isEqualToString:FFGLParameterTypeString])
 		{
 			free(ffglRPrivate(stringParams)[index]);
@@ -383,11 +397,13 @@ typedef struct FFGLRendererPrivate
 			[_plugin _setValue:value forNumberParameterAtIndex:index ofInstance:_instance];
 			ffglRPrivate(readyState) = FFGLRendererNeedsCheck;
 		}
+		/*
 		if (mode == FFGLPluginModeGPU)
 		{
-			CGLUnlockContext(_context);
-			ffglRestoreContext(_context, prev);
+			CGLUnlockContext(cgl_ctx);
+			ffglRestoreContext(cgl_ctx, prev);
 		}
+		 */
 	}
     pthread_mutex_unlock(&ffglRPrivate(lock));
 }

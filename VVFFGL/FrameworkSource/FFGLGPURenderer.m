@@ -223,7 +223,6 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 - (void)nonGCCleanup
 {
 	CGLContextObj prevContext;
-	CGLContextObj cgl_ctx = _context;
 	
 	ffglSetContext(cgl_ctx, prevContext);
 	
@@ -279,7 +278,6 @@ static BOOL FFGLGPURendererSetupFBO(CGLContextObj cgl_ctx, GLenum textureTarget,
 
 - (FFGLImage *)_implementationCreateOutput
 {
-    CGLContextObj cgl_ctx = _context;
 	CGLContextObj prevContext;
 	
 	ffglSetContext(cgl_ctx, prevContext);
