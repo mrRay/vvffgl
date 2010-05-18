@@ -31,7 +31,7 @@ typedef NSUInteger FFGLRendererHint;
 @protected
     FFGLRendererHint	_outputHint;
     FFGLPlugin          *_plugin;
-    CGLContextObj       _context;
+    CGLContextObj       cgl_ctx;
     NSSize              _size;
     NSString            *_pixelFormat;
     void                *_instance;
