@@ -64,4 +64,8 @@
 	// Subclasses override this
 	return NO;
 }
+- (void)drawInContext:(CGLContextObj)context inRect:(NSRect)destRect fromRect:(NSRect)srcRect
+{
+	// Subclasses override this
+}
 @end

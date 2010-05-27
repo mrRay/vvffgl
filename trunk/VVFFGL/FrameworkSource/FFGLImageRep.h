@@ -56,6 +56,7 @@ enum {
 @property (readonly) BOOL isFlipped;
 @property (readonly) BOOL isPrimaryRep;
 @property (readonly) BOOL conformsToFreeFrame;
+- (void)drawInContext:(CGLContextObj)context inRect:(NSRect)destRect fromRect:(NSRect)srcRect;
 @end
 
 @interface FFGLImageRep (Copying)

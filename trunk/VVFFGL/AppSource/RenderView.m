@@ -124,7 +124,7 @@
 	    [image unlockTextureRectRepresentation];
 	} 
 	*/
-
+	/*
 	if ([image lockTexture2DRepresentation])
 	{
 	    // draw it
@@ -166,12 +166,18 @@
 	    glBindTexture(GL_TEXTURE_2D, 0);
 	    glDisable(GL_TEXTURE_2D);
 	    [image unlockTexture2DRepresentation];
-	} 
+	}
 	
 	else if (image != nil) {
         NSLog(@"lockBufferRepresentationWithPixelFormat failed");
     }
- 
+ */	
+	NSUInteger w = [image imagePixelsWide];
+	NSUInteger h = [image imagePixelsHigh];
+	// Calculate origin, using floorf() to remain pixel-aligned
+	CGPoint at = CGPointMake(floorf((bounds.size.width / 2.0) - (w / 2.0)), floorf((bounds.size.height / 2.0) - ( h / 2.0)));
+	[image drawInContext:cgl_ctx inRect:(NSRect){at.x, at.y, w, h} fromRect:(NSRect){0, 0, w, h}];
+//	[image drawInContext:cgl_ctx inRect:(NSRect){0, 0, bounds.size.width, bounds.size.height} fromRect:(NSRect){0, 0, w, h}];	
 	CGLFlushDrawable(cgl_ctx);	
 	CGLUnlockContext(cgl_ctx);
 }

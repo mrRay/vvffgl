@@ -576,4 +576,30 @@ typedef struct FFGLImagePrivate {
 {
     return ffglIPrivate(buffer).isFlipped;
 }
+
+- (void)drawInContext:(CGLContextObj)context inRect:(NSRect)destRect fromRect:(NSRect)srcRect
+{
+	pthread_mutex_lock(&ffglIPrivate(conversionLock));
+	FFGLImageRep *source;
+	if (ffglIPrivate(texture2D))
+	{
+		source = ffglIPrivate(texture2D);
+	}
+	else if (ffglIPrivate(textureRect))
+	{
+		source = ffglIPrivate(textureRect);
+	}
+	else if (ffglIPrivate(buffer))
+	{
+		source = ffglIPrivate(buffer);
+	}
+	else
+	{
+		source = nil;
+	}
+	CGLLockContext(context); // or maybe have the caller do this
+	[source drawInContext:context inRect:destRect fromRect:srcRect];
+	CGLUnlockContext(context);
+	pthread_mutex_unlock(&ffglIPrivate(conversionLock));
+}
 @end

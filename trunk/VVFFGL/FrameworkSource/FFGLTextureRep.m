@@ -197,79 +197,16 @@ static void FFGLTextureRepBufferPerformCallback(GLuint name, CGLContextObj cgl_c
 		// draw the texture.
 		
 		glActiveTexture(GL_TEXTURE0);
-		glEnable(fromGLTarget);
-		glBindTexture(fromGLTarget, texture);
-		
-		glTexParameteri(fromGLTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(fromGLTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(fromGLTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(fromGLTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);				
-		glTexParameteri(fromGLTarget, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);				
-		
-		//				GLfloat texImageWidth, texImageHeight;
-		//
-		//				texImageWidth = fromGLTarget == GL_TEXTURE_2D ? (GLfloat) fromTexture->width / (GLfloat)fromTexture->hardwareWidth : fromTexture->width;
-		//				texImageHeight = fromGLTarget == GL_TEXTURE_2D ? (GLfloat)fromTexture->height / (GLfloat)fromTexture->hardwareHeight : fromTexture->height;
-		//				GLfloat fboImageWidth, fboImageHeight;
-		//				fboImageWidth = toTexture->width;
-		//				fboImageHeight = toTexture->height;
-		//				NSLog(@"%@ -> %@ flipped: %@ texWidth: %f texHeight: %f fboImageWidth: %d fboImageHeight: %d", fromTarget == GL_TEXTURE_2D ? @"2D" : @"Rect", toTarget == GL_TEXTURE_2D ? @"2D" : @"Rect", fromTextureRep->flipped ? @"YES" : @"NO", texWidth, texHeight, fboImageWidth, fboImageHeight);
-		
-		GLfloat tax, tay, tbx, tby, tcx, tcy, tdx, tdy, vax, vay, vbx, vby, vcx, vcy, vdx, vdy;
-		
-		tax = tay = tbx = tdy = 0.0;
-		tby = tcy = (fromGLTarget == GL_TEXTURE_2D ? (GLfloat)imageHeight / (GLfloat)fromTextureHeight : imageHeight);
-		tcx = tdx = (fromGLTarget == GL_TEXTURE_2D ? (GLfloat)imageWidth / (GLfloat)fromTextureWidth : imageWidth);
-		
-		GLfloat tex_coords[] =
-		{
-			tax, tay,
-			tbx, tby,
-			tcx, tcy,
-			tdx, tdy
-		};
-		
-		vax = vbx = 0.0;
-		vcx = vdx = imageWidth;
-		
-		if (flipped)
-		{
-			vay = vdy = imageHeight;
-			vby = vcy = 0.0;
-		}
-		else
-		{
-			vay = vdy = 0.0;
-			vby = vcy = imageHeight;
-		}
-		
-		GLfloat verts[] =
-		{
-			vax, vay,
-			vbx, vby,
-			vcx, vcy,
-			vdx, vdy
-		};
-		/*
-		 // The following seems to upset things weirdly. Not sure why...
-		glDisableClientState(GL_COLOR_ARRAY);
-		glDisableClientState(GL_EDGE_FLAG_ARRAY);
-		glDisableClientState(GL_INDEX_ARRAY);
-		glDisableClientState(GL_NORMAL_ARRAY);
-		 */
-		glEnableClientState( GL_TEXTURE_COORD_ARRAY );
-		glTexCoordPointer(2, GL_FLOAT, 0, tex_coords );
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(2, GL_FLOAT, 0, verts );
-		glDrawArrays(GL_QUADS, 0, 4);
+		ffglDrawTexture(cgl_ctx, texture, fromGLTarget, flipped,
+						imageWidth, imageHeight, fromTextureWidth, fromTextureHeight,
+						(NSRect){0.0, 0.0, imageWidth, imageHeight}, (NSRect){0.0, 0.0, imageWidth, imageHeight});
+
+		// Restore OpenGL states 
+		glMatrixMode(GL_MODELVIEW);
+		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
 	}
-	glBindTexture(fromGLTarget, 0);
-	
-	// Restore OpenGL states 
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
 	
 	// restore states // assume this is balanced with above
 	glPopClientAttrib();
@@ -458,5 +395,18 @@ static void FFGLTextureRepBufferPerformCallback(GLuint name, CGLContextObj cgl_c
 	{
 		return YES;
 	}
+}
+
+- (void)drawInContext:(CGLContextObj)context inRect:(NSRect)destRect fromRect:(NSRect)srcRect
+{
+	GLenum target = _type == FFGLImageRepTypeTexture2D ? GL_TEXTURE_2D : GL_TEXTURE_RECTANGLE_ARB;
+	// Save state
+	CGLContextObj cgl_ctx = context;
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	ffglDrawTexture(context, _textureInfo.texture, target, _isFlipped,
+					_textureInfo.width, _textureInfo.height, _textureInfo.hardwareWidth, _textureInfo.hardwareHeight,
+					srcRect, destRect);
+	// Restore state
+	glPopAttrib();
 }
 @end
