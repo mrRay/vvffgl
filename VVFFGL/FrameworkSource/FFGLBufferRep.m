@@ -342,4 +342,12 @@ static void FFGLBufferRepBufferRepReleaseForTexture(const void *baseAddress, voi
 		return YES;
 	}
 }
+- (void)drawInContext:(CGLContextObj)context inRect:(NSRect)destRect fromRect:(NSRect)srcRect
+{
+	// We make a temporary TextureRep and tell that to draw, as GL_TEXTURE_STORAGE_HINT_APPLE etc
+	// is fastest way to get a buffer on-screen.
+	FFGLTextureRep *rep = [self copyAsType:FFGLImageRepTypeTextureRect pixelFormat:_pixelFormat inContext:context allowingNPOT2D:NO asPrimaryRep:NO];
+	[rep drawInContext:context inRect:destRect fromRect:srcRect];
+	[rep release];
+}
 @end

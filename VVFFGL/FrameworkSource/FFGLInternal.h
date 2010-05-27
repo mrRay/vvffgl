@@ -102,6 +102,10 @@ bool ffglGLInfoForPixelFormat(NSString *ffglFormat, GLenum *format, GLenum *type
 	} \
 }
 
+void ffglDrawTexture(CGLContextObj cgl_ctx, GLuint texture, GLenum target, Boolean isFlipped,
+					 unsigned int srcPixelWidth, unsigned int srcPixelHeight, unsigned int srcTextureWidth, unsigned int srcTextureHeight,
+					 NSRect srcFromRect, NSRect dstToRect);
+
 @interface FFGLPlugin (Instances)
 /*
  Plugin properties

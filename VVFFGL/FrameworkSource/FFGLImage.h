@@ -152,6 +152,16 @@ typedef void (*FFGLImageBufferReleaseCallback)(const void *baseAddress, void *us
 @property (readonly) NSUInteger imagePixelsHigh;
 
 /*
+ - (void)drawInContext:(CGLContextObj)context inRect:(NSRect)destRect fromRect:(NSRect)srcRect
+ 
+	Draws the image.
+	context is the CGLContext to draw into. It should be the same as, or shared with, the context passed in when the image was initted.
+	destRect is the coordinates to draw into expressed in the context's current coordinates
+	srcRect is the part of the image to draw from, expressed in the image's coordinates.
+ */
+- (void)drawInContext:(CGLContextObj)context inRect:(NSRect)destRect fromRect:(NSRect)srcRect;
+
+/*
  lockTexture2DRepresentation
  
 	Indicates that you require access to a GL_TEXTURE_2D representation of the image. If none already exists it will be created from an existing representation if possible.
