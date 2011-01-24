@@ -17,6 +17,7 @@
 		969166531017650F0078DF52 /* VVFFGL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9606B14D101761EF00CC50B7 /* VVFFGL.framework */; };
 		BD1BE75E1117776A00985023 /* FFGLImageRep.h in Headers */ = {isa = PBXBuildFile; fileRef = BD1BE75C1117776A00985023 /* FFGLImageRep.h */; };
 		BD1BE75F1117776A00985023 /* FFGLImageRep.m in Sources */ = {isa = PBXBuildFile; fileRef = BD1BE75D1117776A00985023 /* FFGLImageRep.m */; };
+		BD1D6B5912ED981300192D8E /* FFGLComplianceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = BD1D6B5812ED981300192D8E /* FFGLComplianceTests.m */; };
 		BD2672421113863100D4F1CF /* FFGLGLState.c in Sources */ = {isa = PBXBuildFile; fileRef = BD2672411113863100D4F1CF /* FFGLGLState.c */; };
 		BD26735E1113B29700D4F1CF /* FFGLPluginTests.m in Sources */ = {isa = PBXBuildFile; fileRef = BD26735D1113B29700D4F1CF /* FFGLPluginTests.m */; };
 		BD2673641113B32000D4F1CF /* FFGLRendererTests.m in Sources */ = {isa = PBXBuildFile; fileRef = BD2673631113B32000D4F1CF /* FFGLRendererTests.m */; };
@@ -96,6 +97,8 @@
 		9606B18E101763C900CC50B7 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = AppSource/main.m; sourceTree = "<group>"; };
 		BD1BE75C1117776A00985023 /* FFGLImageRep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLImageRep.h; path = FrameworkSource/FFGLImageRep.h; sourceTree = "<group>"; };
 		BD1BE75D1117776A00985023 /* FFGLImageRep.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLImageRep.m; path = FrameworkSource/FFGLImageRep.m; sourceTree = "<group>"; };
+		BD1D6B5712ED981300192D8E /* FFGLComplianceTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLComplianceTests.h; path = UnitTests/FFGLComplianceTests.h; sourceTree = "<group>"; };
+		BD1D6B5812ED981300192D8E /* FFGLComplianceTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FFGLComplianceTests.m; path = UnitTests/FFGLComplianceTests.m; sourceTree = "<group>"; };
 		BD2672401113863100D4F1CF /* FFGLGLState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLGLState.h; path = UnitTests/FFGLGLState.h; sourceTree = "<group>"; };
 		BD2672411113863100D4F1CF /* FFGLGLState.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = FFGLGLState.c; path = UnitTests/FFGLGLState.c; sourceTree = "<group>"; };
 		BD26725611138AA300D4F1CF /* FFGLUnitTests_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FFGLUnitTests_Prefix.pch; path = UnitTests/FFGLUnitTests_Prefix.pch; sourceTree = "<group>"; };
@@ -301,6 +304,8 @@
 				BD26735D1113B29700D4F1CF /* FFGLPluginTests.m */,
 				BD2673621113B32000D4F1CF /* FFGLRendererTests.h */,
 				BD2673631113B32000D4F1CF /* FFGLRendererTests.m */,
+				BD1D6B5712ED981300192D8E /* FFGLComplianceTests.h */,
+				BD1D6B5812ED981300192D8E /* FFGLComplianceTests.m */,
 			);
 			name = "Unit Testing";
 			sourceTree = "<group>";
@@ -395,7 +400,14 @@
 			isa = PBXProject;
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "VVFFGL" */;
 			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 0867D691FE84028FC02AAC07 /* VVOpenSource */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
 			projectDirPath = "";
@@ -489,6 +501,7 @@
 				BD2672421113863100D4F1CF /* FFGLGLState.c in Sources */,
 				BD26735E1113B29700D4F1CF /* FFGLPluginTests.m in Sources */,
 				BD2673641113B32000D4F1CF /* FFGLRendererTests.m in Sources */,
+				BD1D6B5912ED981300192D8E /* FFGLComplianceTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
