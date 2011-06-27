@@ -148,7 +148,16 @@ static void finalizer()
 		ffglPPrivate(main) = NULL;
         
 		NSString *loadableName = [[path lastPathComponent] stringByDeletingPathExtension];
-		CFStringRef pathToLoadable = (CFStringRef)[NSString stringWithFormat:@"%@/Contents/MacOS/%@", path, loadableName];
+		CFStringRef pathToLoadable = NULL;
+		//	try a couple different paths to find the loadable file
+		NSFileManager		*fm = [NSFileManager defaultManager];
+		pathToLoadable = (CFStringRef)[NSString stringWithFormat:@"%@/Contents/MacOS/%@", path, loadableName];
+		if ((pathToLoadable==nil) || (![fm fileExistsAtPath:(NSString *)pathToLoadable]))
+			pathToLoadable = (CFStringRef)[NSString stringWithFormat:@"%@/%@",path,loadableName];
+		if ((pathToLoadable==nil) || (![fm fileExistsAtPath:(NSString *)pathToLoadable]))
+			pathToLoadable = (CFStringRef)[NSString stringWithFormat:@"%@/Versions/Current/%@",path,loadableName];
+		if (![fm fileExistsAtPath:(NSString *)pathToLoadable])
+			pathToLoadable = nil;
 		if (pathToLoadable != NULL)
 		{
 			CFIndex buffSize = CFStringGetMaximumSizeOfFileSystemRepresentation(pathToLoadable);
