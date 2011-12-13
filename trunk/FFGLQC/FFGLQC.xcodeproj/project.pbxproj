@@ -329,6 +329,11 @@
 				GCC_PREFIX_HEADER = FFGLQC_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Library/Graphics/Quartz Composer Plug-Ins";
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks @loader_path/../Frameworks";
+				OTHER_LDFLAGS = (
+					"-weak_framework",
+					VVFFGL,
+				);
 				PRODUCT_NAME = FFGLQC;
 				WRAPPER_EXTENSION = plugin;
 				ZERO_LINK = YES;
@@ -346,6 +351,11 @@
 				GCC_PREFIX_HEADER = FFGLQC_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Library/Graphics/Quartz Composer Plug-Ins";
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks @loader_path/../Frameworks";
+				OTHER_LDFLAGS = (
+					"-weak_framework",
+					VVFFGL,
+				);
 				PRODUCT_NAME = FFGLQC;
 				WRAPPER_EXTENSION = plugin;
 			};
